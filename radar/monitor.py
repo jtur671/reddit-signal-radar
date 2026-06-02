@@ -10,6 +10,7 @@ from __future__ import annotations
 import os
 import sys
 
+from radar.dotenv import load_env
 from radar import clock, trump
 from radar.config import load_config
 from radar.universe import Universe
@@ -46,6 +47,7 @@ def _validate(alerts, watch):
 
 
 def main(argv=None) -> int:
+    load_env()                                          # local .env (no-op in CI; env wins)
     cfg = load_config("config.yaml")
     ua = getattr(getattr(cfg, "apewisdom", None), "user_agent", "reddit-signal-radar/0.1")
     universe = Universe.load(UNIVERSE_PATH, STOPLIST_PATH)

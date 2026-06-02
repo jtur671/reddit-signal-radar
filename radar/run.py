@@ -1,6 +1,7 @@
 from __future__ import annotations
 import argparse, sys
 from datetime import date
+from radar.dotenv import load_env
 from radar import clock
 from radar.config import load_config
 from radar.themes import Themes
@@ -14,6 +15,7 @@ from radar.email_report import send_email
 from radar import trump, about
 
 def main(argv=None) -> int:
+    load_env()                                          # local .env (no-op in CI; env wins)
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--no-email", action="store_true")
