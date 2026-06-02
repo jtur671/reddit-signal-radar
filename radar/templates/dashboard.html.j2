@@ -82,7 +82,7 @@ body::before{content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;
 .kpi .n{font-family:"Martian Mono";font-weight:700;font-size:19px;margin-top:9px;letter-spacing:-.04em}
 
 /* CARDS */
-.card{border:1px solid var(--line);border-radius:3px;background:var(--panel);padding:17px 19px;margin-bottom:10px;position:relative}
+.card{border:1px solid var(--line);border-radius:3px;background:var(--panel);padding:17px 19px;margin-bottom:10px;position:relative;cursor:pointer}
 /* breaking / hot = green highlighted, active momentum */
 .card.live{border-color:rgba(95,207,151,.45);
   background:linear-gradient(105deg,rgba(63,156,109,.13) 0%,rgba(63,156,109,.03) 38%,var(--panel) 70%);
@@ -135,12 +135,12 @@ tbody td.tk{font-family:"Martian Mono";font-weight:600;font-size:13px;letter-spa
   <!-- 01 BOARD -->
   <div class="sec"><span class="no">01</span><span class="nm">The Board / Top 15 Signals</span><span class="ln"></span></div>
   <div class="chips">
-    {% for theme in themes %}<span class="chip{% if loop.first %} on{% endif %}">{{ theme }}</span>{% endfor %}
+    {% for theme in themes %}<span class="chip{% if loop.first %} on{% endif %}" data-theme="{{ theme }}">{{ theme }}</span>{% endfor %}
   </div>
   {% if board %}
   <div class="board">
     {% for t in board %}
-    <div class="tile{% if t.css %} {{ t.css }}{% endif %}"><span class="rk">{{ "%02d"|format(t.rank) }}</span><div class="tk">{{ t.ticker }}</div><div class="mt {% if t.css == 'cool' %}down{% else %}up{% endif %}">{{ t.mentions }} · {{ t.vel24_disp }}</div><span class="st">{{ t.emoji }}</span><div class="bar" style="width:{{ t.heat_pct }}%;background:{% if t.css == 'live' %}var(--up){% elif t.css == 'cool' %}var(--cyan){% else %}#3a4742{% endif %}"></div></div>
+    <div class="tile{% if t.css %} {{ t.css }}{% endif %}" data-themes="{{ t.themes_attr }}" data-ticker="{{ t.ticker }}"><span class="rk">{{ "%02d"|format(t.rank) }}</span><div class="tk">{{ t.ticker }}</div><div class="mt {% if t.css == 'cool' %}down{% else %}up{% endif %}">{{ t.mentions }} · {{ t.vel24_disp }}</div><span class="st">{{ t.emoji }}</span><div class="bar" style="width:{{ t.heat_pct }}%;background:{% if t.css == 'live' %}var(--up){% elif t.css == 'cool' %}var(--cyan){% else %}#3a4742{% endif %}"></div></div>
     {% endfor %}
   </div>
   {% else %}
@@ -169,7 +169,7 @@ tbody td.tk{font-family:"Martian Mono";font-weight:600;font-size:13px;letter-spa
   <div class="sec"><span class="no">03</span><span class="nm">The Movers / Story Behind the Spike</span><span class="ln"></span></div>
   {% if movers %}
   {% for m in movers %}
-  <div class="card{% if m.css %} {{ m.css }}{% endif %}">
+  <div class="card{% if m.css %} {{ m.css }}{% endif %}" data-themes="{{ m.themes_attr }}" data-ticker="{{ m.ticker }}">
     <div class="hd">
       <span class="rk">№{{ m.rank }}</span><span class="tk">{{ m.ticker }}</span><span class="tag {% if m.css == 'cool' %}t-cool{% elif m.css == 'live' %}t-new{% else %}t-sus{% endif %}">{{ m.state_label }}</span>
       <div class="px"><div class="v {% if m.pct_change is not none and m.pct_change < 0 %}down{% else %}up{% endif %}">{% if m.price is none %}—{% else %}${{ "%.2f"|format(m.price) }}{% endif %} {% if m.pct_change is none %}{% elif m.pct_change < 0 %}▼{{ "%.1f"|format(m.pct_change|abs) }}%{% else %}▲{{ "%.1f"|format(m.pct_change) }}%{% endif %}</div><div class="th">{{ m.theme }}</div></div>
@@ -196,7 +196,7 @@ tbody td.tk{font-family:"Martian Mono";font-weight:600;font-size:13px;letter-spa
     <tbody>
       {% if listings %}
       {% for r in listings %}
-      <tr><td class="tk">{{ r.ticker }}</td><td style="text-align:left">{{ r.theme }}</td><td>{{ r.score }}</td><td>{{ r.mentions }}</td><td class="{% if r.vel24_num < 1 %}down{% else %}up{% endif %}">{{ r.vel24_disp }}</td><td>{% if r.surprise >= 0 %}+{% else %}−{% endif %}{{ "%.1f"|format(r.surprise|abs) }}σ</td><td>{{ r.authors }}</td><td>{{ r.pct_bull }}%</td><td>{% if r.price is none %}—{% else %}{{ r.price }}{% endif %}</td><td class="{% if r.pct_change is not none and r.pct_change < 0 %}down{% else %}up{% endif %}">{% if r.pct_change is none %}—{% else %}{% if r.pct_change >= 0 %}+{% endif %}{{ "%.1f"|format(r.pct_change) }}%{% endif %}</td><td>{{ r.emoji }}</td></tr>
+      <tr data-themes="{{ r.themes_attr }}" data-ticker="{{ r.ticker }}"><td class="tk">{{ r.ticker }}</td><td style="text-align:left">{{ r.theme }}</td><td>{{ r.score }}</td><td>{{ r.mentions }}</td><td class="{% if r.vel24_num < 1 %}down{% else %}up{% endif %}">{{ r.vel24_disp }}</td><td>{% if r.surprise >= 0 %}+{% else %}−{% endif %}{{ "%.1f"|format(r.surprise|abs) }}σ</td><td>{{ r.authors }}</td><td>{{ r.pct_bull }}%</td><td>{% if r.price is none %}—{% else %}{{ r.price }}{% endif %}</td><td class="{% if r.pct_change is not none and r.pct_change < 0 %}down{% else %}up{% endif %}">{% if r.pct_change is none %}—{% else %}{% if r.pct_change >= 0 %}+{% endif %}{{ "%.1f"|format(r.pct_change) }}%{% endif %}</td><td>{{ r.emoji }}</td></tr>
       {% endfor %}
       {% else %}
       <tr><td colspan="11" style="text-align:left">No listings today.</td></tr>
@@ -231,6 +231,25 @@ tbody td.tk{font-family:"Martian Mono";font-weight:600;font-size:13px;letter-spa
   var txt = mins<2 ? 'just now' : (mins<60 ? mins+'m ago' : Math.round(mins/60)+'h ago');
   ago.textContent=' · '+txt;
   if(mins>1500){ el.classList.add('stale'); ago.textContent=' · '+txt+' · STALE'; }
+})();
+// Theme filter chips: show only items whose data-themes (|-joined) include the
+// selected category. "All" resets. Operates on tiles, mover cards and listing rows.
+(function(){
+  var chips=document.querySelectorAll('.chips .chip');
+  if(!chips.length) return;
+  function apply(sel){
+    document.querySelectorAll('[data-themes]').forEach(function(el){
+      var ts=(el.getAttribute('data-themes')||'').split('|');
+      el.style.display=(sel==='All'||ts.indexOf(sel)>=0)?'':'none';
+    });
+  }
+  chips.forEach(function(c){
+    c.addEventListener('click',function(){
+      chips.forEach(function(x){x.classList.remove('on');});
+      c.classList.add('on');
+      apply(c.getAttribute('data-theme'));
+    });
+  });
 })();
 </script>
 </body>

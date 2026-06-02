@@ -58,8 +58,9 @@ def main(argv=None) -> int:
     corpus = sum(a.mentions for a in aggregates)       # total Reddit mentions scanned
     refreshed = clock.now_stamp(cfg.timezone)          # when this run actually generated the page
     refreshed_iso = clock.now_iso_utc()
+    chips = _chip_list(board, themes)
     html = render_html(**_build_context(board, signals, run_day, corpus, refreshed,
-                                        refreshed_iso, category_reads))
+                                        refreshed_iso, category_reads, chips))
     write_outputs(html, {"board": [s.ticker for s in board]}, out_dir=args.out)
 
     if not args.no_email and not args.dry_run:
@@ -106,8 +107,20 @@ def _category_reads(signals, themes):
                               line=f"{label} — {top.ticker} {_vel24(top)[0]} ({top.mentions} mentions)"))
     return reads
 
+def _chip_list(board, themes):
+    """Filter chips: 'All' + the categories actually present on the board (in display
+    order), and always 'Trump' (it's monitored, so it stays filterable)."""
+    order = _category_order(themes)
+    present = set()
+    for s in board:
+        present.update(s.themes or [])
+    chips = ["All"] + [c for c in order if c in present]
+    if "Trump" not in chips:
+        chips.append("Trump")
+    return chips
+
 def _build_context(board, signals, run_day, corpus_count, refreshed="", refreshed_iso="",
-                   category_reads=None):
+                   category_reads=None, chips=None):
     maxw = max((s.weighted_today for s in board), default=1) or 1
     ranked = [s for s in board if s.vel_24h is not None]
     breakout = max(ranked, key=lambda s: s.vel_24h, default=None) or \
@@ -124,11 +137,11 @@ def _build_context(board, signals, run_day, corpus_count, refreshed="", refreshe
         category_reads=(category_reads or []),
         board=[dict(rank=i+1, ticker=s.ticker, mentions=s.mentions,
                     vel24_disp=_vel24(s)[0], vel24_num=_vel24(s)[1],
-                    state=s.state, emoji=_emoji(s.state),
+                    state=s.state, emoji=_emoji(s.state), themes_attr="|".join(s.themes or []),
                     heat_pct=int(100*s.weighted_today/maxw), css=_css(s.state))
                for i, s in enumerate(board)],
         movers=[dict(rank=i+1, ticker=s.ticker, state_label=s.state.title(), css=_css(s.state),
-                     price=s.price, pct_change=s.pct_change,
+                     price=s.price, pct_change=s.pct_change, themes_attr="|".join(s.themes or []),
                      theme=(s.themes[0] if s.themes else ""), mentions=s.mentions,
                      vel24_disp=_vel24(s)[0], vel24_num=_vel24(s)[1],
                      surprise=s.surprise, authors=s.upvotes,
@@ -136,10 +149,10 @@ def _build_context(board, signals, run_day, corpus_count, refreshed="", refreshe
                 for i, s in enumerate(board[:6])],
         listings=[dict(ticker=s.ticker, theme=(s.themes[0] if s.themes else ""), score=s.score,
                        mentions=s.mentions, vel24_disp=_vel24(s)[0], vel24_num=_vel24(s)[1],
-                       surprise=s.surprise,
+                       surprise=s.surprise, themes_attr="|".join(s.themes or []),
                        authors=s.upvotes, pct_bull=int(s.pct_bull), price=s.price,
                        pct_change=s.pct_change, emoji=_emoji(s.state)) for s in board],
-        themes=["All","AI Compute","Crypto","Meme","Defense","Bio/Pharma","Oil","Short Squeeze"],
+        themes=(chips or ["All"]),
         cooling=[dict(ticker=s.ticker, surprise=s.surprise) for s in cooling],
         trend="0,50 60,48 120,40 160,30 200,8")
 

@@ -23,3 +23,28 @@ def test_render_empty_board_shows_no_signals():
                        biggest_breakout="—",most_bullish="—"), mood="No signals today.",
                        board=[], movers=[], listings=[], themes=["All"], cooling=[], trend="")
     assert "No signals" in html or "no signals" in html.lower()
+
+
+from radar.run import _chip_list, _build_context
+from radar.themes import Themes
+from radar.models import Signal
+
+def _themes_b():
+    return Themes({"ai_compute": {"label": "AI Compute", "seeds": ["IREN"]},
+                   "crypto": {"label": "Crypto", "seeds": ["BTC"]},
+                   "trump": {"label": "Trump", "seeds": ["DJT"]}})
+
+def _bsig(ticker, themes):
+    s = Signal(ticker=ticker, mentions=10); s.themes = themes; s.vel_24h = 2.0; return s
+
+def test_chip_list_present_plus_always_trump():
+    chips = _chip_list([_bsig("IREN", ["AI Compute"])], _themes_b())
+    assert chips[0] == "All" and "AI Compute" in chips and "Trump" in chips
+    assert "Crypto" not in chips           # not on board -> not a chip
+
+def test_items_carry_data_themes_and_chips_render():
+    board = [_bsig("IREN", ["AI Compute", "AI"])]
+    html = render_html(**_build_context(board, board, "2026-06-02", 100,
+                                        chips=_chip_list(board, _themes_b())))
+    assert 'data-themes="AI Compute|AI"' in html
+    assert 'data-theme="Trump"' in html    # Trump chip always filterable
