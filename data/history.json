@@ -793,10 +793,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 14,
-"score": 13.52,
+"raw": 13,
+"score": 13.17,
 "state": "new",
-"weighted": 14.0
+"weighted": 13.0
 }
 },
 "FLNC": {
@@ -943,10 +943,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 166,
-"score": 17.83,
+"raw": 164,
+"score": 17.82,
 "state": "new",
-"weighted": 166.0
+"weighted": 164.0
 }
 },
 "GOOGL": {
@@ -1053,20 +1053,20 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 253,
+"raw": 252,
 "score": 15.1,
 "state": "new",
-"weighted": 253.0
+"weighted": 252.0
 }
 },
 "HPQ": {
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 31,
-"score": 17.64,
+"raw": 30,
+"score": 17.62,
 "state": "new",
-"weighted": 31.0
+"weighted": 30.0
 }
 },
 "HR": {
@@ -1462,7 +1462,7 @@
 "MRVL": {
 "2026-06-02": {
 "authors": 0,
-"pct_bull": 50.0,
+"pct_bull": 51.0,
 "raw": 564,
 "score": 44.13,
 "state": "new",
@@ -1483,10 +1483,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 368,
+"raw": 367,
 "score": 17.75,
 "state": "new",
-"weighted": 368.0
+"weighted": 367.0
 }
 },
 "MSTR": {
@@ -1593,10 +1593,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 397,
-"score": 17.5,
+"raw": 395,
+"score": 17.49,
 "state": "new",
-"weighted": 397.0
+"weighted": 395.0
 }
 },
 "OG": {
@@ -1683,10 +1683,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 41,
-"score": 13.92,
+"raw": 40,
+"score": 13.9,
 "state": "new",
-"weighted": 41.0
+"weighted": 40.0
 }
 },
 "OS": {
@@ -1843,10 +1843,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 120,
-"score": 16.42,
+"raw": 119,
+"score": 16.41,
 "state": "new",
-"weighted": 120.0
+"weighted": 119.0
 }
 },
 "QQQM": {
@@ -1963,10 +1963,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 8,
-"score": 16.15,
+"raw": 7,
+"score": 15.47,
 "state": "new",
-"weighted": 8.0
+"weighted": 7.0
 }
 },
 "RTH": {
@@ -2233,20 +2233,20 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 16,
-"score": 19.91,
+"raw": 15,
+"score": 19.26,
 "state": "new",
-"weighted": 16.0
+"weighted": 15.0
 }
 },
 "SPCE": {
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 1989,
+"raw": 1988,
 "score": 17.05,
 "state": "new",
-"weighted": 1989.0
+"weighted": 1988.0
 }
 },
 "SPCX": {
