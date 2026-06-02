@@ -1,7 +1,9 @@
 name: daily-radar
 on:
   schedule:
-    - cron: "0 10 * * *"      # 10:00 UTC = 06:00 ET (EDT). Adjust to 11 for EST if needed.
+    - cron: "17 10 * * *"     # 10:17 UTC = 06:17 ET (EDT). Off the top of the hour:
+                              # GitHub delays/drops cron runs scheduled at :00 under load.
+                              # Use "17 11 * * *" for 06:17 EST in winter.
   workflow_dispatch: {}
 permissions:
   contents: write             # to commit history.json back
