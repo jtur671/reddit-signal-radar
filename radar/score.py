@@ -1,7 +1,17 @@
 from __future__ import annotations
+import math
 from collections import defaultdict
 from radar.models import Mention, Signal
 from radar import clock
+
+def _accel_points(vel_24h) -> float:
+    """Day-1-valid freshness driver for the composite: reward mention growth vs yesterday so
+    breakouts outrank big-but-flat names even before a 90-day baseline exists. Capped so a
+    tiny-base blip can't run away; None (no prior-day data — new to the tracker) gets a
+    moderate fresh-arrival credit, with the volume tiebreaker separating new names."""
+    if vel_24h is None:
+        return 10.0
+    return min(max(vel_24h, 0.0), 10.0) * 3.0          # 1× -> 3, 5× -> 15, capped at 30
 
 def classify_state(velocity: float, surprise: float, baseline_mean: float) -> str:
     if baseline_mean <= 1e-9 and surprise >= 0:
@@ -13,7 +23,7 @@ def classify_state(velocity: float, surprise: float, baseline_mean: float) -> st
     return "sustained"
 
 def _finalize(ticker, weighted, mentions, distinct_authors, bonus_basis,
-              subreddits, history, cfg, run_day) -> Signal:
+              subreddits, history, cfg, run_day, accel_pts=0.0) -> Signal:
     """Shared scoring core: given today's `weighted` magnitude for a ticker, measure
     it against the 90-day EMA baseline to produce velocity / surprise / composite /
     lifecycle state. Used by BOTH the raw-mention path (score_signals) and the
@@ -27,9 +37,12 @@ def _finalize(ticker, weighted, mentions, distinct_authors, bonus_basis,
         surprise = 1.0 if weighted > 0 else 0.0              # brand new (INV-8)
     else:
         surprise = 1.0 if weighted > mean else (-1.0 if weighted < mean else 0.0)
-    # composite: surprise dominates (bounded); volume is a gentle, capped tiebreaker.
+    # composite: 90-day surprise (bounded) once it exists + 24h acceleration (the day-1
+    # freshness driver, via accel_pts) + a gentle, log-scaled volume tiebreaker. During
+    # baseline burn-in surprise is a constant, so acceleration is what actually ranks names.
     bounded_surprise = max(-3.0, min(6.0, surprise))
-    composite = bounded_surprise * 10 + min(bonus_basis, 50) * 0.2
+    volume_pts = min(math.log10(max(bonus_basis, 1.0)), 4.0) * 1.5
+    composite = bounded_surprise * 10 + accel_pts + volume_pts
     s = Signal(ticker=ticker, mentions=mentions, distinct_authors=distinct_authors,
                weighted_today=weighted, baseline_mean=mean, baseline_std=std,
                velocity=(0.0 if velocity == float("inf") else round(velocity, 2)),
@@ -49,11 +62,12 @@ def score_aggregates(aggregates, history, cfg, run_day: str) -> list[Signal]:
     for a in aggregates:
         if a.mentions < min_mentions:
             continue                                         # noise floor (aggregator pre-filters)
+        vel24 = _compute_vel_24h(a.mentions, a.mentions_24h_ago)
         s = _finalize(a.ticker, float(a.mentions), mentions=a.mentions, distinct_authors=0,
                       bonus_basis=a.mentions, subreddits=[a.subreddit],
-                      history=history, cfg=cfg, run_day=run_day)
+                      history=history, cfg=cfg, run_day=run_day, accel_pts=_accel_points(vel24))
         s.mentions_24h_ago = a.mentions_24h_ago
-        s.vel_24h = _compute_vel_24h(a.mentions, a.mentions_24h_ago)
+        s.vel_24h = vel24
         signals.append(s)
     signals.sort(key=lambda x: x.score, reverse=True)
     return signals

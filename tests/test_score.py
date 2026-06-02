@@ -80,6 +80,16 @@ def test_vel_24h_new_when_no_prior():
     s = score_aggregates([_agg("BBB", 100)], FakeHist({}), cfg(), "2026-06-01")[0]  # prior 0
     assert s.vel_24h is None
 
+def test_acceleration_differentiates_during_burn_in():
+    """With no 90-day baseline (all 'new'), the score must still rank: a 5x breakout at
+    modest volume beats a flat mega-name — and they are NOT both the old constant 20."""
+    breakout = Aggregate(ticker="BRK", name="BRK", mentions=200, mentions_24h_ago=40, upvotes=0, subreddit="x")
+    flat = Aggregate(ticker="FLAT", name="FLAT", mentions=2000, mentions_24h_ago=2000, upvotes=0, subreddit="x")
+    sigs = {s.ticker: s for s in score_aggregates([breakout, flat], FakeHist({}), cfg(), "2026-06-01")}
+    assert sigs["BRK"].score > sigs["FLAT"].score             # freshness beats raw popularity
+    assert round(sigs["BRK"].score, 2) != round(sigs["FLAT"].score, 2)   # no longer a flat 20
+
+
 def test_engine_velocity_unchanged_on_cold_start():
     a = Aggregate(ticker="CCC", name="CCC", mentions=100, mentions_24h_ago=50, upvotes=10, subreddit="x")
     s = score_aggregates([a], FakeHist({}), cfg(), "2026-06-01")[0]
