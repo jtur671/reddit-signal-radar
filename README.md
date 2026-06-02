@@ -1,39 +1,45 @@
 # Reddit Signal Radar
 
-Reddit Signal Radar scans the busiest trading subreddits through Reddit's public JSON
-endpoints, extracts the tickers people are talking about, and scores each one for
-**freshness**, **velocity** (mention acceleration vs. its own 90-day baseline), and
-**sentiment** — so stale signals always decay off the board instead of lingering. The
+Reddit Signal Radar tracks which tickers Reddit's trading communities are talking about
+and scores each one for **freshness** and **velocity** (mention acceleration vs. its own
+90-day baseline) — so stale signals always decay off the board instead of lingering. The
 top movers are rendered into an infographic dashboard published to GitHub Pages, and the
 same board is delivered as a daily email at **6 AM ET**.
+
+**Data source:** Reddit's public JSON endpoints return HTTP 403 to cloud/CI IPs, so the
+bot sources per-ticker mention counts from the free, no-auth [ApeWisdom](https://apewisdom.io)
+aggregator (`all-stocks` + `all-crypto`). The freshness engine scores those daily counts
+against its own 90-day EMA baseline. (The original raw-Reddit fetch/extract/sentiment path
+still ships and is tested, for anyone running from a non-blocked residential host.)
 
 ## How it works
 
 ```
-fetch → extract → score → sentiment + enrich → render → publish + email
+fetch (ApeWisdom) → score → engagement + price enrich → render → publish + email
 ```
 
-Each run pulls listings/comments from the configured subreddits, extracts and validates
-ticker mentions, scores them with a half-life decay model, layers on VADER sentiment plus
-theme/price enrichment, renders `out/index.html` + `out/data.json`, then publishes to
-GitHub Pages and sends the email. A rolling 90-day `data/history.json` is used as the
-velocity baseline and is committed back to the repo on every run.
+Each run pulls per-ticker Reddit mention aggregates, scores them against each ticker's
+adaptive 90-day EMA baseline (velocity + surprise z-score, noise floor, lifecycle states),
+tags themes, adds an upvotes-based **engagement** proxy and yfinance prices, renders
+`out/index.html` + `out/data.json`, then publishes to GitHub Pages and sends the email.
+A rolling 90-day `data/history.json` is the velocity baseline, committed back every run.
+
+> Note: ApeWisdom provides mention counts + upvotes but **no directional (bull/bear)
+> sentiment** and no raw comment text — so the dashboard's "engagement" bar is an
+> upvotes-per-mention proxy, and DeepSeek summaries are generated from the numbers.
 
 ## Local run
 
 ```bash
 pip install -r requirements.txt
-python3 -m radar.run --dry-run --no-email --subreddits stocks --out out
+python3 -m radar.run --dry-run --no-email --out out
 open out/index.html
 ```
 
-This runs the full pipeline against r/stocks only, skips the email, and writes the
+This runs the full pipeline (live ApeWisdom data), skips the email, and writes the
 dashboard to `out/index.html`. The pinned `openai` client is `>=1.59.0,<2` (used to talk
-to the DeepSeek-compatible API).
-
-Note: Reddit may rate-limit unauthenticated requests, so seeing an **empty board** when
-you run locally is normal — it just means the public JSON returned no usable data on that
-attempt.
+to the DeepSeek-compatible API). Velocity/surprise only become meaningful after ~1–2 weeks
+of `history.json` has accumulated; early boards are "new"-heavy by design.
 
 ## Deploy (GitHub Actions)
 
@@ -50,12 +56,12 @@ The daily run is driven by `.github/workflows/daily.yml`.
 
 ## Configuration
 
-- `config.yaml` — pipeline tunables: half-life (`half_life_hours`), lookback window
-  (`lookback_hours`), noise floor (`noise_floor`), top-N (`top_n`), and history retention
-  (`history_days`).
-- `data/themes.yaml` — theme watchlists (seed tickers + keywords).
-- `data/subreddits.txt` — the list of subreddits to scan.
-- `data/stoplist.txt` — words/tickers to ignore.
+- `config.yaml` — pipeline tunables: the `apewisdom` feeds/pages, noise floor
+  (`noise_floor`), top-N (`top_n`), EMA smoothing (`ema_alpha`), and history retention
+  (`history_days`). (Half-life / lookback / `fetch` apply only to the legacy raw-Reddit path.)
+- `data/themes.yaml` — theme watchlists (seed tickers + keywords) used to tag the board.
+- `data/stoplist.txt`, `data/subreddits.txt`, `data/universe.txt` — used by the legacy
+  raw-Reddit path only.
 
 For example, the `infrastructure` theme tracks the `KEEL` ticker (Keel Infrastructure) —
 add your own themes the same way by appending a labelled block with `seeds` and
@@ -63,17 +69,15 @@ add your own themes the same way by appending a labelled block with `seeds` and
 
 ## Known limitations
 
-- **Sockpuppet brigades.** The noise floor caps any single author's weight and counts
-  distinct authors, which defeats a lone high-volume account. A coordinated botnet of
-  many throwaway accounts each posting once can still inflate distinct-author counts —
-  inherent to author-based weighting without account-age/karma signals.
-- **LLM summaries are best-effort.** Untrusted Reddit text is fenced and run through an
-  injection sanitizer before reaching the model, and all model output is HTML-escaped
-  on the dashboard and in email (so injection cannot become XSS). A determined prompt
-  injection could still produce a misleading one-line summary; treat summaries as color,
-  not fact.
-- **Reddit rate limits.** Unauthenticated public-JSON requests are throttled; an empty
-  board on a given run usually means the fetch was rate-limited, not that nothing trended.
+- **Aggregator trust.** Mention counts come from ApeWisdom, so the bot inherits whatever
+  scraping/filtering it does. No directional sentiment or raw text is available, so the
+  "engagement" bar is an upvotes-per-mention proxy, not a bull/bear reading.
+- **Cold start.** Velocity and surprise are measured against the 90-day baseline, which
+  starts empty — the first ~1–2 weeks of boards are dominated by "new" until history fills.
+- **LLM summaries are best-effort.** Summaries are generated from mention metadata and
+  HTML-escaped on output (so they can't become XSS); treat them as color, not fact.
+- **Single source of truth.** If ApeWisdom is down, the board is empty for that run; the
+  pipeline degrades gracefully (no crash) but there's no fallback feed today.
 
 ## Disclaimer
 
