@@ -11,6 +11,7 @@ from radar.sentiment import summarize, engagement_pct
 from radar.enrich import enrich
 from radar.render import render_html, write_outputs
 from radar.email_report import send_email
+from radar import trump
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
@@ -61,8 +62,9 @@ def main(argv=None) -> int:
     refreshed_iso = clock.now_iso_utc()
     chips = _chip_list(board, themes)
     detail_json = _detail_blob(board, history, run_day)
+    alert = _load_alert("data/trump_alert.json")       # Trump pump alert (if fresh)
     html = render_html(**_build_context(board, signals, run_day, corpus, refreshed,
-                                        refreshed_iso, category_reads, chips, detail_json))
+                                        refreshed_iso, category_reads, chips, detail_json, alert))
     write_outputs(html, {"board": [s.ticker for s in board]}, out_dir=args.out)
 
     if not args.no_email and not args.dry_run:
@@ -109,6 +111,16 @@ def _category_reads(signals, themes):
                               line=f"{label} — {top.ticker} {_vel24(top)[0]} ({top.mentions} mentions)"))
     return reads
 
+def _load_alert(path):
+    """Load the Trump alert for the dashboard card, but only if still fresh (<48h).
+    Returns a render-ready dict (post text rendered server-side, autoescaped)."""
+    raw = trump.load_alert(path)
+    if not raw or not trump.alert_is_fresh(raw, clock.now_utc()):
+        return None
+    return dict(tickers=" · ".join("$" + t for t in raw.get("tickers", [])),
+                post=raw.get("post", ""), url=raw.get("url", ""),
+                when=raw.get("published") or raw.get("detected_at") or "")
+
 def _history_series(history, ticker, run_day, days=90):
     """Chronological [{d, m}] mention series within the trailing window, for the
     detail-modal sparkline. Uses the recorded raw mention count per day."""
@@ -146,7 +158,7 @@ def _chip_list(board, themes):
     return chips
 
 def _build_context(board, signals, run_day, corpus_count, refreshed="", refreshed_iso="",
-                   category_reads=None, chips=None, detail_json=None):
+                   category_reads=None, chips=None, detail_json=None, alert=None):
     maxw = max((s.weighted_today for s in board), default=1) or 1
     ranked = [s for s in board if s.vel_24h is not None]
     breakout = max(ranked, key=lambda s: s.vel_24h, default=None) or \
@@ -162,6 +174,7 @@ def _build_context(board, signals, run_day, corpus_count, refreshed="", refreshe
         mood=(board[0].summary if board and board[0].summary else ""),
         category_reads=(category_reads or []),
         detail_json=(detail_json or {}),
+        alert=alert,
         board=[dict(rank=i+1, ticker=s.ticker, mentions=s.mentions,
                     vel24_disp=_vel24(s)[0], vel24_num=_vel24(s)[1],
                     state=s.state, emoji=_emoji(s.state), themes_attr="|".join(s.themes or []),

@@ -10,7 +10,7 @@ permissions:
   pages: write
   id-token: write
 concurrency:
-  group: daily-radar
+  group: pages                 # shared with trump-monitor so Pages never deploys twice at once
   cancel-in-progress: false
 jobs:
   run:

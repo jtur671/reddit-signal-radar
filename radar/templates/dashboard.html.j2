@@ -131,6 +131,12 @@ tr[data-ticker]{cursor:pointer}
 #m-sparklabel{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:10px}
 #m-summary{font-size:12.5px;line-height:1.6;color:var(--ink);border-left:2px solid var(--up-d);padding-left:11px;margin:4px 0 10px}
 #m-src{font-size:10px;color:var(--faint)}
+.alert{border:1px solid var(--down);border-radius:4px;background:linear-gradient(100deg,rgba(224,101,79,.15),rgba(224,101,79,.03));margin:18px 0 4px;padding:13px 17px}
+.alert-tag{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--down)}
+.alert-tk{font-size:16px;font-weight:700;letter-spacing:.05em;color:var(--ink);margin-top:5px}
+.alert-post{font-size:13px;line-height:1.55;color:var(--ink);margin:7px 0}
+.alert-meta{font-size:10px;letter-spacing:.06em;color:var(--faint)}
+.alert-meta a{color:var(--gold)}
 </style>
 </head>
 <body>
@@ -145,6 +151,17 @@ tr[data-ticker]{cursor:pointer}
     <div class="mast-name">REDDIT SIGNAL <span class="b">RADAR</span></div>
     <div class="mast-strap"><span class="c">//</span> what the trading internet is buzzing about — before the open &nbsp;·&nbsp; {{ meta.date }}</div>
   </header>
+
+  {% if alert %}
+  <div class="alert" data-themes="Trump" data-ticker="">
+    <div class="alert-tag">⚠ Trump Alert</div>
+    <div class="alert-body">
+      <div class="alert-tk">{{ alert.tickers }}</div>
+      <p class="alert-post">“{{ alert.post }}”</p>
+      <div class="alert-meta">{{ alert.when }}{% if alert.url %} · <a href="{{ alert.url }}" target="_blank" rel="noopener noreferrer">Truth Social post ↗</a>{% endif %}</div>
+    </div>
+  </div>
+  {% endif %}
 
   <!-- 01 BOARD -->
   <div class="sec"><span class="no">01</span><span class="nm">The Board / Top 15 Signals</span><span class="ln"></span></div>

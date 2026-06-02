@@ -60,12 +60,24 @@ The daily run is driven by `.github/workflows/daily.yml`.
   (`noise_floor`), top-N (`top_n`), EMA smoothing (`ema_alpha`), and history retention
   (`history_days`). (Half-life / lookback / `fetch` apply only to the legacy raw-Reddit path.)
 - `data/themes.yaml` — theme watchlists (seed tickers + keywords) used to tag the board.
+- `data/trump_watch.yaml` — company/asset name → ticker map for the Trump monitor.
 - `data/stoplist.txt`, `data/subreddits.txt`, `data/universe.txt` — used by the legacy
   raw-Reddit path only.
 
 For example, the `infrastructure` theme tracks the `KEEL` ticker (Keel Infrastructure) —
 add your own themes the same way by appending a labelled block with `seeds` and
 `keywords`.
+
+## Trump pump monitor
+
+A separate workflow (`.github/workflows/trump-monitor.yml`, every 30 min) polls Donald
+Trump's Truth Social posts via the free [trumpstruth.org](https://www.trumpstruth.org)
+RSS feed. When a post names a ticker or tracked company (cashtags + universe symbols +
+`data/trump_watch.yaml`), it emails immediately and rebuilds the dashboard with a red
+alert card between the masthead and the board (auto-expires after 48h). Detection is
+deduped via `data/trump_seen.json`; the build/deploy only runs on a new pump, so the
+30-min cadence is cheap. (X/Twitter isn't monitored — Trump posts on Truth Social, and
+the X API is paid-only.)
 
 ## Known limitations
 

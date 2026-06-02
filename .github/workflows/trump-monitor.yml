@@ -1,0 +1,47 @@
+name: trump-monitor
+on:
+  schedule:
+    - cron: "*/30 * * * *"      # every 30 min — tripwire for a Trump pump
+  workflow_dispatch: {}
+permissions:
+  contents: write              # commit dedup cursor / alert back
+  pages: write
+  id-token: write
+concurrency:
+  group: pages                 # shared with daily-radar so Pages never deploys twice at once
+  cancel-in-progress: false
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: main, fetch-depth: 1 }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -r requirements.txt
+      - name: Check Truth Social
+        id: mon
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          EMAIL_RECIPIENTS: ${{ secrets.EMAIL_RECIPIENTS }}
+        run: python -m radar.monitor
+      - name: Commit monitor state
+        run: |
+          git config user.name "radar-bot"
+          git config user.email "radar-bot@users.noreply.github.com"
+          git add data/trump_seen.json data/trump_alert.json 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "data: trump monitor $(date -u +%FT%TZ)"
+          git push origin HEAD:main || echo "nothing to push"
+      # On a NEW pump only: rebuild + redeploy the dashboard so the alert card shows.
+      - name: Build dashboard with alert
+        if: steps.mon.outputs.alert == 'true'
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+        run: python -m radar.run --no-email --out out
+      - uses: actions/upload-pages-artifact@v3
+        if: steps.mon.outputs.alert == 'true'
+        with: { path: out }
+      - uses: actions/deploy-pages@v4
+        if: steps.mon.outputs.alert == 'true'

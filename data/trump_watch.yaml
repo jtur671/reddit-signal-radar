@@ -1,0 +1,24 @@
+# Company / asset names -> ticker, for detecting pumps in Trump's plain-prose posts
+# (he rarely uses cashtags). Keys are matched case-insensitively on word boundaries.
+# Keep entries SPECIFIC and multi-word where possible to avoid false positives — do
+# NOT add bare generic words like "oil", "gold", "truth" on their own.
+tesla: TSLA
+nvidia: NVDA
+apple: AAPL
+microsoft: MSFT
+amazon: AMZN
+google: GOOGL
+alphabet: GOOGL
+facebook: META
+boeing: BA
+lockheed: LMT
+raytheon: RTX
+coinbase: COIN
+bitcoin: BTC
+ethereum: ETH
+"truth social": DJT
+"trump media": DJT
+djt: DJT
+palantir: PLTR
+"fannie mae": FNMA
+"freddie mac": FMCC
