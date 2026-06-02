@@ -1,0 +1,44 @@
+ai_compute:
+  label: "AI Compute"
+  seeds: [IREN, HIVE, WULF, CORZ, APLD, CIFR, MARA, RIOT, BTDR, CLSK, BTBT, HUT, GREE, SDIG, NBIS, CRWV, SMCI, VRT, KULR]
+  keywords: ["ai compute", "hpc", "gpu cluster", "ex-miner", "bitcoin miner"]
+ai_stocks:
+  label: "AI"
+  seeds: [NVDA, PLTR, AMD, AVGO, SMCI, MSFT, GOOGL, META, TSLA, BBAI, SOUN, AI]
+  keywords: ["artificial intelligence", "palantir", "nvidia"]
+crypto:
+  label: "Crypto"
+  seeds: [BTC, ETH, SOL, XRP, DOGE, COIN, MSTR, HOOD]
+  keywords: ["bitcoin", "ethereum", "crypto", "perps", "perpetual"]
+meme:
+  label: "Meme"
+  seeds: [GME, AMC, MULN, KOSS, BB, DJT]
+  keywords: ["meme stock", "moon", "diamond hands"]
+short_squeeze:
+  label: "Short Squeeze"
+  seeds: [GME, AMC]
+  keywords: ["short squeeze", "short interest", "ftd", "squeeze"]
+biopharma:
+  label: "Bio/Pharma"
+  seeds: [SAVA, MRNA, NVAX, PFE]
+  keywords: ["fda", "phase 3", "clinical trial", "biotech"]
+defense:
+  label: "Defense"
+  seeds: [LMT, RTX, NOC, GD, BA, LHX, KTOS, AVAV, LDOS, PLTR, RKLB]
+  keywords: ["defense", "war", "missile", "pentagon"]
+oil:
+  label: "Oil"
+  seeds: [XOM, CVX, OXY, COP, SLB, HAL, DVN, MPC, VLO]
+  keywords: ["oil", "energy", "crude", "opec"]
+trump:
+  label: "Trump"
+  seeds: [DJT, PHUN, BKKT, RUM]
+  keywords: ["trump", "djt", "truth social"]
+space:
+  label: "Space"
+  seeds: [RKLB, ASTS, LUNR, RDW, SPCE]
+  keywords: ["space", "rocket", "satellite", "spacex"]
+infrastructure:
+  label: "Infrastructure"
+  seeds: [KEEL]
+  keywords: ["infrastructure", "keel"]

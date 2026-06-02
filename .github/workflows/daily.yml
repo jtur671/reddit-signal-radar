@@ -1,0 +1,41 @@
+name: daily-radar
+on:
+  schedule:
+    - cron: "0 10 * * *"      # 10:00 UTC = 06:00 ET (EDT). Adjust to 11 for EST if needed.
+  workflow_dispatch: {}
+permissions:
+  contents: write             # to commit history.json back
+  pages: write
+  id-token: write
+concurrency:
+  group: daily-radar
+  cancel-in-progress: false
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: main, fetch-depth: 1 }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -r requirements.txt
+      - name: Run pipeline
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+          EMAIL_RECIPIENTS: ${{ secrets.EMAIL_RECIPIENTS }}
+        run: python -m radar.run --out out
+      - name: Commit history
+        run: |
+          git config user.name "radar-bot"
+          git config user.email "radar-bot@users.noreply.github.com"
+          git add data/history.json
+          # commit only if there's a change; checkout is detached on cron/dispatch
+          # events, so push to an explicit branch ref rather than a bare `git push`.
+          git diff --cached --quiet || git commit -m "data: history $(date -u +%F)"
+          git push origin HEAD:main
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: out }
+      - uses: actions/deploy-pages@v4

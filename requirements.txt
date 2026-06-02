@@ -1,0 +1,10 @@
+requests==2.32.3
+vaderSentiment==3.3.2
+yfinance==0.2.51
+alpaca-py==0.33.1
+jinja2==3.1.4
+pyyaml==6.0.2
+openai>=1.59.0,<2
+resend==2.5.1
+pytest==8.3.4
+freezegun==1.5.1

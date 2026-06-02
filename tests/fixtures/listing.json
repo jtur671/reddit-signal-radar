@@ -1,0 +1,54 @@
+{
+  "kind": "Listing",
+  "data": {
+    "after": "t3_abc125",
+    "before": null,
+    "children": [
+      {
+        "kind": "t3",
+        "data": {
+          "id": "abc123",
+          "subreddit": "stocks",
+          "author": "value_investor_42",
+          "created_utc": 1717180800.0,
+          "title": "Loading up on $NVDA before earnings",
+          "selftext": "I think $NVDA is undervalued here and $AMD looks interesting too. Thoughts on the AI semiconductor trade?",
+          "score": 482,
+          "permalink": "/r/stocks/comments/abc123/loading_up_on_nvda_before_earnings/",
+          "num_comments": 213,
+          "upvote_ratio": 0.91
+        }
+      },
+      {
+        "kind": "t3",
+        "data": {
+          "id": "abc124",
+          "subreddit": "stocks",
+          "author": "dividend_dan",
+          "created_utc": 1717177200.0,
+          "title": "Weekly discussion thread",
+          "selftext": "What are you all watching this week? I've got my eye on $AAPL and $MSFT.",
+          "score": 67,
+          "permalink": "/r/stocks/comments/abc124/weekly_discussion_thread/",
+          "num_comments": 540,
+          "upvote_ratio": 0.88
+        }
+      },
+      {
+        "kind": "t3",
+        "data": {
+          "id": "abc125",
+          "subreddit": "stocks",
+          "author": "bear_market_bob",
+          "created_utc": 1717173600.0,
+          "title": "Is $TSLA overvalued at these levels?",
+          "selftext": "Curious what the bulls think. $TSLA P/E still looks stretched compared to other automakers.",
+          "score": 154,
+          "permalink": "/r/stocks/comments/abc125/is_tsla_overvalued_at_these_levels/",
+          "num_comments": 98,
+          "upvote_ratio": 0.74
+        }
+      }
+    ]
+  }
+}

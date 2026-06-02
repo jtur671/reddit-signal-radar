@@ -1,0 +1,17 @@
+half_life_hours: 24
+lookback_hours: 48
+top_n: 15
+history_days: 90
+noise_floor:
+  min_mentions: 5
+  min_distinct_authors: 4
+  max_author_weight: 1.5   # cap each author's decay-weighted contribution (anti-whale-brigade)
+ema_alpha: 0.30
+fetch:
+  listings: [hot, new, "top?t=day"]
+  post_limit: 100
+  comment_posts: 25
+  user_agent: "reddit-signal-radar/0.1 (open-source ticker signal bot)"
+  sleep_seconds: 1.5
+  max_retries: 3
+timezone: "America/New_York"
