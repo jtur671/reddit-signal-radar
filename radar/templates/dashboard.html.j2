@@ -117,6 +117,20 @@ tbody td.tk{font-family:"Martian Mono";font-weight:600;font-size:13px;letter-spa
 .method{margin-top:10px;border:1px solid var(--line2);border-radius:3px;background:var(--panel2);padding:17px;font-size:12px;line-height:1.66;color:var(--dim)}
 .method b{color:var(--ink);font-weight:600}
 .foot{margin-top:30px;border-top:1px solid var(--line);padding-top:13px;display:flex;justify-content:space-between;font-size:9.5px;letter-spacing:.12em;color:var(--faint);text-transform:uppercase;flex-wrap:wrap;gap:8px}
+tr[data-ticker]{cursor:pointer}
+.modal{position:fixed;inset:0;z-index:9998;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.62)}
+.modal.open{display:flex}
+.modal-card{background:var(--panel);border:1px solid var(--line2);border-radius:4px;max-width:460px;width:90%;padding:22px 24px;position:relative}
+.modal-x{position:absolute;top:8px;right:12px;background:none;border:none;color:var(--dim);font-size:21px;cursor:pointer;line-height:1}
+.modal-hd{display:flex;align-items:baseline;gap:10px;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:13px}
+.modal-hd .tk{font-size:22px;font-weight:700;letter-spacing:.04em}
+.modal-hd .th{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.modal-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:13px 12px;margin-bottom:14px}
+.modal-metrics .mv{font-size:15px;color:var(--ink)}.modal-metrics .ml{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-top:2px}
+.modal-spark{width:100%;height:46px;margin:4px 0 2px}
+#m-sparklabel{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:10px}
+#m-summary{font-size:12.5px;line-height:1.6;color:var(--ink);border-left:2px solid var(--up-d);padding-left:11px;margin:4px 0 10px}
+#m-src{font-size:10px;color:var(--faint)}
 </style>
 </head>
 <body>
@@ -219,6 +233,19 @@ tbody td.tk{font-family:"Martian Mono";font-weight:600;font-size:13px;letter-spa
   <div class="foot"><span>Reddit Signal Radar</span><span>Not Investment Advice</span><span>{% if meta.refreshed %}Generated {{ meta.refreshed }}{% else %}Auto-generated daily{% endif %}</span></div>
 
 </div>
+
+<div id="modal" class="modal" aria-hidden="true">
+  <div class="modal-card">
+    <button class="modal-x" aria-label="close">×</button>
+    <div class="modal-hd"><span id="m-tk" class="tk"></span><span id="m-th" class="th"></span></div>
+    <div class="modal-metrics" id="m-metrics"></div>
+    <svg id="m-spark" class="modal-spark" viewBox="0 0 240 48" preserveAspectRatio="none"></svg>
+    <div id="m-sparklabel"></div>
+    <p id="m-summary"></p>
+    <div id="m-src"></div>
+  </div>
+</div>
+<script type="application/json" id="radar-data">{{ (detail_json or {})|tojson }}</script>
 <script>
 // Show "X ago" next to the refreshed stamp, and flag staleness if the last run is
 // older than ~25h (a missed daily cron). data-ts is our own UTC ISO string — safe.
@@ -250,6 +277,60 @@ tbody td.tk{font-family:"Martian Mono";font-weight:600;font-size:13px;letter-spa
       apply(c.getAttribute('data-theme'));
     });
   });
+})();
+// Click a tile / mover / row -> detail modal (built from the #radar-data JSON via
+// textContent, so attacker-controlled summary text can never execute).
+(function(){
+  var dataEl=document.getElementById('radar-data'), modal=document.getElementById('modal');
+  if(!dataEl||!modal) return;
+  var data={}; try{ data=JSON.parse(dataEl.textContent); }catch(e){ return; }
+  var SVGNS='http://www.w3.org/2000/svg';
+  function metric(label,val){
+    var w=document.createElement('div'); w.className='metric';
+    var v=document.createElement('div'); v.className='mv'; v.textContent=val;
+    var l=document.createElement('div'); l.className='ml'; l.textContent=label;
+    w.appendChild(v); w.appendChild(l); return w;
+  }
+  function spark(series){
+    var svg=document.getElementById('m-spark'), lbl=document.getElementById('m-sparklabel');
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+    if(!series||series.length<3){ svg.style.display='none'; lbl.textContent='building history…'; return; }
+    svg.style.display='';
+    var ms=series.map(function(p){return p.m;});
+    var min=Math.min.apply(null,ms), max=Math.max.apply(null,ms), span=(max-min)||1, n=series.length, W=240, H=44;
+    var pts=series.map(function(p,i){
+      var x=(n>1)?(i/(n-1))*W:0, y=H-((p.m-min)/span)*H+2;
+      return x.toFixed(1)+','+y.toFixed(1);
+    }).join(' ');
+    var pl=document.createElementNS(SVGNS,'polyline');
+    pl.setAttribute('points',pts); pl.setAttribute('fill','none');
+    pl.setAttribute('stroke','var(--up)'); pl.setAttribute('stroke-width','1.5');
+    svg.appendChild(pl);
+    lbl.textContent=n+'-day mentions · '+min+'–'+max;
+  }
+  function open(t){
+    var d=data[t]; if(!d) return;
+    document.getElementById('m-tk').textContent=d.ticker;
+    document.getElementById('m-th').textContent=(d.themes||[]).join(' · ');
+    var mx=document.getElementById('m-metrics'); while(mx.firstChild) mx.removeChild(mx.firstChild);
+    mx.appendChild(metric('mentions', d.mentions));
+    mx.appendChild(metric('24h velocity', d.vel24));
+    mx.appendChild(metric('surprise', (d.surprise>=0?'+':'')+d.surprise+'σ'));
+    mx.appendChild(metric('upvotes', d.upvotes));
+    mx.appendChild(metric('engagement', d.pct_bull+'%'));
+    mx.appendChild(metric('price', d.price==null?'—':('$'+d.price+(d.pct_change==null?'':' '+(d.pct_change>=0?'+':'')+d.pct_change+'%'))));
+    spark(d.series);
+    var sum=document.getElementById('m-summary'); sum.textContent=d.summary||''; sum.style.display=d.summary?'':'none';
+    document.getElementById('m-src').textContent=(d.subreddits||[]).join(' · ');
+    modal.classList.add('open'); modal.setAttribute('aria-hidden','false');
+  }
+  function close(){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); }
+  document.querySelectorAll('[data-ticker]').forEach(function(el){
+    el.addEventListener('click',function(){ open(el.getAttribute('data-ticker')); });
+  });
+  modal.addEventListener('click',function(e){ if(e.target===modal) close(); });
+  document.querySelector('.modal-x').addEventListener('click',close);
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') close(); });
 })();
 </script>
 </body>

@@ -48,3 +48,20 @@ def test_items_carry_data_themes_and_chips_render():
                                         chips=_chip_list(board, _themes_b())))
     assert 'data-themes="AI Compute|AI"' in html
     assert 'data-theme="Trump"' in html    # Trump chip always filterable
+
+
+def test_radar_data_blob_is_xss_safe():
+    from radar.run import _detail_blob, _build_context
+    from radar.history import History
+    s = Signal(ticker="EVIL", mentions=5)
+    s.themes = ["AI Compute"]; s.subreddits = ["x"]; s.vel_24h = 1.0
+    s.summary = '</script><script>alert(1)</script>'
+    blob = _detail_blob([s], History("x", {}), "2026-06-02")
+    html = render_html(**_build_context([s], [s], "2026-06-02", 100, detail_json=blob))
+    assert '</script><script>alert(1)</script>' not in html      # not injected raw
+    assert '\\u003c/script\\u003e' in html                        # tojson-escaped instead
+
+def test_tiles_have_data_ticker():
+    s = _bsig("NVDA", ["AI"])
+    html = render_html(**_build_context([s], [s], "2026-06-02", 100))
+    assert 'data-ticker="NVDA"' in html

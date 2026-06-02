@@ -1,5 +1,6 @@
 from __future__ import annotations
 import argparse, sys
+from datetime import date
 from radar import clock
 from radar.config import load_config
 from radar.themes import Themes
@@ -59,8 +60,9 @@ def main(argv=None) -> int:
     refreshed = clock.now_stamp(cfg.timezone)          # when this run actually generated the page
     refreshed_iso = clock.now_iso_utc()
     chips = _chip_list(board, themes)
+    detail_json = _detail_blob(board, history, run_day)
     html = render_html(**_build_context(board, signals, run_day, corpus, refreshed,
-                                        refreshed_iso, category_reads, chips))
+                                        refreshed_iso, category_reads, chips, detail_json))
     write_outputs(html, {"board": [s.ticker for s in board]}, out_dir=args.out)
 
     if not args.no_email and not args.dry_run:
@@ -107,6 +109,30 @@ def _category_reads(signals, themes):
                               line=f"{label} — {top.ticker} {_vel24(top)[0]} ({top.mentions} mentions)"))
     return reads
 
+def _history_series(history, ticker, run_day, days=90):
+    """Chronological [{d, m}] mention series within the trailing window, for the
+    detail-modal sparkline. Uses the recorded raw mention count per day."""
+    hist = history.days_for(ticker)
+    before_ord = date.fromisoformat(run_day).toordinal()
+    cutoff = before_ord - days
+    out = []
+    for d in sorted(hist):
+        o = date.fromisoformat(d).toordinal()
+        if cutoff <= o <= before_ord:
+            out.append({"d": d, "m": hist[d].get("raw", 0)})
+    return out
+
+def _detail_blob(board, history, run_day):
+    """Per-ticker detail (all metrics + 90-day series) embedded for the click modal."""
+    blob = {}
+    for s in board:
+        blob[s.ticker] = dict(
+            ticker=s.ticker, mentions=s.mentions, vel24=_vel24(s)[0], surprise=s.surprise,
+            state=s.state, pct_bull=int(s.pct_bull), price=s.price, pct_change=s.pct_change,
+            upvotes=s.upvotes, themes=(s.themes or []), summary=s.summary,
+            subreddits=(s.subreddits or []), series=_history_series(history, s.ticker, run_day))
+    return blob
+
 def _chip_list(board, themes):
     """Filter chips: 'All' + the categories actually present on the board (in display
     order), and always 'Trump' (it's monitored, so it stays filterable)."""
@@ -120,7 +146,7 @@ def _chip_list(board, themes):
     return chips
 
 def _build_context(board, signals, run_day, corpus_count, refreshed="", refreshed_iso="",
-                   category_reads=None, chips=None):
+                   category_reads=None, chips=None, detail_json=None):
     maxw = max((s.weighted_today for s in board), default=1) or 1
     ranked = [s for s in board if s.vel_24h is not None]
     breakout = max(ranked, key=lambda s: s.vel_24h, default=None) or \
@@ -135,6 +161,7 @@ def _build_context(board, signals, run_day, corpus_count, refreshed="", refreshe
                   refreshed=refreshed, refreshed_iso=refreshed_iso),
         mood=(board[0].summary if board and board[0].summary else ""),
         category_reads=(category_reads or []),
+        detail_json=(detail_json or {}),
         board=[dict(rank=i+1, ticker=s.ticker, mentions=s.mentions,
                     vel24_disp=_vel24(s)[0], vel24_num=_vel24(s)[1],
                     state=s.state, emoji=_emoji(s.state), themes_attr="|".join(s.themes or []),
