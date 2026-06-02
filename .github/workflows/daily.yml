@@ -33,7 +33,7 @@ jobs:
         run: |
           git config user.name "radar-bot"
           git config user.email "radar-bot@users.noreply.github.com"
-          git add data/history.json
+          git add data/history.json data/about.json
           # commit only if there's a change; checkout is detached on cron/dispatch
           # events, so push to an explicit branch ref rather than a bare `git push`.
           git diff --cached --quiet || git commit -m "data: history $(date -u +%F)"

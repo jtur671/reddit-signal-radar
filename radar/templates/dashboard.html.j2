@@ -125,6 +125,9 @@ tr[data-ticker]{cursor:pointer}
 .modal-hd{display:flex;align-items:baseline;gap:10px;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:13px}
 .modal-hd .tk{font-size:22px;font-weight:700;letter-spacing:.04em}
 .modal-hd .th{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+#m-name{font-size:13px;color:var(--ink);font-weight:600;margin:-5px 0 11px}
+#m-aboutlabel{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
+#m-about{font-size:12px;line-height:1.55;color:var(--dim);margin:0 0 14px}
 .modal-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:13px 12px;margin-bottom:14px}
 .modal-metrics .mv{font-size:15px;color:var(--ink)}.modal-metrics .ml{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-top:2px}
 .modal-spark{width:100%;height:46px;margin:4px 0 2px}
@@ -257,6 +260,9 @@ tr[data-ticker]{cursor:pointer}
   <div class="modal-card">
     <button class="modal-x" aria-label="close">×</button>
     <div class="modal-hd"><span id="m-tk" class="tk"></span><span id="m-th" class="th"></span></div>
+    <div id="m-name"></div>
+    <div id="m-aboutlabel">what it is</div>
+    <p id="m-about"></p>
     <div class="modal-metrics" id="m-metrics"></div>
     <svg id="m-spark" class="modal-spark" viewBox="0 0 240 48" preserveAspectRatio="none"></svg>
     <div id="m-sparklabel"></div>
@@ -333,6 +339,9 @@ tr[data-ticker]{cursor:pointer}
     var d=data[t]; if(!d) return;
     document.getElementById('m-tk').textContent=d.ticker;
     document.getElementById('m-th').textContent=(d.themes||[]).join(' · ');
+    var nm=document.getElementById('m-name'); nm.textContent=d.name||''; nm.style.display=(d.name&&d.name!==d.ticker)?'':'none';
+    var ab=document.getElementById('m-about'), abl=document.getElementById('m-aboutlabel');
+    ab.textContent=d.about||''; ab.style.display=d.about?'':'none'; abl.style.display=d.about?'':'none';
     var mx=document.getElementById('m-metrics'); while(mx.firstChild) mx.removeChild(mx.firstChild);
     mx.appendChild(metric('mentions', d.mentions));
     mx.appendChild(metric('24h velocity', d.vel24));

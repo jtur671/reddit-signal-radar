@@ -46,3 +46,14 @@ def test_detail_blob_has_why():
     blob = _detail_blob([s], _hist([("2026-06-01", 300)]), "2026-06-01")
     why = blob["AAA"]["why"]
     assert "2.4×" in why and "300" in why and "AI Compute" in why and "34.7k upvotes" in why
+
+
+def test_detail_blob_has_name_and_about():
+    s = _board_sig("HPE")
+    s.name = "Hewlett Packard Enterprise"
+    s.about_desc = "American IT company"
+    s.about_extract = "Hewlett Packard Enterprise is an American multinational IT company."
+    blob = _detail_blob([s], _hist([("2026-06-01", 100)]), "2026-06-01")
+    d = blob["HPE"]
+    assert d["name"] == "Hewlett Packard Enterprise"
+    assert d["about"].startswith("Hewlett Packard Enterprise")   # prefers extract

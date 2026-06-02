@@ -11,7 +11,7 @@ from radar.sentiment import summarize, engagement_pct
 from radar.enrich import enrich
 from radar.render import render_html, write_outputs
 from radar.email_report import send_email
-from radar import trump
+from radar import trump, about
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
@@ -36,6 +36,8 @@ def main(argv=None) -> int:
     category_reads = _category_reads(signals, themes)
 
     by_ticker = {a.ticker: a for a in aggregates}
+    about_cache = about.load_cache("data/about.json")
+    about_ua = getattr(getattr(cfg, "apewisdom", None), "user_agent", "reddit-signal-radar/0.1")
     for s in board:
         a = by_ticker.get(s.ticker)
         s.themes = themes.themes_for(s.ticker)
@@ -43,12 +45,16 @@ def main(argv=None) -> int:
             continue
         s.upvotes = a.upvotes
         s.pct_bull = engagement_pct(a.upvotes, a.mentions)   # engagement proxy (not directional)
+        info = about.describe(s.ticker, a.name, about_cache, about_ua)  # 'what is this company'
+        s.name, s.about_desc, s.about_extract = info["name"], info["desc"], info["extract"]
         theme = s.themes[0] if s.themes else "stocks"
         meta_line = (f"{a.name or s.ticker}: {a.mentions} Reddit mentions today vs "
                      f"{a.mentions_24h_ago} yesterday, {a.upvotes} upvotes, "
                      f"velocity {s.velocity}x vs its 90-day baseline.")
         s.summary = summarize(s.ticker, [meta_line], theme)
     enrich(board)
+    if not args.dry_run:
+        about.save_cache("data/about.json", about_cache)
 
     for s in signals:
         history.record(run_day, s.ticker, s.weighted_today, s.mentions, s.distinct_authors,
@@ -169,7 +175,8 @@ def _detail_blob(board, history, run_day):
     blob = {}
     for s in board:
         blob[s.ticker] = dict(
-            ticker=s.ticker, mentions=s.mentions, vel24=_vel24(s)[0], surprise=s.surprise,
+            ticker=s.ticker, name=s.name, about=(s.about_extract or s.about_desc),
+            mentions=s.mentions, vel24=_vel24(s)[0], surprise=s.surprise,
             state=s.state, pct_bull=int(s.pct_bull), price=s.price, pct_change=s.pct_change,
             upvotes=s.upvotes, themes=(s.themes or []), summary=s.summary, why=_why(s),
             subreddits=(s.subreddits or []), series=_history_series(history, s.ticker, run_day))
