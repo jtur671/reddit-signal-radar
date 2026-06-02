@@ -16,9 +16,9 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with: { ref: main, fetch-depth: 1 }
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with: { python-version: "3.11" }
       - run: pip install -r requirements.txt
       - name: Run pipeline
@@ -39,6 +39,6 @@ jobs:
           # events, so push to an explicit branch ref rather than a bare `git push`.
           git diff --cached --quiet || git commit -m "data: history $(date -u +%F)"
           git push origin HEAD:main
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with: { path: out }
-      - uses: actions/deploy-pages@v4
+      - uses: actions/deploy-pages@v5
