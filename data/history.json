@@ -13,10 +13,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 21,
-"score": 14.2,
+"raw": 22,
+"score": 14.4,
 "state": "new",
-"weighted": 21.0
+"weighted": 22.0
 }
 },
 "ABVX": {
@@ -83,30 +83,30 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 67,
+"raw": 69,
 "score": 20.0,
 "state": "new",
-"weighted": 67.0
+"weighted": 69.0
 }
 },
 "AMC": {
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 56,
+"raw": 53,
 "score": 20.0,
 "state": "new",
-"weighted": 56.0
+"weighted": 53.0
 }
 },
 "AMD": {
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 79,
+"raw": 80,
 "score": 20.0,
 "state": "new",
-"weighted": 79.0
+"weighted": 80.0
 }
 },
 "AMZN": {
@@ -123,10 +123,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 9,
-"score": 11.8,
+"raw": 8,
+"score": 11.6,
 "state": "new",
-"weighted": 9.0
+"weighted": 8.0
 }
 },
 "ANY": {
@@ -163,10 +163,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 49,
-"score": 19.8,
+"raw": 47,
+"score": 19.4,
 "state": "new",
-"weighted": 49.0
+"weighted": 47.0
 }
 },
 "ARR": {
@@ -193,20 +193,20 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 37.0,
-"raw": 218,
+"raw": 225,
 "score": 20.0,
 "state": "new",
-"weighted": 218.0
+"weighted": 225.0
 }
 },
 "AVGO": {
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 32.0,
-"raw": 203,
+"raw": 209,
 "score": 20.0,
 "state": "new",
-"weighted": 203.0
+"weighted": 209.0
 }
 },
 "AXON": {
@@ -243,10 +243,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 53,
+"raw": 56,
 "score": 20.0,
 "state": "new",
-"weighted": 53.0
+"weighted": 56.0
 }
 },
 "BBAI": {
@@ -283,30 +283,30 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 278,
+"raw": 276,
 "score": 20.0,
 "state": "new",
-"weighted": 278.0
+"weighted": 276.0
 }
 },
 "BULL": {
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 11,
-"score": 12.2,
+"raw": 12,
+"score": 12.4,
 "state": "new",
-"weighted": 11.0
+"weighted": 12.0
 }
 },
 "CAN": {
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 8,
-"score": 11.6,
+"raw": 7,
+"score": 11.4,
 "state": "new",
-"weighted": 8.0
+"weighted": 7.0
 }
 },
 "CAR": {
@@ -323,20 +323,20 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 26,
-"score": 15.2,
+"raw": 25,
+"score": 15.0,
 "state": "new",
-"weighted": 26.0
+"weighted": 25.0
 }
 },
 "CD": {
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 5,
-"score": 11.0,
+"raw": 6,
+"score": 11.2,
 "state": "new",
-"weighted": 5.0
+"weighted": 6.0
 }
 },
 "CE": {
@@ -383,10 +383,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 8,
-"score": 11.6,
+"raw": 7,
+"score": 11.4,
 "state": "new",
-"weighted": 8.0
+"weighted": 7.0
 }
 },
 "COHR": {
@@ -403,10 +403,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 73,
+"raw": 74,
 "score": 20.0,
 "state": "new",
-"weighted": 73.0
+"weighted": 74.0
 }
 },
 "CRM": {
@@ -453,20 +453,20 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 25,
-"score": 15.0,
+"raw": 24,
+"score": 14.8,
 "state": "new",
-"weighted": 25.0
+"weighted": 24.0
 }
 },
 "CSCO": {
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 7,
-"score": 11.4,
+"raw": 8,
+"score": 11.6,
 "state": "new",
-"weighted": 7.0
+"weighted": 8.0
 }
 },
 "CTNT": {
@@ -533,20 +533,20 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 20,
-"score": 14.0,
+"raw": 21,
+"score": 14.2,
 "state": "new",
-"weighted": 20.0
+"weighted": 21.0
 }
 },
 "DJT": {
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 12,
-"score": 12.4,
+"raw": 11,
+"score": 12.2,
 "state": "new",
-"weighted": 12.0
+"weighted": 11.0
 }
 },
 "DOCU": {
@@ -583,10 +583,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 63,
+"raw": 66,
 "score": 20.0,
 "state": "new",
-"weighted": 63.0
+"weighted": 66.0
 }
 },
 "DVN": {
@@ -633,10 +633,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 103,
+"raw": 102,
 "score": 20.0,
 "state": "new",
-"weighted": 103.0
+"weighted": 102.0
 }
 },
 "ETN": {
@@ -683,10 +683,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 17,
-"score": 13.4,
+"raw": 18,
+"score": 13.6,
 "state": "new",
-"weighted": 17.0
+"weighted": 18.0
 }
 },
 "FIG": {
@@ -773,20 +773,20 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 6,
-"score": 11.2,
+"raw": 7,
+"score": 11.4,
 "state": "new",
-"weighted": 6.0
+"weighted": 7.0
 }
 },
 "GME": {
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 14,
-"score": 12.8,
+"raw": 12,
+"score": 12.4,
 "state": "new",
-"weighted": 14.0
+"weighted": 12.0
 }
 },
 "GMM": {
@@ -813,20 +813,20 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 67.0,
-"raw": 198,
+"raw": 203,
 "score": 20.0,
 "state": "new",
-"weighted": 198.0
+"weighted": 203.0
 }
 },
 "GOOGL": {
 "2026-06-02": {
 "authors": 0,
-"pct_bull": 0.0,
-"raw": 126,
+"pct_bull": 69.0,
+"raw": 130,
 "score": 20.0,
 "state": "new",
-"weighted": 126.0
+"weighted": 130.0
 }
 },
 "GRPN": {
@@ -843,10 +843,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 26,
-"score": 15.2,
+"raw": 28,
+"score": 15.6,
 "state": "new",
-"weighted": 26.0
+"weighted": 28.0
 }
 },
 "GTLB": {
@@ -913,10 +913,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 46.0,
-"raw": 686,
+"raw": 688,
 "score": 20.0,
 "state": "new",
-"weighted": 686.0
+"weighted": 688.0
 }
 },
 "HPQ": {
@@ -943,10 +943,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 32,
-"score": 16.4,
+"raw": 43,
+"score": 18.6,
 "state": "new",
-"weighted": 32.0
+"weighted": 43.0
 }
 },
 "HUT": {
@@ -973,20 +973,20 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 14,
-"score": 12.8,
+"raw": 15,
+"score": 13.0,
 "state": "new",
-"weighted": 14.0
+"weighted": 15.0
 }
 },
 "IBM": {
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 98,
+"raw": 92,
 "score": 20.0,
 "state": "new",
-"weighted": 98.0
+"weighted": 92.0
 }
 },
 "IGV": {
@@ -1003,20 +1003,20 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 33,
-"score": 16.6,
+"raw": 34,
+"score": 16.8,
 "state": "new",
-"weighted": 33.0
+"weighted": 34.0
 }
 },
 "INTU": {
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 7,
-"score": 11.4,
+"raw": 8,
+"score": 11.6,
 "state": "new",
-"weighted": 7.0
+"weighted": 8.0
 }
 },
 "IP": {
@@ -1043,10 +1043,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 20,
-"score": 14.0,
+"raw": 21,
+"score": 14.2,
 "state": "new",
-"weighted": 20.0
+"weighted": 21.0
 }
 },
 "ISRG": {
@@ -1093,10 +1093,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 6,
-"score": 11.2,
+"raw": 5,
+"score": 11.0,
 "state": "new",
-"weighted": 6.0
+"weighted": 5.0
 }
 },
 "JUST": {
@@ -1123,10 +1123,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 5,
-"score": 11.0,
+"raw": 7,
+"score": 11.4,
 "state": "new",
-"weighted": 5.0
+"weighted": 7.0
 }
 },
 "LFVN": {
@@ -1153,10 +1153,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 32,
-"score": 16.4,
+"raw": 34,
+"score": 16.8,
 "state": "new",
-"weighted": 32.0
+"weighted": 34.0
 }
 },
 "LNG": {
@@ -1173,10 +1173,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 14,
-"score": 12.8,
+"raw": 13,
+"score": 12.6,
 "state": "new",
-"weighted": 14.0
+"weighted": 13.0
 }
 },
 "LOVE": {
@@ -1203,10 +1203,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 24,
-"score": 14.8,
+"raw": 23,
+"score": 14.6,
 "state": "new",
-"weighted": 24.0
+"weighted": 23.0
 }
 },
 "MA": {
@@ -1262,34 +1262,54 @@
 "META": {
 "2026-06-02": {
 "authors": 0,
-"pct_bull": 46.0,
-"raw": 186,
+"pct_bull": 43.0,
+"raw": 184,
 "score": 20.0,
 "state": "new",
-"weighted": 186.0
+"weighted": 184.0
 }
 },
 "MRVL": {
 "2026-06-02": {
 "authors": 0,
-"pct_bull": 58.0,
-"raw": 267,
+"pct_bull": 57.0,
+"raw": 272,
 "score": 20.0,
 "state": "new",
-"weighted": 267.0
+"weighted": 272.0
 }
 },
 "MSFT": {
 "2026-06-02": {
 "authors": 0,
-"pct_bull": 34.0,
-"raw": 303,
+"pct_bull": 31.0,
+"raw": 310,
 "score": 20.0,
 "state": "new",
-"weighted": 303.0
+"weighted": 310.0
 }
 },
 "MSTR": {
+"2026-06-02": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 122,
+"score": 20.0,
+"state": "new",
+"weighted": 122.0
+}
+},
+"MU": {
+"2026-06-02": {
+"authors": 0,
+"pct_bull": 43.0,
+"raw": 572,
+"score": 20.0,
+"state": "new",
+"weighted": 572.0
+}
+},
+"NBIS": {
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -1297,26 +1317,6 @@
 "score": 20.0,
 "state": "new",
 "weighted": 120.0
-}
-},
-"MU": {
-"2026-06-02": {
-"authors": 0,
-"pct_bull": 43.0,
-"raw": 559,
-"score": 20.0,
-"state": "new",
-"weighted": 559.0
-}
-},
-"NBIS": {
-"2026-06-02": {
-"authors": 0,
-"pct_bull": 40.0,
-"raw": 127,
-"score": 20.0,
-"state": "new",
-"weighted": 127.0
 }
 },
 "NFLX": {
@@ -1353,20 +1353,20 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 29.0,
-"raw": 163,
+"raw": 165,
 "score": 20.0,
 "state": "new",
-"weighted": 163.0
+"weighted": 165.0
 }
 },
 "NVDA": {
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 47.0,
-"raw": 304,
+"raw": 313,
 "score": 20.0,
 "state": "new",
-"weighted": 304.0
+"weighted": 313.0
 }
 },
 "OG": {
@@ -1432,21 +1432,21 @@
 "OPEN": {
 "2026-06-02": {
 "authors": 0,
-"pct_bull": 51.0,
-"raw": 169,
+"pct_bull": 52.0,
+"raw": 167,
 "score": 20.0,
 "state": "new",
-"weighted": 169.0
+"weighted": 167.0
 }
 },
 "OR": {
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 8,
-"score": 11.6,
+"raw": 9,
+"score": 11.8,
 "state": "new",
-"weighted": 8.0
+"weighted": 9.0
 }
 },
 "ORCL": {
@@ -1473,10 +1473,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 7,
-"score": 11.4,
+"raw": 8,
+"score": 11.6,
 "state": "new",
-"weighted": 7.0
+"weighted": 8.0
 }
 },
 "OWL": {
@@ -1523,10 +1523,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 13,
-"score": 12.6,
+"raw": 14,
+"score": 12.8,
 "state": "new",
-"weighted": 13.0
+"weighted": 14.0
 }
 },
 "PLTR": {
@@ -1543,20 +1543,20 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 22,
-"score": 14.4,
+"raw": 23,
+"score": 14.6,
 "state": "new",
-"weighted": 22.0
+"weighted": 23.0
 }
 },
 "PR": {
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 16,
-"score": 13.2,
+"raw": 17,
+"score": 13.4,
 "state": "new",
-"weighted": 16.0
+"weighted": 17.0
 }
 },
 "PRZO": {
@@ -1573,10 +1573,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 10,
-"score": 12.0,
+"raw": 9,
+"score": 11.8,
 "state": "new",
-"weighted": 10.0
+"weighted": 9.0
 }
 },
 "PYPL": {
@@ -1603,10 +1603,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 112,
+"raw": 115,
 "score": 20.0,
 "state": "new",
-"weighted": 112.0
+"weighted": 115.0
 }
 },
 "QS": {
@@ -1633,30 +1633,30 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 42,
-"score": 18.4,
+"raw": 41,
+"score": 18.2,
 "state": "new",
-"weighted": 42.0
+"weighted": 41.0
 }
 },
 "RDW": {
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 11,
-"score": 12.2,
+"raw": 12,
+"score": 12.4,
 "state": "new",
-"weighted": 11.0
+"weighted": 12.0
 }
 },
 "RE": {
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 5,
-"score": 11.0,
+"raw": 6,
+"score": 11.2,
 "state": "new",
-"weighted": 5.0
+"weighted": 6.0
 }
 },
 "RGTI": {
@@ -1682,11 +1682,11 @@
 "RKLB": {
 "2026-06-02": {
 "authors": 0,
-"pct_bull": 35.0,
-"raw": 187,
+"pct_bull": 36.0,
+"raw": 183,
 "score": 20.0,
 "state": "new",
-"weighted": 187.0
+"weighted": 183.0
 }
 },
 "RR": {
@@ -1773,10 +1773,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 5,
-"score": 11.0,
+"raw": 7,
+"score": 11.4,
 "state": "new",
-"weighted": 5.0
+"weighted": 7.0
 }
 },
 "SLS": {
@@ -1813,10 +1813,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 83,
+"raw": 84,
 "score": 20.0,
 "state": "new",
-"weighted": 83.0
+"weighted": 84.0
 }
 },
 "SMH": {
@@ -1843,30 +1843,30 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 54,
+"raw": 58,
 "score": 20.0,
 "state": "new",
-"weighted": 54.0
+"weighted": 58.0
 }
 },
 "SNOW": {
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 20,
-"score": 14.0,
+"raw": 19,
+"score": 13.8,
 "state": "new",
-"weighted": 20.0
+"weighted": 19.0
 }
 },
 "SO": {
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 6,
-"score": 11.2,
+"raw": 7,
+"score": 11.4,
 "state": "new",
-"weighted": 6.0
+"weighted": 7.0
 }
 },
 "SOFI": {
@@ -1913,20 +1913,20 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 10,
-"score": 12.0,
+"raw": 11,
+"score": 12.2,
 "state": "new",
-"weighted": 10.0
+"weighted": 11.0
 }
 },
 "SOXS": {
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 6,
-"score": 11.2,
+"raw": 7,
+"score": 11.4,
 "state": "new",
-"weighted": 6.0
+"weighted": 7.0
 }
 },
 "SOXX": {
@@ -1942,11 +1942,11 @@
 "SPCE": {
 "2026-06-02": {
 "authors": 0,
-"pct_bull": 55.0,
-"raw": 2355,
+"pct_bull": 56.0,
+"raw": 2336,
 "score": 20.0,
 "state": "new",
-"weighted": 2355.0
+"weighted": 2336.0
 }
 },
 "SPCX": {
@@ -2003,10 +2003,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 7,
-"score": 11.4,
+"raw": 9,
+"score": 11.8,
 "state": "new",
-"weighted": 7.0
+"weighted": 9.0
 }
 },
 "TEAM": {
@@ -2033,20 +2033,20 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 76,
+"raw": 78,
 "score": 20.0,
 "state": "new",
-"weighted": 76.0
+"weighted": 78.0
 }
 },
 "TSM": {
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 24,
-"score": 14.8,
+"raw": 23,
+"score": 14.6,
 "state": "new",
-"weighted": 24.0
+"weighted": 23.0
 }
 },
 "TTD": {
@@ -2123,20 +2123,20 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 7,
-"score": 11.4,
+"raw": 6,
+"score": 11.2,
 "state": "new",
-"weighted": 7.0
+"weighted": 6.0
 }
 },
 "USO": {
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 27,
-"score": 15.4,
+"raw": 28,
+"score": 15.6,
 "state": "new",
-"weighted": 27.0
+"weighted": 28.0
 }
 },
 "VC": {
@@ -2153,10 +2153,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 5,
-"score": 11.0,
+"raw": 6,
+"score": 11.2,
 "state": "new",
-"weighted": 5.0
+"weighted": 6.0
 }
 },
 "VOO": {
@@ -2173,10 +2173,10 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 13,
-"score": 12.6,
+"raw": 12,
+"score": 12.4,
 "state": "new",
-"weighted": 13.0
+"weighted": 12.0
 }
 },
 "VRT": {
@@ -2313,20 +2313,20 @@
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 26,
-"score": 15.2,
+"raw": 27,
+"score": 15.4,
 "state": "new",
-"weighted": 26.0
+"weighted": 27.0
 }
 },
 "ZM": {
 "2026-06-02": {
 "authors": 0,
 "pct_bull": 0.0,
-"raw": 11,
-"score": 12.2,
+"raw": 12,
+"score": 12.4,
 "state": "new",
-"weighted": 11.0
+"weighted": 12.0
 }
 },
 "ZS": {
