@@ -38,3 +38,11 @@ def test_detail_blob_shape():
     assert d["ticker"] == "AAA" and d["vel24"] == "2.0×"
     assert d["summary"] == "why it's trending" and d["subreddits"] == ["all-stocks"]
     assert isinstance(d["series"], list)
+
+
+def test_detail_blob_has_why():
+    s = _board_sig("AAA", mentions=300)
+    s.vel_24h = 2.4; s.state = "hot"; s.surprise = 4.7; s.upvotes = 34720
+    blob = _detail_blob([s], _hist([("2026-06-01", 300)]), "2026-06-01")
+    why = blob["AAA"]["why"]
+    assert "2.4×" in why and "300" in why and "AI Compute" in why and "34.7k upvotes" in why

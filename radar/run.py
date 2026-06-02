@@ -86,6 +86,36 @@ def _vel24(s):
         return ("NEW", 1.0)
     return (f"{min(s.vel_24h, 99.9):.1f}×", s.vel_24h)
 
+def _kfmt(n):
+    return f"{n/1000:.1f}k" if n and n >= 1000 else str(int(n or 0))
+
+def _why(s):
+    """Deterministic 'why it's trending' blurb from the metrics — always present, so the
+    detail modal explains the trend even without a DeepSeek summary."""
+    parts = []
+    if s.vel_24h is None:
+        parts.append(f"new to the tracker with {s.mentions} mentions today")
+    elif s.vel_24h >= 1.15:
+        parts.append(f"mentions up {min(s.vel_24h, 99.9):.1f}× vs yesterday ({s.mentions} today)")
+    elif s.vel_24h <= 0.85:
+        parts.append(f"mentions cooling to {s.vel_24h:.1f}× of yesterday ({s.mentions} today)")
+    else:
+        parts.append(f"steady at {s.mentions} mentions ({s.vel_24h:.1f}× vs yesterday)")
+    state_phrase = {
+        "new": "no 90-day baseline yet, so it reads as brand-new",
+        "hot": f"running {s.surprise:.1f}σ above its 90-day norm",
+        "cooling": "fading below its recent average",
+        "sustained": "holding near its 90-day average",
+    }.get(s.state)
+    if state_phrase:
+        parts.append(state_phrase)
+    if s.themes:
+        parts.append(f"{s.themes[0]} theme")
+    if s.upvotes:
+        parts.append(f"{_kfmt(s.upvotes)} upvotes")
+    text = "; ".join(parts)
+    return (text[:1].upper() + text[1:] + ".") if text else ""
+
 def _email_row(s):
     return dict(ticker=s.ticker, velocity=_vel24(s)[0], state=s.state,
                 pct_bull=s.pct_bull, price=s.price, pct_change=s.pct_change, summary=s.summary)
@@ -141,7 +171,7 @@ def _detail_blob(board, history, run_day):
         blob[s.ticker] = dict(
             ticker=s.ticker, mentions=s.mentions, vel24=_vel24(s)[0], surprise=s.surprise,
             state=s.state, pct_bull=int(s.pct_bull), price=s.price, pct_change=s.pct_change,
-            upvotes=s.upvotes, themes=(s.themes or []), summary=s.summary,
+            upvotes=s.upvotes, themes=(s.themes or []), summary=s.summary, why=_why(s),
             subreddits=(s.subreddits or []), series=_history_series(history, s.ticker, run_day))
     return blob
 
