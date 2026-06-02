@@ -52,9 +52,19 @@ def score_aggregates(aggregates, history, cfg, run_day: str) -> list[Signal]:
         s = _finalize(a.ticker, float(a.mentions), mentions=a.mentions, distinct_authors=0,
                       bonus_basis=a.mentions, subreddits=[a.subreddit],
                       history=history, cfg=cfg, run_day=run_day)
+        s.mentions_24h_ago = a.mentions_24h_ago
+        s.vel_24h = _compute_vel_24h(a.mentions, a.mentions_24h_ago)
         signals.append(s)
     signals.sort(key=lambda x: x.score, reverse=True)
     return signals
+
+def _compute_vel_24h(mentions: int, prior: int) -> float | None:
+    """Display velocity from ApeWisdom: mentions vs 24h ago. Meaningful on day 1
+    (unlike the 90-day-baseline engine velocity, which is undefined on cold start).
+    None means 'no prior-day data' -> the UI shows NEW."""
+    if prior <= 0:
+        return None
+    return round(mentions / prior, 1)
 
 def score_signals(mentions, history, cfg, now: float, run_day: str) -> list[Signal]:
     by: dict[str, list[Mention]] = defaultdict(list)

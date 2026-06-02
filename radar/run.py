@@ -63,14 +63,19 @@ def main(argv=None) -> int:
     return 0
 
 def _vel(s):
-    # Display velocity. A brand-new ticker has no baseline, so the engine's internal
-    # 999.0 "undefined" sentinel (and genuinely huge comeback ratios) are capped to a
-    # clean 99.9 for the UI rather than rendering as "999.0×". Stays numeric so the
-    # template's `velocity < 1` comparisons keep working.
+    # Internal engine velocity (vs 90-day baseline), capped for any incidental display.
     return round(min(s.velocity, 99.9), 1)
 
+def _vel24(s):
+    """Display velocity = mentions vs 24h ago (meaningful from day 1). Returns
+    (display_string, numeric). NEW when there's no prior-day data; numeric 1.0 for
+    NEW keeps the template's `< 1` down-colouring neutral rather than red."""
+    if s.vel_24h is None:
+        return ("NEW", 1.0)
+    return (f"{min(s.vel_24h, 99.9):.1f}×", s.vel_24h)
+
 def _email_row(s):
-    return dict(ticker=s.ticker, velocity=_vel(s), state=s.state,
+    return dict(ticker=s.ticker, velocity=_vel24(s)[0], state=s.state,
                 pct_bull=s.pct_bull, price=s.price, pct_change=s.pct_change, summary=s.summary)
 
 def _emoji(state): return {"new":"🆕","hot":"🔥","sustained":"➡️","cooling":"🧊"}.get(state,"➡️")
@@ -78,28 +83,33 @@ def _css(state): return {"new":"live","hot":"live","cooling":"cool"}.get(state,"
 
 def _build_context(board, signals, run_day, corpus_count, refreshed="", refreshed_iso=""):
     maxw = max((s.weighted_today for s in board), default=1) or 1
-    breakout = max(board, key=lambda s: s.velocity, default=None)
+    ranked = [s for s in board if s.vel_24h is not None]
+    breakout = max(ranked, key=lambda s: s.vel_24h, default=None) or \
+        max(board, key=lambda s: s.velocity, default=None)
     bull = max(board, key=lambda s: s.pct_bull, default=None)
     cooling = sorted([s for s in signals if s.state == "cooling"], key=lambda s: s.surprise)[:3]
     return dict(
         meta=dict(date=run_day, edition_no=1, corpus_count=f"{corpus_count/1000:.1f}k",
                   signals_tracked=len(board),
-                  biggest_breakout=(f"{breakout.ticker} {_vel(breakout):.1f}×" if breakout else "—"),
+                  biggest_breakout=(f"{breakout.ticker} {_vel24(breakout)[0]}" if breakout else "—"),
                   most_bullish=(f"{int(bull.pct_bull)}%" if bull else "—"),
                   refreshed=refreshed, refreshed_iso=refreshed_iso),
         mood=(board[0].summary if board and board[0].summary else "No signals today."),
-        board=[dict(rank=i+1, ticker=s.ticker, mentions=s.mentions, velocity=_vel(s),
+        board=[dict(rank=i+1, ticker=s.ticker, mentions=s.mentions,
+                    vel24_disp=_vel24(s)[0], vel24_num=_vel24(s)[1],
                     state=s.state, emoji=_emoji(s.state),
                     heat_pct=int(100*s.weighted_today/maxw), css=_css(s.state))
                for i, s in enumerate(board)],
         movers=[dict(rank=i+1, ticker=s.ticker, state_label=s.state.title(), css=_css(s.state),
                      price=s.price, pct_change=s.pct_change,
                      theme=(s.themes[0] if s.themes else ""), mentions=s.mentions,
-                     velocity=_vel(s), surprise=s.surprise, authors=s.upvotes,
+                     vel24_disp=_vel24(s)[0], vel24_num=_vel24(s)[1],
+                     surprise=s.surprise, authors=s.upvotes,
                      pct_bull=int(s.pct_bull), summary=s.summary, subreddits=" · ".join(s.subreddits[:3]))
                 for i, s in enumerate(board[:6])],
         listings=[dict(ticker=s.ticker, theme=(s.themes[0] if s.themes else ""), score=s.score,
-                       mentions=s.mentions, velocity=_vel(s), surprise=s.surprise,
+                       mentions=s.mentions, vel24_disp=_vel24(s)[0], vel24_num=_vel24(s)[1],
+                       surprise=s.surprise,
                        authors=s.upvotes, pct_bull=int(s.pct_bull), price=s.price,
                        pct_change=s.pct_change, emoji=_emoji(s.state)) for s in board],
         themes=["All","AI Compute","Crypto","Meme","Defense","Bio/Pharma","Oil","Short Squeeze"],

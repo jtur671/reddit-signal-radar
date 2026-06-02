@@ -40,3 +40,5 @@ class Signal:
     pct_change: float | None = None
     summary: str = ""
     upvotes: int = 0              # ApeWisdom upvote total (aggregate path); 0 for raw-mention path
+    mentions_24h_ago: int = 0     # ApeWisdom prior-day mention count
+    vel_24h: float | None = None  # display velocity = mentions / mentions_24h_ago; None -> NEW

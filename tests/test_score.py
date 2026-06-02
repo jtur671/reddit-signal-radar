@@ -69,3 +69,19 @@ def test_aggregates_noise_floor_and_new_state():
 def test_aggregates_velocity_vs_baseline():
     s = score_aggregates([_agg("AAA", 50)], FakeHist({"AAA": (25.0, 5.0)}), cfg(), "2026-06-01")[0]
     assert abs(s.velocity - 2.0) < 1e-6        # 50 / 25
+
+
+def test_vel_24h_basic():
+    a = Aggregate(ticker="AAA", name="AAA", mentions=100, mentions_24h_ago=50, upvotes=10, subreddit="x")
+    s = score_aggregates([a], FakeHist({}), cfg(), "2026-06-01")[0]
+    assert s.vel_24h == 2.0 and s.mentions_24h_ago == 50
+
+def test_vel_24h_new_when_no_prior():
+    s = score_aggregates([_agg("BBB", 100)], FakeHist({}), cfg(), "2026-06-01")[0]  # prior 0
+    assert s.vel_24h is None
+
+def test_engine_velocity_unchanged_on_cold_start():
+    a = Aggregate(ticker="CCC", name="CCC", mentions=100, mentions_24h_ago=50, upvotes=10, subreddit="x")
+    s = score_aggregates([a], FakeHist({}), cfg(), "2026-06-01")[0]
+    assert s.velocity == 999.0          # engine velocity still the cold-start sentinel
+    assert s.vel_24h == 2.0             # display velocity is meaningful day 1
