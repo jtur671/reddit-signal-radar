@@ -50,7 +50,9 @@ def main(argv=None) -> int:
         history.save()
 
     corpus = sum(a.mentions for a in aggregates)       # total Reddit mentions scanned
-    html = render_html(**_build_context(board, signals, run_day, corpus))
+    refreshed = clock.now_stamp(cfg.timezone)          # when this run actually generated the page
+    refreshed_iso = clock.now_iso_utc()
+    html = render_html(**_build_context(board, signals, run_day, corpus, refreshed, refreshed_iso))
     write_outputs(html, {"board": [s.ticker for s in board]}, out_dir=args.out)
 
     if not args.no_email and not args.dry_run:
@@ -74,7 +76,7 @@ def _email_row(s):
 def _emoji(state): return {"new":"🆕","hot":"🔥","sustained":"➡️","cooling":"🧊"}.get(state,"➡️")
 def _css(state): return {"new":"live","hot":"live","cooling":"cool"}.get(state,"")
 
-def _build_context(board, signals, run_day, corpus_count):
+def _build_context(board, signals, run_day, corpus_count, refreshed="", refreshed_iso=""):
     maxw = max((s.weighted_today for s in board), default=1) or 1
     breakout = max(board, key=lambda s: s.velocity, default=None)
     bull = max(board, key=lambda s: s.pct_bull, default=None)
@@ -83,7 +85,8 @@ def _build_context(board, signals, run_day, corpus_count):
         meta=dict(date=run_day, edition_no=1, corpus_count=f"{corpus_count/1000:.1f}k",
                   signals_tracked=len(board),
                   biggest_breakout=(f"{breakout.ticker} {_vel(breakout):.1f}×" if breakout else "—"),
-                  most_bullish=(f"{int(bull.pct_bull)}%" if bull else "—")),
+                  most_bullish=(f"{int(bull.pct_bull)}%" if bull else "—"),
+                  refreshed=refreshed, refreshed_iso=refreshed_iso),
         mood=(board[0].summary if board and board[0].summary else "No signals today."),
         board=[dict(rank=i+1, ticker=s.ticker, mentions=s.mentions, velocity=_vel(s),
                     state=s.state, emoji=_emoji(s.state),

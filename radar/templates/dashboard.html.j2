@@ -28,6 +28,7 @@ body::before{content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;
 .mast{border:1px solid var(--line);background:linear-gradient(180deg,#101319,#0b0d11);border-radius:3px;padding:18px 20px}
 .mast-top{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--line2);padding-bottom:11px}
 .mast-top .live{color:var(--up);display:flex;align-items:center;gap:6px}
+.mast-top .live.stale{color:var(--down)}
 .mast-top .live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--up);box-shadow:0 0 8px var(--up);animation:pulse 1.8s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 .mast-name{font-family:"Martian Mono";font-weight:800;font-size:clamp(20px,3.6vw,31px);letter-spacing:-.045em;margin:15px 0 0;line-height:1.05}
@@ -125,7 +126,7 @@ tbody td.tk{font-family:"Martian Mono";font-weight:600;font-size:13px;letter-spa
   <header class="mast">
     <div class="mast-top">
       <span>VOL.1 / NO.{{ meta.edition_no }} / MORNING EDITION</span>
-      <span class="live">Live · 06:00 ET</span>
+      <span class="live" id="refreshed" data-ts="{{ meta.refreshed_iso }}">{% if meta.refreshed %}Refreshed {{ meta.refreshed }}{% else %}Awaiting first run{% endif %}<span id="ago"></span></span>
     </div>
     <div class="mast-name">REDDIT SIGNAL <span class="b">RADAR</span></div>
     <div class="mast-strap"><span class="c">//</span> what the trading internet is buzzing about — before the open &nbsp;·&nbsp; {{ meta.date }}</div>
@@ -213,8 +214,22 @@ tbody td.tk{font-family:"Martian Mono";font-weight:600;font-size:13px;letter-spa
     <b>// how signals are scored.</b> Daily per-ticker Reddit mention counts (via the ApeWisdom aggregator) are measured against each ticker's adaptive 90-day EMA baseline to yield a velocity multiple and a surprise (z-score); a noise floor on minimum mentions filters thin signals, and silent days decay a ticker's baseline so stale names fall off the board. Composite rank favors surprise over raw volume. The engagement bar is an upvotes-per-mention proxy (the aggregator provides no directional sentiment), with a DeepSeek summary on the top names. Prices via yfinance. 90 days of history retained.
   </div>
 
-  <div class="foot"><span>Reddit Signal Radar</span><span>Not Investment Advice</span><span>Auto-generated 06:00 ET</span></div>
+  <div class="foot"><span>Reddit Signal Radar</span><span>Not Investment Advice</span><span>{% if meta.refreshed %}Generated {{ meta.refreshed }}{% else %}Auto-generated daily{% endif %}</span></div>
 
 </div>
+<script>
+// Show "X ago" next to the refreshed stamp, and flag staleness if the last run is
+// older than ~25h (a missed daily cron). data-ts is our own UTC ISO string — safe.
+(function(){
+  var el=document.getElementById('refreshed'); if(!el) return;
+  var ts=el.getAttribute('data-ts'); if(!ts) return;
+  var mins=Math.round((Date.now()-new Date(ts).getTime())/60000);
+  if(isNaN(mins)||mins<0) return;
+  var ago=document.getElementById('ago');
+  var txt = mins<2 ? 'just now' : (mins<60 ? mins+'m ago' : Math.round(mins/60)+'h ago');
+  ago.textContent=' · '+txt;
+  if(mins>1500){ el.classList.add('stale'); ago.textContent=' · '+txt+' · STALE'; }
+})();
+</script>
 </body>
 </html>

@@ -22,3 +22,14 @@ def within_window(age_h: float, lookback_hours: float) -> bool:
 def run_date(tz_name: str) -> str:
     """The calendar date in the target timezone (handles DST automatically)."""
     return datetime.now(ZoneInfo(tz_name)).strftime("%Y-%m-%d")
+
+def now_stamp(tz_name: str) -> str:
+    """Human-readable 'last refreshed' timestamp in the target timezone, DST-safe.
+    e.g. 'Jun 2, 2026 · 9:38 AM EDT'. (Avoids %-I/%-d for cross-platform safety.)"""
+    dt = datetime.now(ZoneInfo(tz_name))
+    hour12 = dt.strftime("%I").lstrip("0") or "12"
+    return f"{dt.strftime('%b')} {dt.day}, {dt.year} · {hour12}:{dt.strftime('%M %p %Z')}"
+
+def now_iso_utc() -> str:
+    """UTC timestamp as an ISO-8601 'Z' string, for client-side relative-time display."""
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")

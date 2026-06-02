@@ -21,3 +21,10 @@ def test_run_date_is_eastern_calendar_day_dst_safe():
         assert clock.run_date("America/New_York") == "2026-06-01"
     with freeze_time("2026-03-08 06:30:00"):
         assert clock.run_date("America/New_York") == "2026-03-08"
+
+
+def test_now_stamp_and_iso_dst_safe():
+    with freeze_time("2026-06-02 13:38:00"):     # 13:38 UTC == 09:38 EDT
+        s = clock.now_stamp("America/New_York")
+        assert s.startswith("Jun 2, 2026") and "9:38" in s and "AM" in s
+        assert clock.now_iso_utc() == "2026-06-02T13:38:00Z"
