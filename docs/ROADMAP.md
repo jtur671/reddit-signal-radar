@@ -26,14 +26,28 @@ The single most valuable next move is **GO LIVE** — everything else is enhance
 
 The bot is useless until it runs daily on real data. Blockers, in order:
 
-- [ ] **Create GitHub repo + push.** `reddit_review` is a local git repo on `main`; needs a remote.
-- [ ] **Enable Pages** → Settings → Pages → Source: **GitHub Actions**.
-- [ ] **Add repo secrets:** `DEEPSEEK_API_KEY`, `RESEND_API_KEY`, `EMAIL_RECIPIENTS` (optional `ALPACA_API_KEY`/`ALPACA_SECRET_KEY`).
-- [ ] **Manual trigger** (Actions → daily-radar → Run workflow) to validate the *real* run before the first 6 AM cron.
-- [ ] **Verify live artifacts:** dashboard renders at the Pages URL, email arrives, `data/history.json` commit-back succeeds (this is the detached-HEAD fix — confirm it actually pushes).
-- [ ] **Confirm Reddit isn't blocking the Actions runner** — local env was rate-limited; GitHub IPs may differ. If empty boards persist, see Phase C (auth).
+- [x] **Create GitHub repo + push.** Public repo `jtur671/reddit-signal-radar`, clean
+  single-commit history (neutral `radar-dev` author, all personal info scrubbed,
+  secrets-detector GO). _Done 2026-06-01._
+- [x] **Enable Pages** → source GitHub Actions. Live: https://jtur671.github.io/reddit-signal-radar/
+- [ ] **Add repo secrets:** `DEEPSEEK_API_KEY`, `RESEND_API_KEY`, `EMAIL_RECIPIENTS` (optional `ALPACA_API_KEY`/`ALPACA_SECRET_KEY`). _Owner sets these via `gh secret set` (not via chat)._
+- [x] **Manual trigger** — validation run `26796498453` succeeded end-to-end (2m34s).
+- [x] **Verify live artifacts:** dashboard renders (HTTP 200); **history commit-back works**
+  (detached-HEAD fix confirmed in real CI — correctly a no-op on an empty board); Pages deploy ✓.
+- [ ] ⛔ **BLOCKER — Reddit 403s the Actions runner.** Confirmed: `r/stocks/hot.json`
+  returns **HTTP 403** from cloud IPs, so the live board is empty. This is *the* thing
+  standing between "deployed" and "useful" — secrets won't fix it. **Next:** implement
+  authenticated Reddit OAuth (pull [[#Phase C]] forward) — a free script-type Reddit app
+  + application-only token, fetch via `oauth.reddit.com`, store `REDDIT_CLIENT_ID` /
+  `REDDIT_CLIENT_SECRET` as secrets. Alternative: run the pipeline from a non-blocked
+  host (small VPS / personal machine cron) and push artifacts.
 
-**Exit:** one successful end-to-end scheduled run with a non-empty board and a delivered email.
+**Exit:** one successful scheduled run with a **non-empty** board and a delivered email.
+_Infra exit met; data-source exit blocked on Reddit auth._
+
+### Node deprecation (minor, non-blocking)
+- [ ] Bump `actions/checkout`, `actions/setup-python`, `actions/upload-pages-artifact`,
+  `actions/deploy-pages` when Node-24 versions ship (GitHub forces Node 24 on 2026-06-16).
 
 ## Phase B — Trust the signal (weeks 1–2 after live)
 
