@@ -152,8 +152,10 @@ tbody td.tk{font-family:"Martian Mono";font-weight:600;font-size:13px;letter-spa
   <div class="term">
     <div class="term-bar"><span class="d"></span><span class="d"></span><span class="d"></span><span style="margin-left:6px">radar://today-read</span></div>
     <div class="term-body">
-      <div class="ln"><span class="p">$</span><span>analyze --corpus {{ meta.corpus_count }} --window 48h</span></div>
-      <p class="read">{{ mood }}<span class="cur"></span></p>
+      <div class="ln"><span class="p">$</span><span>analyze --corpus {{ meta.corpus_count }} --window 48h · top signal per category</span></div>
+      {% if mood %}<p class="read">{{ mood }}</p>{% endif %}
+      {% for r in category_reads or [] %}<div class="ln"><span class="p">{% if r.quiet %}·{% else %}▸{% endif %}</span><span{% if r.quiet %} class="faint"{% endif %}>{{ r.line }}</span></div>{% endfor %}
+      <span class="cur"></span>
     </div>
   </div>
   <div class="kpis">

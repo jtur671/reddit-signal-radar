@@ -27,6 +27,12 @@ def main(argv=None) -> int:
     signals = score_aggregates(aggregates, history, cfg, run_day)
     board = top_signals(signals, cfg.top_n)
 
+    # Tag themes on a wider slice than the board so every category in Today's Read
+    # can find its strongest representative even when it's off the top-15 board.
+    for s in signals[:50]:
+        s.themes = themes.themes_for(s.ticker)
+    category_reads = _category_reads(signals, themes)
+
     by_ticker = {a.ticker: a for a in aggregates}
     for s in board:
         a = by_ticker.get(s.ticker)
@@ -52,7 +58,8 @@ def main(argv=None) -> int:
     corpus = sum(a.mentions for a in aggregates)       # total Reddit mentions scanned
     refreshed = clock.now_stamp(cfg.timezone)          # when this run actually generated the page
     refreshed_iso = clock.now_iso_utc()
-    html = render_html(**_build_context(board, signals, run_day, corpus, refreshed, refreshed_iso))
+    html = render_html(**_build_context(board, signals, run_day, corpus, refreshed,
+                                        refreshed_iso, category_reads))
     write_outputs(html, {"board": [s.ticker for s in board]}, out_dir=args.out)
 
     if not args.no_email and not args.dry_run:
@@ -81,7 +88,26 @@ def _email_row(s):
 def _emoji(state): return {"new":"🆕","hot":"🔥","sustained":"➡️","cooling":"🧊"}.get(state,"➡️")
 def _css(state): return {"new":"live","hot":"live","cooling":"cool"}.get(state,"")
 
-def _build_context(board, signals, run_day, corpus_count, refreshed="", refreshed_iso=""):
+def _category_order(themes):
+    """Display order of categories = the theme labels in themes.yaml order."""
+    return [t["label"] for t in themes.raw.values()]
+
+def _category_reads(signals, themes):
+    """One line per tracked category: its top-scoring signal, or 'quiet'. Computed
+    from data so Today's Read is never blank, even without a DeepSeek summary.
+    `signals` is sorted by score desc; only the wider-tagged slice has themes set."""
+    reads = []
+    for label in _category_order(themes):
+        top = next((s for s in signals if label in (s.themes or [])), None)
+        if top is None:
+            reads.append(dict(category=label, line=f"{label} — quiet", quiet=True))
+        else:
+            reads.append(dict(category=label, ticker=top.ticker, quiet=False,
+                              line=f"{label} — {top.ticker} {_vel24(top)[0]} ({top.mentions} mentions)"))
+    return reads
+
+def _build_context(board, signals, run_day, corpus_count, refreshed="", refreshed_iso="",
+                   category_reads=None):
     maxw = max((s.weighted_today for s in board), default=1) or 1
     ranked = [s for s in board if s.vel_24h is not None]
     breakout = max(ranked, key=lambda s: s.vel_24h, default=None) or \
@@ -94,7 +120,8 @@ def _build_context(board, signals, run_day, corpus_count, refreshed="", refreshe
                   biggest_breakout=(f"{breakout.ticker} {_vel24(breakout)[0]}" if breakout else "—"),
                   most_bullish=(f"{int(bull.pct_bull)}%" if bull else "—"),
                   refreshed=refreshed, refreshed_iso=refreshed_iso),
-        mood=(board[0].summary if board and board[0].summary else "No signals today."),
+        mood=(board[0].summary if board and board[0].summary else ""),
+        category_reads=(category_reads or []),
         board=[dict(rank=i+1, ticker=s.ticker, mentions=s.mentions,
                     vel24_disp=_vel24(s)[0], vel24_num=_vel24(s)[1],
                     state=s.state, emoji=_emoji(s.state),
