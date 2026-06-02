@@ -87,3 +87,10 @@ The known residuals, in priority order:
 ## Decision log
 
 - **2026-06-01** — Built v1.0 from the plan via subagent-driven TDD. Adjudicated a plan-defect test fixture, hardened the baseline against silent-day freeze, added a per-author weight cap, fixed a detached-HEAD CI push that would have broken every run. Kept scope as a *signal radar* (publish/notify), explicitly **not** a trader. Roadmap kept separate from the `money` vault per owner.
+
+## Shipped 2026-06-02 (UI sprint + Trump monitor)
+
+- Real 24h velocity (mentions vs yesterday) replacing the meaningless cold-start 99.9×.
+- Today's Read is now per-category (top signal of each tracked theme), never blank.
+- Theme filter chips work (client-side); tiles/cards/rows clickable → detail modal + 90-day sparkline.
+- NEW: Trump Truth Social monitor (trumpstruth.org RSS, every 30 min) → red alert card + instant email when he names a ticker/company. Verified live on a real Fannie Mae/Freddie Mac post.
