@@ -1,0 +1,79 @@
+{
+ "count": 1057,
+ "pages": 11,
+ "current_page": 1,
+ "results": [
+  {
+   "rank": 1,
+   "ticker": "SPCE",
+   "name": "Virgin Galactic",
+   "mentions": 2833,
+   "upvotes": 34981,
+   "rank_24h_ago": 1,
+   "mentions_24h_ago": 986
+  },
+  {
+   "rank": 2,
+   "ticker": "HPE",
+   "name": "Hewlett Packard Enterprise",
+   "mentions": 651,
+   "upvotes": 4139,
+   "rank_24h_ago": 14,
+   "mentions_24h_ago": 67
+  },
+  {
+   "rank": 3,
+   "ticker": "MU",
+   "name": "Micron Technology",
+   "mentions": 572,
+   "upvotes": 2326,
+   "rank_24h_ago": 2,
+   "mentions_24h_ago": 295
+  },
+  {
+   "rank": 4,
+   "ticker": "NVDA",
+   "name": "NVIDIA",
+   "mentions": 341,
+   "upvotes": 1983,
+   "rank_24h_ago": 7,
+   "mentions_24h_ago": 86
+  },
+  {
+   "rank": 5,
+   "ticker": "SPY",
+   "name": "SPDR S&amp;P 500 ETF Trust",
+   "mentions": 335,
+   "upvotes": 1399,
+   "rank_24h_ago": 5,
+   "mentions_24h_ago": 92
+  },
+  {
+   "rank": 6,
+   "ticker": "MSFT",
+   "name": "Microsoft",
+   "mentions": 283,
+   "upvotes": 1487,
+   "rank_24h_ago": 6,
+   "mentions_24h_ago": 103
+  },
+  {
+   "rank": 7,
+   "ticker": "ASTS",
+   "name": "AST SpaceMobile",
+   "mentions": 247,
+   "upvotes": 1073,
+   "rank_24h_ago": 12,
+   "mentions_24h_ago": 62
+  },
+  {
+   "rank": 8,
+   "ticker": "NOW",
+   "name": "ServiceNow",
+   "mentions": 228,
+   "upvotes": 754,
+   "rank_24h_ago": 3,
+   "mentions_24h_ago": 179
+  }
+ ]
+}

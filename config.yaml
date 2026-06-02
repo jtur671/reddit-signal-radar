@@ -7,6 +7,14 @@ noise_floor:
   min_distinct_authors: 4
   max_author_weight: 1.5   # cap each author's decay-weighted contribution (anti-whale-brigade)
 ema_alpha: 0.30
+# Data source: ApeWisdom aggregates (Reddit's public JSON 403s from cloud/CI IPs).
+apewisdom:
+  filters: [all-stocks, all-crypto]   # apewisdom.io feeds to pull
+  max_pages: 2                        # 50 tickers/page
+  user_agent: "reddit-signal-radar/0.1 (open-source ticker signal bot)"
+  sleep_seconds: 1.0
+  max_retries: 3
+# (legacy raw-Reddit fetch config — kept for the still-tested raw-mention path)
 fetch:
   listings: [hot, new, "top?t=day"]
   post_limit: 100

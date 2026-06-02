@@ -158,7 +158,7 @@ tbody td.tk{font-family:"Martian Mono";font-weight:600;font-size:13px;letter-spa
   <div class="kpis">
     <div class="kpi"><div class="l">Signals Tracked</div><div class="n">{{ meta.signals_tracked }}</div></div>
     <div class="kpi"><div class="l">Biggest Breakout</div><div class="n up">{{ meta.biggest_breakout }}</div></div>
-    <div class="kpi"><div class="l">Most Bullish</div><div class="n">{{ meta.most_bullish }}</div></div>
+    <div class="kpi"><div class="l">Top Engagement</div><div class="n">{{ meta.most_bullish }}</div></div>
     <div class="kpi"><div class="l">Corpus Scanned</div><div class="n">{{ meta.corpus_count }}</div></div>
   </div>
 
@@ -175,8 +175,8 @@ tbody td.tk{font-family:"Martian Mono";font-weight:600;font-size:13px;letter-spa
       <div class="metric"><div class="mv">{{ m.mentions }}</div><div class="ml">mentions</div></div>
       <div class="metric"><div class="mv {% if m.velocity < 1 %}down{% else %}up{% endif %}">{{ m.velocity }}×</div><div class="ml">velocity</div></div>
       <div class="metric"><div class="mv {% if m.surprise < 0 %}down{% endif %}">{% if m.surprise >= 0 %}+{% else %}−{% endif %}{{ "%.1f"|format(m.surprise|abs) }}σ</div><div class="ml">surprise</div></div>
-      <div class="metric"><div class="mv">{{ m.authors }}</div><div class="ml">authors</div></div>
-      <div style="margin-left:auto"><div class="ml">{{ m.pct_bull }}% bull</div><div class="sent"><i style="width:{{ m.pct_bull }}%;background:var(--up-d)"></i><i style="width:{{ 100 - m.pct_bull }}%;background:var(--down)"></i></div></div>
+      <div class="metric"><div class="mv">{{ m.authors }}</div><div class="ml">upvotes</div></div>
+      <div style="margin-left:auto"><div class="ml">{{ m.pct_bull }}% eng</div><div class="sent"><i style="width:{{ m.pct_bull }}%;background:var(--up-d)"></i><i style="width:{{ 100 - m.pct_bull }}%;background:var(--down)"></i></div></div>
     </div>
     <p class="quote">{{ m.summary }}</p>
     <div class="src">{{ m.subreddits }}</div>
@@ -189,7 +189,7 @@ tbody td.tk{font-family:"Martian Mono";font-weight:600;font-size:13px;letter-spa
   <!-- 04 LISTINGS -->
   <div class="sec"><span class="no">04</span><span class="nm">The Listings / Full Metrics</span><span class="ln"></span></div>
   <table>
-    <thead><tr><th>Ticker</th><th>Theme</th><th>Score</th><th>Ment.</th><th>Vel</th><th>Surprise</th><th>Auth.</th><th>Bull</th><th>Last</th><th>Δ</th><th></th></tr></thead>
+    <thead><tr><th>Ticker</th><th>Theme</th><th>Score</th><th>Ment.</th><th>Vel</th><th>Surprise</th><th>Upv.</th><th>Eng</th><th>Last</th><th>Δ</th><th></th></tr></thead>
     <tbody>
       {% if listings %}
       {% for r in listings %}
@@ -210,7 +210,7 @@ tbody td.tk{font-family:"Martian Mono";font-weight:600;font-size:13px;letter-spa
       <div style="font-size:12.5px;color:var(--dim);line-height:1.95">{% for c in cooling %}{{ c.ticker }}&nbsp;&nbsp;<span class="down">{% if c.surprise >= 0 %}+{% else %}−{% endif %}{{ "%.1f"|format(c.surprise|abs) }}σ</span>{% if not loop.last %}<br>{% endif %}{% endfor %}</div></div>
   </div>
   <div class="method">
-    <b>// how signals are scored.</b> Mentions from the last 48h are recency-weighted on a 24h half-life, summed into today's score, then measured against each ticker's adaptive EMA baseline to yield a velocity multiple and a surprise (z-score). A noise floor — minimum mentions and minimum distinct authors — filters spam and manipulation. Composite rank favors surprise over raw volume. Sentiment via a finance-tuned lexicon across the corpus, with a DeepSeek summary on the top 15. Prices via yfinance + Alpaca. 90 days of history retained.
+    <b>// how signals are scored.</b> Daily per-ticker Reddit mention counts (via the ApeWisdom aggregator) are measured against each ticker's adaptive 90-day EMA baseline to yield a velocity multiple and a surprise (z-score); a noise floor on minimum mentions filters thin signals, and silent days decay a ticker's baseline so stale names fall off the board. Composite rank favors surprise over raw volume. The engagement bar is an upvotes-per-mention proxy (the aggregator provides no directional sentiment), with a DeepSeek summary on the top names. Prices via yfinance. 90 days of history retained.
   </div>
 
   <div class="foot"><span>Reddit Signal Radar</span><span>Not Investment Advice</span><span>Auto-generated 06:00 ET</span></div>

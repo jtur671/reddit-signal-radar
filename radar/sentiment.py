@@ -45,3 +45,14 @@ def summarize(ticker: str, sample_texts: list[str], theme: str) -> str:
         return r.choices[0].message.content.strip()
     except Exception:
         return ""
+
+def engagement_pct(upvotes: int, mentions: int) -> float:
+    """Upvotes-per-mention mapped to a saturating 0-100 'engagement' proxy. The
+    ApeWisdom data source provides NO directional (bull/bear) sentiment, so this
+    measures how heavily a ticker's mentions are upvoted -- engagement intensity,
+    not direction. Used to populate the dashboard's sentiment bar when running off
+    aggregates."""
+    if mentions <= 0 or upvotes <= 0:
+        return 0.0
+    ratio = upvotes / mentions
+    return round(100 * ratio / (ratio + 8), 0)

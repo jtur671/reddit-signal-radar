@@ -39,3 +39,4 @@ class Signal:
     price: float | None = None
     pct_change: float | None = None
     summary: str = ""
+    upvotes: int = 0              # ApeWisdom upvote total (aggregate path); 0 for raw-mention path

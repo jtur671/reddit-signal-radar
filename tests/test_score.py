@@ -51,3 +51,21 @@ from radar.score import top_signals
 def test_top_n_caps_board():
     sigs = [type("S",(),{"score":i})() for i in range(40)]
     assert len(top_signals(sigs, 15)) == 15
+
+
+from radar.score import score_aggregates
+from radar.apewisdom import Aggregate
+
+def _agg(t, m, sub="all-stocks"):
+    return Aggregate(ticker=t, name=t, mentions=m, mentions_24h_ago=0, upvotes=m * 10, subreddit=sub)
+
+def test_aggregates_noise_floor_and_new_state():
+    rows = [_agg("NEW", 100), _agg("TINY", 2)]
+    sigs = {s.ticker: s for s in score_aggregates(rows, FakeHist({"NEW": (0.0, 0.0)}), cfg(), "2026-06-01")}
+    assert "TINY" not in sigs                  # below min_mentions
+    assert sigs["NEW"].state == "new" and sigs["NEW"].weighted_today == 100.0
+    assert sigs["NEW"].surprise == sigs["NEW"].surprise   # not NaN
+
+def test_aggregates_velocity_vs_baseline():
+    s = score_aggregates([_agg("AAA", 50)], FakeHist({"AAA": (25.0, 5.0)}), cfg(), "2026-06-01")[0]
+    assert abs(s.velocity - 2.0) < 1e-6        # 50 / 25
