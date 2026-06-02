@@ -23,6 +23,7 @@ jobs:
         id: mon
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM: ${{ secrets.RESEND_FROM }}
           EMAIL_RECIPIENTS: ${{ secrets.EMAIL_RECIPIENTS }}
         run: python -m radar.monitor
       - name: Commit monitor state

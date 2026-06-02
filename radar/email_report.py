@@ -18,7 +18,8 @@ def _send(subject: str, html: str) -> bool:
         return False              # require both an API key and a recipient; no hardcoded address
     import resend
     resend.api_key = key
-    resend.Emails.send({"from": "radar@resend.dev", "to": to.split(","),
+    sender = os.environ.get("RESEND_FROM", "onboarding@resend.dev")
+    resend.Emails.send({"from": sender, "to": to.split(","),
                         "subject": subject, "html": html})
     return True
 
