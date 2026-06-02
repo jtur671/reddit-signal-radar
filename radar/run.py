@@ -8,7 +8,7 @@ from radar.themes import Themes
 from radar.history import History
 from radar.apewisdom import fetch_mentions
 from radar.score import score_aggregates, top_signals
-from radar.sentiment import summarize, engagement_pct, daily_read, why_it_matters
+from radar.sentiment import summarize, engagement_pct, daily_read, why_it_matters, recommend_buys
 from radar.enrich import enrich
 from radar.render import render_html, write_outputs
 from radar.email_report import send_email
@@ -54,6 +54,7 @@ def main(argv=None) -> int:
     enrich(board)
     today_read = _today_read(board, themes)            # DeepSeek smart read (deterministic fallback)
     why_matters = _why_matters(board, today_read)      # DeepSeek 'why you should care' so-what
+    early_plays = _early_plays(board)                  # DeepSeek 'get in early' buy ideas (fail-closed)
     if not args.dry_run:
         about.save_cache("data/about.json", about_cache)
 
@@ -72,7 +73,7 @@ def main(argv=None) -> int:
     alert = _load_alert("data/trump_alert.json")       # Trump pump alert (if fresh)
     html = render_html(**_build_context(board, signals, run_day, corpus, refreshed,
                                         refreshed_iso, today_read, chips, detail_json, alert,
-                                        why_matters))
+                                        why_matters, early_plays))
     write_outputs(html, {"board": [s.ticker for s in board]}, out_dir=args.out)
 
     if not args.no_email and not args.dry_run:
@@ -178,6 +179,24 @@ def _today_read(board, themes):
         return read
     return _read_fallback(top)                          # no key / DeepSeek down
 
+def _early_plays(board):
+    """DeepSeek 'early plays' card: feed the top of the board (with each name's catalyst summary)
+    to recommend_buys and return up to 3 ranked picks, each tagged with the company name for
+    display. Empty list -> the card is hidden (we never fabricate buy ideas)."""
+    top = board[:12]
+    if not top:
+        return []
+    cands = [dict(ticker=s.ticker, name=s.name, theme=(s.themes[0] if s.themes else "stocks"),
+                  mentions=s.mentions, vel=_vel24(s)[0], state=s.state, summary=s.summary)
+             for s in top]
+    by = {s.ticker: s for s in top}
+    picks = recommend_buys(cands)
+    for p in picks:
+        s = by.get(p["ticker"])
+        p["name"] = s.name if s else p["ticker"]
+        p["vel24"] = _vel24(s)[0] if s else ""
+    return picks
+
 def _why_matters(board, today_read):
     """'Why It Matters' = a DeepSeek so-what take on the day. Deterministic fallback keeps the
     section populated (and number-free) when DeepSeek is down. Returns a string."""
@@ -253,7 +272,8 @@ def _chip_list(board, themes):
     return chips
 
 def _build_context(board, signals, run_day, corpus_count, refreshed="", refreshed_iso="",
-                   today_read=None, chips=None, detail_json=None, alert=None, why_matters=""):
+                   today_read=None, chips=None, detail_json=None, alert=None, why_matters="",
+                   early_plays=None):
     maxw = max((s.weighted_today for s in board), default=1) or 1
     ranked = [s for s in board if s.vel_24h is not None]
     breakout = max(ranked, key=lambda s: s.vel_24h, default=None) or \
@@ -268,6 +288,7 @@ def _build_context(board, signals, run_day, corpus_count, refreshed="", refreshe
                   refreshed=refreshed, refreshed_iso=refreshed_iso),
         today_read=(today_read or dict(lead="", bullets=[])),
         why_matters=(why_matters or ""),
+        early_plays=(early_plays or []),
         detail_json=(detail_json or {}),
         alert=alert,
         board=[dict(rank=i+1, ticker=s.ticker, mentions=s.mentions,

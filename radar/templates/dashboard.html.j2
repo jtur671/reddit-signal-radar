@@ -147,6 +147,21 @@ tr[data-ticker]{cursor:pointer}
 .alert-post{font-size:13px;line-height:1.55;color:var(--ink);margin:7px 0}
 .alert-meta{font-size:10px;letter-spacing:.06em;color:var(--faint)}
 .alert-meta a{color:var(--gold)}
+.plays{border:1px solid var(--up);border-radius:4px;background:linear-gradient(100deg,rgba(124,196,124,.12),rgba(124,196,124,.02));margin:18px 0 4px;padding:14px 18px;cursor:default}
+.plays-tag{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--up)}
+.plays-sub{font-size:9.5px;letter-spacing:.05em;color:var(--faint);margin-top:3px}
+.play{border-top:1px solid var(--line2);padding:11px 0 3px;margin-top:9px;cursor:pointer}
+.play:first-of-type{border-top:none}
+.play-hd{display:flex;align-items:baseline;gap:9px}
+.play-rk{font-size:11px;color:var(--faint);font-weight:700}
+.play-tk{font-size:15px;font-weight:700;letter-spacing:.04em;color:var(--ink)}
+.play-nm{font-size:10.5px;color:var(--dim)}
+.play-cv{margin-left:auto;font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:10px;border:1px solid var(--line2);color:var(--dim)}
+.play-cv.high{color:var(--up);border-color:var(--up)}
+.play-th{font-size:12.5px;line-height:1.55;color:var(--ink);margin:6px 0 3px}
+.play-rs{font-size:11px;color:var(--dim)}
+.play-rs b{color:var(--faint);font-weight:600;letter-spacing:.04em;text-transform:uppercase;font-size:9px;margin-right:3px}
+.plays-note{font-size:9.5px;line-height:1.5;color:var(--faint);margin-top:12px;font-style:italic}
 </style>
 </head>
 <body>
@@ -161,6 +176,26 @@ tr[data-ticker]{cursor:pointer}
     <div class="mast-name">REDDIT SIGNAL <span class="b">RADAR</span></div>
     <div class="mast-strap"><span class="c">//</span> what the trading internet is buzzing about — before the open &nbsp;·&nbsp; {{ meta.date }}</div>
   </header>
+
+  {% if early_plays %}
+  <div class="plays">
+    <div class="plays-tag">⭐ DeepSeek Early Plays</div>
+    <div class="plays-sub">get-in-early ideas · ranked · fresh movers with a real catalyst</div>
+    {% for p in early_plays %}
+    <div class="play" data-ticker="{{ p.ticker }}">
+      <div class="play-hd">
+        <span class="play-rk">{{ loop.index }}</span>
+        <span class="play-tk">${{ p.ticker }}</span>
+        <span class="play-nm">{{ p.name }}{% if p.vel24 %} · {{ p.vel24 }} vs yesterday{% endif %}</span>
+        {% if p.conviction %}<span class="play-cv {{ p.conviction }}">{{ p.conviction }}</span>{% endif %}
+      </div>
+      <p class="play-th">{{ p.thesis }}</p>
+      {% if p.risk %}<div class="play-rs"><b>risk</b>{{ p.risk }}</div>{% endif %}
+    </div>
+    {% endfor %}
+    <div class="plays-note">Not financial advice — this surfaces fast-rising Reddit attention with a plausible catalyst, not a vetted investment recommendation. Do your own research.</div>
+  </div>
+  {% endif %}
 
   {% if alert %}
   <div class="alert" data-themes="Trump" data-ticker="">
