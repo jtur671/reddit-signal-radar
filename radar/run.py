@@ -12,7 +12,7 @@ from radar.sentiment import summarize, engagement_pct, daily_read, why_it_matter
 from radar.enrich import enrich
 from radar.render import render_html, write_outputs
 from radar.email_report import send_email
-from radar import trump, about
+from radar import trump, about, news
 
 def main(argv=None) -> int:
     load_env()                                          # local .env (no-op in CI; env wins)
@@ -49,10 +49,8 @@ def main(argv=None) -> int:
         info = about.describe(s.ticker, a.name, about_cache, about_ua)  # 'what is this company'
         s.name, s.about_desc, s.about_extract = info["name"], info["desc"], info["extract"]
         theme = s.themes[0] if s.themes else "stocks"
-        meta_line = (f"{a.name or s.ticker}: {a.mentions} Reddit mentions today vs "
-                     f"{a.mentions_24h_ago} yesterday, {a.upvotes} upvotes, "
-                     f"velocity {s.velocity}x vs its 90-day baseline.")
-        s.summary = summarize(s.ticker, [meta_line], theme)
+        s.headlines = news.headlines(s.ticker, a.name, about_ua)   # the catalyst behind the chatter
+        s.summary = summarize(s.ticker, s.headlines, theme)        # WHY it's trending, from real news
     enrich(board)
     today_read = _today_read(board, themes)            # DeepSeek smart read (deterministic fallback)
     why_matters = _why_matters(board, today_read)      # DeepSeek 'why you should care' so-what
@@ -238,6 +236,7 @@ def _detail_blob(board, history, run_day):
             mentions=s.mentions, vel24=_vel24(s)[0], surprise=s.surprise,
             state=s.state, pct_bull=int(s.pct_bull), price=s.price, pct_change=s.pct_change,
             upvotes=s.upvotes, themes=(s.themes or []), summary=s.summary, why=_why(s),
+            headlines=(s.headlines or [])[:3],   # the actual news driving the chatter
             subreddits=(s.subreddits or []), series=_history_series(history, s.ticker, run_day))
     return blob
 

@@ -136,6 +136,10 @@ tr[data-ticker]{cursor:pointer}
 #m-whylabel{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--up-d);margin-bottom:4px}
 #m-why{font-size:12.5px;line-height:1.6;color:var(--ink);margin:0 0 10px}
 #m-summary{font-size:12px;line-height:1.6;color:var(--dim);border-left:2px solid var(--line2);padding-left:11px;margin:4px 0 10px}
+#m-newslabel{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--up-d);margin-bottom:4px}
+#m-news{list-style:none;margin:2px 0 12px;padding:0}
+#m-news li{font-size:11px;line-height:1.5;color:var(--dim);padding-left:13px;position:relative;margin-bottom:4px}
+#m-news li:before{content:'\203A';position:absolute;left:0;color:var(--up)}
 #m-src{font-size:10px;color:var(--faint)}
 .alert{border:1px solid var(--down);border-radius:4px;background:linear-gradient(100deg,rgba(224,101,79,.15),rgba(224,101,79,.03));margin:18px 0 4px;padding:13px 17px}
 .alert-tag{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--down)}
@@ -277,6 +281,8 @@ tr[data-ticker]{cursor:pointer}
     <div id="m-whylabel">why it's trending</div>
     <p id="m-why"></p>
     <p id="m-summary"></p>
+    <div id="m-newslabel">in the news</div>
+    <ul id="m-news"></ul>
     <div id="m-src"></div>
   </div>
 </div>
@@ -360,6 +366,9 @@ tr[data-ticker]{cursor:pointer}
     spark(d.series);
     document.getElementById('m-why').textContent=d.why||'';
     var sum=document.getElementById('m-summary'); sum.textContent=d.summary||''; sum.style.display=d.summary?'':'none';
+    var nl=document.getElementById('m-newslabel'), nu=document.getElementById('m-news'), hs=d.headlines||[];
+    nu.innerHTML=''; hs.forEach(function(t){ var li=document.createElement('li'); li.textContent=t; nu.appendChild(li); });
+    nl.style.display=hs.length?'':'none'; nu.style.display=hs.length?'':'none';
     document.getElementById('m-src').textContent=(d.subreddits||[]).join(' · ');
     modal.classList.add('open'); modal.setAttribute('aria-hidden','false');
   }

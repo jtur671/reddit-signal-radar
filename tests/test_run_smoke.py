@@ -8,6 +8,7 @@ def test_dry_run_writes_dashboard(tmp_path, monkeypatch):
                   mentions_24h_ago=10, upvotes=400, subreddit="all-stocks"),
     ])
     monkeypatch.setenv("DEEPSEEK_API_KEY", "")    # skip LLM
+    monkeypatch.setattr(run.news, "headlines", lambda *a, **k: [])  # no live Google News in tests
     code = run.main(["--dry-run", "--out", str(tmp_path / "out"), "--no-email"])
     assert code == 0
     html = (tmp_path / "out" / "index.html").read_text()
