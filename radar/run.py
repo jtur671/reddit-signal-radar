@@ -7,7 +7,7 @@ from radar.themes import Themes
 from radar.history import History
 from radar.apewisdom import fetch_mentions
 from radar.score import score_aggregates, top_signals
-from radar.sentiment import summarize, engagement_pct
+from radar.sentiment import summarize, engagement_pct, daily_read, why_it_matters
 from radar.enrich import enrich
 from radar.render import render_html, write_outputs
 from radar.email_report import send_email
@@ -33,7 +33,6 @@ def main(argv=None) -> int:
     # can find its strongest representative even when it's off the top-15 board.
     for s in signals[:50]:
         s.themes = themes.themes_for(s.ticker)
-    category_reads = _category_reads(signals, themes)
 
     by_ticker = {a.ticker: a for a in aggregates}
     about_cache = about.load_cache("data/about.json")
@@ -53,6 +52,8 @@ def main(argv=None) -> int:
                      f"velocity {s.velocity}x vs its 90-day baseline.")
         s.summary = summarize(s.ticker, [meta_line], theme)
     enrich(board)
+    today_read = _today_read(board, themes)            # DeepSeek smart read (deterministic fallback)
+    why_matters = _why_matters(board, today_read)      # DeepSeek 'why you should care' so-what
     if not args.dry_run:
         about.save_cache("data/about.json", about_cache)
 
@@ -70,7 +71,8 @@ def main(argv=None) -> int:
     detail_json = _detail_blob(board, history, run_day)
     alert = _load_alert("data/trump_alert.json")       # Trump pump alert (if fresh)
     html = render_html(**_build_context(board, signals, run_day, corpus, refreshed,
-                                        refreshed_iso, category_reads, chips, detail_json, alert))
+                                        refreshed_iso, today_read, chips, detail_json, alert,
+                                        why_matters))
     write_outputs(html, {"board": [s.ticker for s in board]}, out_dir=args.out)
 
     if not args.no_email and not args.dry_run:
@@ -133,19 +135,74 @@ def _category_order(themes):
     """Display order of categories = the theme labels in themes.yaml order."""
     return [t["label"] for t in themes.raw.values()]
 
-def _category_reads(signals, themes):
-    """One line per tracked category: its top-scoring signal, or 'quiet'. Computed
-    from data so Today's Read is never blank, even without a DeepSeek summary.
-    `signals` is sorted by score desc; only the wider-tagged slice has themes set."""
-    reads = []
-    for label in _category_order(themes):
-        top = next((s for s in signals if label in (s.themes or [])), None)
-        if top is None:
-            reads.append(dict(category=label, line=f"{label} — quiet", quiet=True))
-        else:
-            reads.append(dict(category=label, ticker=top.ticker, quiet=False,
-                              line=f"{label} — {top.ticker} {_vel24(top)[0]} ({top.mentions} mentions)"))
-    return reads
+def _trend_word(s):
+    """Qualitative mention-trend label (no raw counts) for the DeepSeek prompt + fallback."""
+    if s.vel_24h is None:
+        return "new"
+    if s.vel_24h >= 1.15:
+        return "heating up vs yesterday"
+    if s.vel_24h <= 0.85:
+        return "cooling vs yesterday"
+    return "steady"
+
+def _read_bullet_why(s):
+    """Deterministic per-ticker 'why' with NO mention counts — the fallback when DeepSeek
+    is unavailable, so Today's Read is never blank or numeric."""
+    base = {"new": "new to the tracker",
+            "heating up vs yesterday": "heating up vs yesterday",
+            "cooling vs yesterday": "cooling off vs yesterday",
+            "steady": "holding steady"}[_trend_word(s)]
+    tail = {"hot": "running hot above its 90-day norm",
+            "cooling": "fading below its recent average"}.get(s.state)
+    theme = s.themes[0] if s.themes else None
+    return " · ".join(p for p in (base, tail, theme) if p)
+
+def _today_read(board, themes):
+    """Today's Read = a DeepSeek smart summary of what's going on (lead sentence + a 'why'
+    per notable ticker, no mention counts). Falls back to deterministic qualitative text so
+    the block is never blank and never shows raw counts. Returns {lead, bullets}."""
+    top = board[:6]
+    if not top:
+        return dict(lead="No signals on the board today — the tape is quiet.", bullets=[])
+    items = [dict(ticker=s.ticker, name=s.name, theme=(s.themes[0] if s.themes else "stocks"),
+                  trend=_trend_word(s), state=s.state, about=(s.about_extract or s.about_desc))
+             for s in top]
+    read = daily_read(items)
+    if read and read.get("bullets"):
+        have = {b["ticker"] for b in read["bullets"]}
+        for s in top:                                  # backfill any ticker DeepSeek skipped
+            if s.ticker not in have:
+                read["bullets"].append(dict(ticker=s.ticker, why=_read_bullet_why(s)))
+        if not read.get("lead"):
+            read["lead"] = _read_fallback(top)["lead"]
+        return read
+    return _read_fallback(top)                          # no key / DeepSeek down
+
+def _why_matters(board, today_read):
+    """'Why It Matters' = a DeepSeek so-what take on the day. Deterministic fallback keeps the
+    section populated (and number-free) when DeepSeek is down. Returns a string."""
+    top = board[:6]
+    if not top:
+        return ("Nothing is breaking out today — a quiet tape is itself a signal that retail "
+                "attention has rotated elsewhere. Worth a look tomorrow.")
+    items = [dict(ticker=s.ticker, name=s.name, theme=(s.themes[0] if s.themes else "stocks"),
+                  trend=_trend_word(s), state=s.state) for s in top]
+    take = why_it_matters(items, (today_read or {}).get("lead", ""))
+    if take:
+        return take
+    hot = [s for s in top if s.state == "hot" or (s.vel_24h or 0) >= 1.15]
+    movers = ", ".join(s.ticker for s in (hot or top)[:3])
+    return (f"Reddit attention is rising fastest around {movers} right now — the kind of early crowd "
+            f"signal that sometimes precedes a move, which is exactly what this radar is built to "
+            f"surface before it's obvious. Worth watching, but Reddit volume reflects attention, not "
+            f"conviction, so treat it as a lead to investigate rather than a buy signal.")
+
+def _read_fallback(top):
+    lead_theme = (top[0].themes[0] if top[0].themes else "the board")
+    lead = (f"{lead_theme} is leading today, with {top[0].ticker} the standout; "
+            f"{len(top)} names are drawing the most Reddit attention.")
+    return dict(lead=lead,
+                bullets=[dict(ticker=s.ticker, why=_read_bullet_why(s)) for s in top])
 
 def _load_alert(path):
     """Load the Trump alert for the dashboard card, but only if still fresh (<48h).
@@ -195,7 +252,7 @@ def _chip_list(board, themes):
     return chips
 
 def _build_context(board, signals, run_day, corpus_count, refreshed="", refreshed_iso="",
-                   category_reads=None, chips=None, detail_json=None, alert=None):
+                   today_read=None, chips=None, detail_json=None, alert=None, why_matters=""):
     maxw = max((s.weighted_today for s in board), default=1) or 1
     ranked = [s for s in board if s.vel_24h is not None]
     breakout = max(ranked, key=lambda s: s.vel_24h, default=None) or \
@@ -208,8 +265,8 @@ def _build_context(board, signals, run_day, corpus_count, refreshed="", refreshe
                   biggest_breakout=(f"{breakout.ticker} {_vel24(breakout)[0]}" if breakout else "—"),
                   most_bullish=(f"{int(bull.pct_bull)}%" if bull else "—"),
                   refreshed=refreshed, refreshed_iso=refreshed_iso),
-        mood=(board[0].summary if board and board[0].summary else ""),
-        category_reads=(category_reads or []),
+        today_read=(today_read or dict(lead="", bullets=[])),
+        why_matters=(why_matters or ""),
         detail_json=(detail_json or {}),
         alert=alert,
         board=[dict(rank=i+1, ticker=s.ticker, mentions=s.mentions,

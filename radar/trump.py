@@ -20,7 +20,6 @@ import requests
 import yaml
 
 CASHTAG = re.compile(r"\$([A-Za-z]{1,5})\b")
-BAREWORD = re.compile(r"\b([A-Z]{1,5})\b")
 _TAG = re.compile(r"<[^>]+>")
 FEED_URL = "https://www.trumpstruth.org/feed"
 
@@ -87,18 +86,15 @@ def load_watch_map(path) -> dict[str, str]:
 
 
 def detect_tickers(text: str, universe, watch_map: dict[str, str]) -> set[str]:
-    """Cashtags ($TSLA) + real universe symbols + curated company-name matches."""
+    """Only two trustworthy signals in Trump's prose: an explicit cashtag ($TSLA) and a
+    curated company-name match (watch_map). We deliberately do NOT scan bare ALL-CAPS words
+    against the universe — he writes in caps constantly, so common words like ICE (the
+    agency) or MASS collide with real tickers and flood the alert with false positives. The
+    surviving candidates are then semantically validated by DeepSeek in the monitor."""
     found: set[str] = set()
     for m in CASHTAG.finditer(text):
         tok = m.group(1).upper()
         if universe.is_symbol(tok):
-            found.add(tok)
-    for m in BAREWORD.finditer(text):
-        tok = m.group(1).upper()
-        # Require >=2 chars: single-letter tickers (J, A, T, F...) are almost always
-        # initials/words in Trump's prose, not stock mentions. Cashtags + the curated
-        # name map carry the real signal; this path is just a conservative extra.
-        if len(tok) >= 2 and universe.is_symbol(tok) and not universe.is_stopword(tok):
             found.add(tok)
     low = text.lower()
     for name, ticker in watch_map.items():
