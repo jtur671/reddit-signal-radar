@@ -49,14 +49,20 @@ def test_detail_blob_has_why():
     assert "2.4×" in why and "300" in why and "AI Compute" in why and "34.7k upvotes" in why
 
 
-def test_reddit_search_url_is_cashtag_search():
-    url = _reddit_search_url("TSLA")
-    assert url == "https://www.reddit.com/search/?q=%24TSLA&sort=top&t=week"
+def test_reddit_search_url_sitewide_when_no_subs():
+    assert _reddit_search_url("TSLA") == "https://www.reddit.com/search/?q=%24TSLA&sort=top&t=week"
 
 
-def test_detail_blob_has_reddit_link():
-    blob = _detail_blob([_board_sig("AAA")], _hist([("2026-06-01", 100)]), "2026-06-01")
-    assert blob["AAA"]["reddit"].endswith("q=%24AAA&sort=top&t=week")
+def test_reddit_search_url_scoped_to_subs():
+    url = _reddit_search_url("TSLA", ["wallstreetbets", "stocks"])
+    assert url == "https://www.reddit.com/r/wallstreetbets+stocks/search/?q=%24TSLA&restrict_sr=1&sort=top&t=week"
+
+
+def test_detail_blob_reddit_link_uses_configured_subs():
+    blob = _detail_blob([_board_sig("AAA")], _hist([("2026-06-01", 100)]), "2026-06-01",
+                        reddit_subs=["wallstreetbets", "stocks"])
+    assert "/r/wallstreetbets+stocks/search/" in blob["AAA"]["reddit"]
+    assert blob["AAA"]["reddit"].endswith("q=%24AAA&restrict_sr=1&sort=top&t=week")
 
 
 def test_modal_renders_reddit_link_element():

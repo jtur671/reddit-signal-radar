@@ -22,4 +22,8 @@ fetch:
   user_agent: "reddit-signal-radar/0.1 (open-source ticker signal bot)"
   sleep_seconds: 1.5
   max_retries: 3
+# Modal "see the Reddit discussion" link — scope the cashtag search to finance subs
+# (less noise than a site-wide search). Empty list -> site-wide.
+reddit:
+  discussion_subreddits: [wallstreetbets, stocks, investing, StockMarket, options, CryptoCurrency]
 timezone: "America/New_York"

@@ -69,7 +69,8 @@ def main(argv=None) -> int:
     refreshed = clock.now_stamp(cfg.timezone)          # when this run actually generated the page
     refreshed_iso = clock.now_iso_utc()
     chips = _chip_list(board, themes)
-    detail_json = _detail_blob(board, history, run_day)
+    reddit_subs = list(getattr(getattr(cfg, "reddit", None), "discussion_subreddits", []) or [])
+    detail_json = _detail_blob(board, history, run_day, reddit_subs)
     alert = _load_alert("data/trump_alert.json")       # Trump pump alert (if fresh)
     html = render_html(**_build_context(board, signals, run_day, corpus, refreshed,
                                         refreshed_iso, today_read, chips, detail_json, alert,
@@ -233,9 +234,13 @@ def _load_alert(path):
                 post=raw.get("post", ""), url=raw.get("url", ""),
                 when=raw.get("published") or raw.get("detected_at") or "")
 
-def _reddit_search_url(ticker):
+def _reddit_search_url(ticker, subs=None):
     """Link to the live Reddit discussions for a ticker — a cashtag search sorted by top this
-    week. Built client-agnostically; a human's browser (not a cloud IP) loads it fine."""
+    week, scoped to the finance subreddits in `subs` (less noise) or site-wide when empty.
+    A human's browser (not a cloud IP) loads it fine."""
+    if subs:
+        base = "https://www.reddit.com/r/" + "+".join(subs) + "/search/"
+        return f"{base}?q=%24{ticker}&restrict_sr=1&sort=top&t=week"
     return f"https://www.reddit.com/search/?q=%24{ticker}&sort=top&t=week"
 
 def _history_series(history, ticker, run_day, days=90):
@@ -251,7 +256,7 @@ def _history_series(history, ticker, run_day, days=90):
             out.append({"d": d, "m": hist[d].get("raw", 0)})
     return out
 
-def _detail_blob(board, history, run_day):
+def _detail_blob(board, history, run_day, reddit_subs=None):
     """Per-ticker detail (all metrics + 90-day series) embedded for the click modal."""
     blob = {}
     for s in board:
@@ -261,7 +266,7 @@ def _detail_blob(board, history, run_day):
             state=s.state, pct_bull=int(s.pct_bull), price=s.price, pct_change=s.pct_change,
             upvotes=s.upvotes, themes=(s.themes or []), summary=s.summary, why=_why(s),
             headlines=(s.headlines or [])[:3],   # the actual news driving the chatter
-            reddit=_reddit_search_url(s.ticker),  # link to the live Reddit discussions
+            reddit=_reddit_search_url(s.ticker, reddit_subs),  # link to live Reddit discussions
             subreddits=(s.subreddits or []), series=_history_series(history, s.ticker, run_day))
     return blob
 
