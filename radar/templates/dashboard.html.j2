@@ -140,6 +140,12 @@ tr[data-ticker]{cursor:pointer}
 #m-news{list-style:none;margin:2px 0 12px;padding:0}
 #m-news li{font-size:11px;line-height:1.5;color:var(--dim);padding-left:13px;position:relative;margin-bottom:4px}
 #m-news li:before{content:'\203A';position:absolute;left:0;color:var(--up)}
+#m-postslabel{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--up-d);margin-bottom:4px}
+#m-posts{list-style:none;margin:2px 0 10px;padding:0}
+#m-posts li{font-size:11px;line-height:1.45;margin-bottom:6px}
+#m-posts li a{color:var(--ink);text-decoration:none}
+#m-posts li a:hover{text-decoration:underline}
+#m-posts li .meta{display:block;font-size:9px;color:var(--faint);margin-top:1px}
 #m-reddit{display:inline-block;font-size:11px;color:var(--gold);text-decoration:none;margin:2px 0 12px}
 #m-reddit:hover{text-decoration:underline}
 #m-src{font-size:10px;color:var(--faint)}
@@ -319,6 +325,8 @@ tr[data-ticker]{cursor:pointer}
     <p id="m-why"></p>
     <div id="m-newslabel">in the news</div>
     <ul id="m-news"></ul>
+    <div id="m-postslabel">top Reddit threads</div>
+    <ul id="m-posts"></ul>
     <a id="m-reddit" target="_blank" rel="noopener noreferrer">see the Reddit discussion ↗</a>
     <div id="m-src"></div>
   </div>
@@ -405,6 +413,16 @@ tr[data-ticker]{cursor:pointer}
     var nl=document.getElementById('m-newslabel'), nu=document.getElementById('m-news'), hs=d.headlines||[];
     nu.innerHTML=''; hs.forEach(function(t){ var li=document.createElement('li'); li.textContent=t; nu.appendChild(li); });
     nl.style.display=hs.length?'':'none'; nu.style.display=hs.length?'':'none';
+    var pl=document.getElementById('m-postslabel'), pu=document.getElementById('m-posts'), ps=d.posts||[];
+    pu.innerHTML='';
+    ps.forEach(function(p){
+      var li=document.createElement('li'), a=document.createElement('a');
+      a.href=p.url||'#'; a.target='_blank'; a.rel='noopener noreferrer'; a.textContent=p.title||'';
+      var meta=document.createElement('span'); meta.className='meta';
+      meta.textContent='r/'+(p.subreddit||'')+' · '+(p.score||0)+' upvotes';
+      li.appendChild(a); li.appendChild(meta); pu.appendChild(li);
+    });
+    pl.style.display=ps.length?'':'none'; pu.style.display=ps.length?'':'none';
     var rl=document.getElementById('m-reddit'); rl.href=d.reddit||'#'; rl.style.display=d.reddit?'':'none';
     document.getElementById('m-src').textContent=(d.subreddits||[]).join(' · ');
     modal.classList.add('open'); modal.setAttribute('aria-hidden','false');
