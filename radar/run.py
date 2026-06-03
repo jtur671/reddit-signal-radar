@@ -88,7 +88,8 @@ def main(argv=None) -> int:
 
     if not args.no_email and not args.dry_run:
         try:
-            send_email(run_day, [_email_row(s) for s in board[:cfg.top_n]])
+            send_email(run_day, [_email_row(s) for s in board[:cfg.top_n]],
+                       [_still_email_row(s) for s in still])
         except Exception:
             pass                                       # email is best-effort; never fail the publish
     return 0
@@ -138,6 +139,10 @@ def _why(s):
 def _email_row(s):
     return dict(ticker=s.ticker, velocity=_vel24(s)[0], state=s.state,
                 pct_bull=s.pct_bull, price=s.price, pct_change=s.pct_change, summary=s.summary)
+
+def _still_email_row(s):
+    return dict(ticker=s.ticker, price=s.price, pct_change=s.pct_change,
+                days_running=(s.days_running or 0))
 
 def _emoji(state): return {"new":"🆕","hot":"🔥","sustained":"➡️","cooling":"🧊"}.get(state,"➡️")
 def _css(state): return {"new":"live","hot":"live","cooling":"cool"}.get(state,"")
