@@ -52,6 +52,16 @@ def test_excludes_breakout_older_than_lookback():
     assert still_running([sig], hist, "2026-06-03", [], _cfg(lookback=3)) == []
 
 
+def test_includes_breakout_on_lookback_boundary():
+    # cutoff is inclusive: with lookback=3 and run_day 2026-06-03, a breakout exactly
+    # 3 days prior (2026-05-31, the cutoff edge) must still qualify; 2026-05-30 must not.
+    sig = _sig("EDGE", "sustained", 2.0, 500)
+    hist = _hist({"EDGE": {"2026-05-31": "new"}})
+    out = still_running([sig], hist, "2026-06-03", [], _cfg(lookback=3))
+    assert [s.ticker for s in out] == ["EDGE"]
+    assert out[0].days_running == 3
+
+
 def test_excludes_on_board():
     sig = _sig("MRVL", "sustained", 2.0, 931)
     hist = _hist({"MRVL": {"2026-06-02": "new"}})
