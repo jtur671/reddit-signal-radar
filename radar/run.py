@@ -2,7 +2,7 @@ from __future__ import annotations
 import argparse, sys
 from datetime import date
 from radar.dotenv import load_env
-from radar import clock, reddit_posts
+from radar import clock
 from radar.config import load_config
 from radar.themes import Themes
 from radar.history import History
@@ -39,8 +39,6 @@ def main(argv=None) -> int:
     by_ticker = {a.ticker: a for a in aggregates}
     about_cache = about.load_cache("data/about.json")
     about_ua = getattr(getattr(cfg, "apewisdom", None), "user_agent", "reddit-signal-radar/0.1")
-    reddit_subs = list(getattr(getattr(cfg, "reddit", None), "discussion_subreddits", []) or [])
-    reddit_token = reddit_posts.token_from_env(about_ua)   # None unless REDDIT_CLIENT_ID/SECRET set
     for s in board:
         a = by_ticker.get(s.ticker)
         s.themes = themes.themes_for(s.ticker)
@@ -53,7 +51,6 @@ def main(argv=None) -> int:
         theme = s.themes[0] if s.themes else "stocks"
         s.headlines = news.headlines(s.ticker, a.name, about_ua)   # the catalyst behind the chatter
         s.summary = summarize(s.ticker, s.headlines, theme)        # WHY it's trending, from real news
-        s.reddit_posts = reddit_posts.top_posts(s.ticker, reddit_subs, reddit_token, about_ua)  # real threads
     enrich(board)
     today_read = _today_read(board, themes)            # DeepSeek smart read (deterministic fallback)
     why_matters = _why_matters(board, today_read)      # DeepSeek 'why you should care' so-what
@@ -72,6 +69,7 @@ def main(argv=None) -> int:
     refreshed = clock.now_stamp(cfg.timezone)          # when this run actually generated the page
     refreshed_iso = clock.now_iso_utc()
     chips = _chip_list(board, themes)
+    reddit_subs = list(getattr(getattr(cfg, "reddit", None), "discussion_subreddits", []) or [])
     detail_json = _detail_blob(board, history, run_day, reddit_subs)
     alert = _load_alert("data/trump_alert.json")       # Trump pump alert (if fresh)
     html = render_html(**_build_context(board, signals, run_day, corpus, refreshed,
@@ -268,7 +266,6 @@ def _detail_blob(board, history, run_day, reddit_subs=None):
             state=s.state, pct_bull=int(s.pct_bull), price=s.price, pct_change=s.pct_change,
             upvotes=s.upvotes, themes=(s.themes or []), summary=s.summary, why=_why(s),
             headlines=(s.headlines or [])[:3],   # the actual news driving the chatter
-            posts=(s.reddit_posts or []),         # real top Reddit threads (authed API; [] if no creds)
             reddit=_reddit_search_url(s.ticker, reddit_subs),  # link to live Reddit discussions
             subreddits=(s.subreddits or []), series=_history_series(history, s.ticker, run_day))
     return blob
