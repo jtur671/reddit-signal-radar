@@ -1,7 +1,18 @@
 from __future__ import annotations
 import os, html as _html
 
-def build_email_html(date_str: str, signals: list[dict]) -> str:
+def _still_block(still) -> str:
+    if not still:
+        return ""
+    rows = "".join(
+        f"<tr><td><b>{_html.escape(s['ticker'])}</b></td>"
+        f"<td>{('$%.2f' % s['price']) if s.get('price') is not None else '—'}</td>"
+        f"<td>{('%+.1f%%' % s['pct_change']) if s.get('pct_change') is not None else '—'}</td>"
+        f"<td>running {int(s.get('days_running') or 0)}d</td></tr>"
+        for s in still)
+    return f"<h3>Still Running</h3><table cellpadding=6>{rows}</table>"
+
+def build_email_html(date_str: str, signals: list[dict], still: list[dict] | None = None) -> str:
     rows = "".join(
         f"<tr><td><b>{_html.escape(s['ticker'])}</b></td><td>{s['velocity']}×</td>"
         f"<td>{s['pct_bull']}% bull</td><td>{s.get('price') or '—'}</td>"
@@ -9,6 +20,7 @@ def build_email_html(date_str: str, signals: list[dict]) -> str:
         for s in signals)
     return (f"<h2>Reddit Signal Radar — {date_str}</h2>"
             f"<table cellpadding=6>{rows}</table>"
+            f"{_still_block(still)}"
             f"<p style='color:#888'>Not investment advice.</p>")
 
 def _send(subject: str, html: str) -> bool:
@@ -23,8 +35,8 @@ def _send(subject: str, html: str) -> bool:
                         "subject": subject, "html": html})
     return True
 
-def send_email(date_str: str, signals: list[dict]) -> bool:
-    return _send(f"📡 Signal Radar — {date_str}", build_email_html(date_str, signals))
+def send_email(date_str: str, signals: list[dict], still: list[dict] | None = None) -> bool:
+    return _send(f"📡 Signal Radar — {date_str}", build_email_html(date_str, signals, still))
 
 def build_trump_alert_email(alert: dict) -> str:
     tickers = ", ".join("$" + t for t in alert.get("tickers", []))

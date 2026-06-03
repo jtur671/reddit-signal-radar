@@ -65,3 +65,17 @@ def test_tiles_have_data_ticker():
     s = _bsig("NVDA", ["AI"])
     html = render_html(**_build_context([s], [s], "2026-06-02", 100))
     assert 'data-ticker="NVDA"' in html
+
+def test_still_running_section_renders():
+    s = _bsig("MRVL", ["AI Compute"])
+    s.days_running = 1; s.price = 308.69; s.pct_change = 6.1; s.name = "Marvell"
+    html = render_html(**_build_context([], [s], "2026-06-03", 100, still=[s]))
+    assert "Still Running" in html
+    assert 'data-ticker="MRVL"' in html
+    assert "running 1d" in html
+
+
+def test_still_running_section_hidden_when_empty():
+    s = _bsig("IREN", ["AI Compute"])
+    html = render_html(**_build_context([s], [s], "2026-06-03", 100))
+    assert "Still Running" not in html

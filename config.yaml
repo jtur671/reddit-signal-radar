@@ -27,3 +27,9 @@ fetch:
 reddit:
   discussion_subreddits: [wallstreetbets, stocks, investing, StockMarket, options, CryptoCurrency]
 timezone: "America/New_York"
+# Still Running lane: keep recently-broken-out names that have fallen off the top-N board
+# visible while they're still elevated.
+still_running:
+  lookback_days: 3     # broke out (new/hot) within this many prior days
+  max_items: 5         # lane size
+  velocity_cap: 10     # cap on the elevation multiplier when ranking

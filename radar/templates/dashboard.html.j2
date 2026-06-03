@@ -289,8 +289,25 @@ tr[data-ticker]{cursor:pointer}
     </tbody>
   </table>
 
+  <!-- 06 STILL RUNNING -->
+  {% if still_running %}
+  <div class="sec"><span class="no">06</span><span class="nm">Still Running / Proven Movers Holding</span><span class="ln"></span></div>
+  {% for r in still_running %}
+  <div class="card{% if r.css %} {{ r.css }}{% endif %}" data-themes="{{ r.themes_attr }}" data-ticker="{{ r.ticker }}">
+    <div class="hd">
+      <span class="rk">№{{ r.rank }}</span><span class="tk">{{ r.ticker }}</span><span class="tag t-sus">running {{ r.days_running }}d</span>
+      <div class="px"><div class="v {% if r.pct_change is not none and r.pct_change < 0 %}down{% else %}up{% endif %}">{% if r.price is none %}—{% else %}${{ "%.2f"|format(r.price) }}{% endif %} {% if r.pct_change is none %}{% elif r.pct_change < 0 %}▼{{ "%.1f"|format(r.pct_change|abs) }}%{% else %}▲{{ "%.1f"|format(r.pct_change) }}%{% endif %}</div><div class="th">{{ r.theme }}</div></div>
+    </div>
+    <div class="row">
+      <div class="metric"><div class="mv">{{ r.mentions }}</div><div class="ml">mentions</div></div>
+      <div class="metric"><div class="mv {% if r.vel24_num < 1 %}down{% else %}up{% endif %}">{{ r.vel24_disp }}</div><div class="ml">24h velocity</div></div>
+    </div>
+  </div>
+  {% endfor %}
+  {% endif %}
+
   <!-- 05 ARCHIVE -->
-  <div class="sec"><span class="no">06</span><span class="nm">Archive &amp; Method</span><span class="ln"></span></div>
+  <div class="sec"><span class="no">07</span><span class="nm">Archive &amp; Method</span><span class="ln"></span></div>
   <div class="colo">
     <div class="box"><h4>90-Day Mention Trend</h4>
       <svg width="100%" height="56" viewBox="0 0 220 56" preserveAspectRatio="none"><polyline points="{{ trend }}" fill="none" stroke="var(--up)" stroke-width="1.5"/></svg></div>
