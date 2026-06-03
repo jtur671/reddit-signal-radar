@@ -8,6 +8,7 @@ from radar.themes import Themes
 from radar.history import History
 from radar.apewisdom import fetch_mentions
 from radar.score import score_aggregates, top_signals
+from radar.still_running import still_running
 from radar.sentiment import summarize, engagement_pct, daily_read, why_it_matters, recommend_buys
 from radar.enrich import enrich
 from radar.render import render_html, write_outputs
@@ -45,6 +46,7 @@ def main(argv=None) -> int:
     aggregates = fetch_mentions(cfg)                    # ApeWisdom; never raises
     signals = score_aggregates(aggregates, history, cfg, run_day)
     board = top_signals(signals, cfg.top_n)
+    still = still_running(signals, history, run_day, board, cfg)
 
     # Tag themes on a wider slice than the board so every category in Today's Read
     # can find its strongest representative even when it's off the top-15 board.
@@ -56,7 +58,9 @@ def main(argv=None) -> int:
     about_ua = getattr(getattr(cfg, "apewisdom", None), "user_agent", "reddit-signal-radar/0.1")
     for s in board:
         _enrich_ticker(s, by_ticker, about_cache, about_ua, themes)
-    enrich(board)
+    for s in still:
+        _enrich_ticker(s, by_ticker, about_cache, about_ua, themes)
+    enrich(board + still)
     today_read = _today_read(board, themes)            # DeepSeek smart read (deterministic fallback)
     why_matters = _why_matters(board, today_read)      # DeepSeek 'why you should care' so-what
     early_plays = _early_plays(board)                  # DeepSeek 'get in early' buy ideas (fail-closed)
@@ -75,11 +79,11 @@ def main(argv=None) -> int:
     refreshed_iso = clock.now_iso_utc()
     chips = _chip_list(board, themes)
     reddit_subs = list(getattr(getattr(cfg, "reddit", None), "discussion_subreddits", []) or [])
-    detail_json = _detail_blob(board, history, run_day, reddit_subs)
+    detail_json = _detail_blob(board + still, history, run_day, reddit_subs)
     alert = _load_alert("data/trump_alert.json")       # Trump pump alert (if fresh)
     html = render_html(**_build_context(board, signals, run_day, corpus, refreshed,
                                         refreshed_iso, today_read, chips, detail_json, alert,
-                                        why_matters, early_plays))
+                                        why_matters, early_plays, still))
     write_outputs(html, {"board": [s.ticker for s in board]}, out_dir=args.out)
 
     if not args.no_email and not args.dry_run:
@@ -289,7 +293,7 @@ def _chip_list(board, themes):
 
 def _build_context(board, signals, run_day, corpus_count, refreshed="", refreshed_iso="",
                    today_read=None, chips=None, detail_json=None, alert=None, why_matters="",
-                   early_plays=None):
+                   early_plays=None, still=None):
     maxw = max((s.weighted_today for s in board), default=1) or 1
     ranked = [s for s in board if s.vel_24h is not None]
     breakout = max(ranked, key=lambda s: s.vel_24h, default=None) or \
@@ -324,6 +328,14 @@ def _build_context(board, signals, run_day, corpus_count, refreshed="", refreshe
                        surprise=s.surprise, themes_attr="|".join(s.themes or []),
                        authors=s.upvotes, pct_bull=int(s.pct_bull), price=s.price,
                        pct_change=s.pct_change, emoji=_emoji(s.state)) for s in board],
+        still_running=[dict(rank=i+1, ticker=s.ticker, name=s.name, mentions=s.mentions,
+                            vel24_disp=_vel24(s)[0], vel24_num=_vel24(s)[1],
+                            price=s.price, pct_change=s.pct_change,
+                            days_running=(s.days_running or 0),
+                            theme=(s.themes[0] if s.themes else ""),
+                            themes_attr="|".join(s.themes or []),
+                            css=_css(s.state), state_label=s.state.title())
+                       for i, s in enumerate(still or [])],
         themes=(chips or ["All"]),
         cooling=[dict(ticker=s.ticker, surprise=s.surprise) for s in cooling],
         trend="0,50 60,48 120,40 160,30 200,8")
