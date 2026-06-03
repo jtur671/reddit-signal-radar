@@ -66,9 +66,11 @@ def main(argv=None) -> int:
         alert = trump.build_alert(alerts, clock.now_iso_utc())
         trump.write_alert_json(ALERT_PATH, alert)
         try:
-            send_trump_alert(alert)                     # best-effort; never crash the run
-        except Exception:
-            pass
+            if not send_trump_alert(alert):             # best-effort; never crash the run
+                print("EMAIL: trump alert not sent — RESEND_API_KEY or EMAIL_RECIPIENTS missing/empty",
+                      file=sys.stderr)
+        except Exception as e:                          # surface provider error, keep the run green
+            print(f"EMAIL: trump alert send failed — {e!r}", file=sys.stderr)
         _set_output("alert", "true")
         print(f"TRUMP ALERT: {alert['tickers']} — {alert['post'][:80]}")
     else:
