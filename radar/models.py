@@ -46,3 +46,4 @@ class Signal:
     about_desc: str = ""          # one-line Wikipedia description ("American IT company")
     about_extract: str = ""       # fuller Wikipedia summary sentence(s)
     headlines: list[str] = field(default_factory=list)  # recent news headlines (the catalyst)
+    days_running: int | None = None  # Still Running lane: days since the most recent breakout
