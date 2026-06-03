@@ -143,11 +143,12 @@ def _why(s):
 
 def _email_row(s):
     return dict(ticker=s.ticker, velocity=_vel24(s)[0], state=s.state,
-                pct_bull=s.pct_bull, price=s.price, pct_change=s.pct_change, summary=s.summary)
+                pct_bull=s.pct_bull, price=s.price, pct_change=s.pct_change,
+                summary=s.summary, mentions=s.mentions, name=s.name)
 
 def _still_email_row(s):
     return dict(ticker=s.ticker, price=s.price, pct_change=s.pct_change,
-                days_running=(s.days_running or 0))
+                days_running=(s.days_running or 0), name=s.name, mentions=s.mentions)
 
 def _emoji(state): return {"new":"🆕","hot":"🔥","sustained":"➡️","cooling":"🧊"}.get(state,"➡️")
 def _css(state): return {"new":"live","hot":"live","cooling":"cool"}.get(state,"")
