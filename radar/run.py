@@ -14,6 +14,21 @@ from radar.render import render_html, write_outputs
 from radar.email_report import send_email
 from radar import trump, about, news
 
+def _enrich_ticker(s, by_ticker, about_cache, about_ua, themes):
+    """Attach themes, engagement, 'what it is', the news catalyst, and a DeepSeek
+    summary to one Signal. Shared by the board and the Still Running lane."""
+    a = by_ticker.get(s.ticker)
+    s.themes = themes.themes_for(s.ticker)
+    if a is None:
+        return
+    s.upvotes = a.upvotes
+    s.pct_bull = engagement_pct(a.upvotes, a.mentions)   # engagement proxy (not directional)
+    info = about.describe(s.ticker, a.name, about_cache, about_ua)  # 'what is this company'
+    s.name, s.about_desc, s.about_extract = info["name"], info["desc"], info["extract"]
+    theme = s.themes[0] if s.themes else "stocks"
+    s.headlines = news.headlines(s.ticker, a.name, about_ua)   # the catalyst behind the chatter
+    s.summary = summarize(s.ticker, s.headlines, theme)        # WHY it's trending, from real news
+
 def main(argv=None) -> int:
     load_env()                                          # local .env (no-op in CI; env wins)
     ap = argparse.ArgumentParser()
@@ -40,17 +55,7 @@ def main(argv=None) -> int:
     about_cache = about.load_cache("data/about.json")
     about_ua = getattr(getattr(cfg, "apewisdom", None), "user_agent", "reddit-signal-radar/0.1")
     for s in board:
-        a = by_ticker.get(s.ticker)
-        s.themes = themes.themes_for(s.ticker)
-        if a is None:
-            continue
-        s.upvotes = a.upvotes
-        s.pct_bull = engagement_pct(a.upvotes, a.mentions)   # engagement proxy (not directional)
-        info = about.describe(s.ticker, a.name, about_cache, about_ua)  # 'what is this company'
-        s.name, s.about_desc, s.about_extract = info["name"], info["desc"], info["extract"]
-        theme = s.themes[0] if s.themes else "stocks"
-        s.headlines = news.headlines(s.ticker, a.name, about_ua)   # the catalyst behind the chatter
-        s.summary = summarize(s.ticker, s.headlines, theme)        # WHY it's trending, from real news
+        _enrich_ticker(s, by_ticker, about_cache, about_ua, themes)
     enrich(board)
     today_read = _today_read(board, themes)            # DeepSeek smart read (deterministic fallback)
     why_matters = _why_matters(board, today_read)      # DeepSeek 'why you should care' so-what
