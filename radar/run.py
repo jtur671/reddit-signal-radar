@@ -233,6 +233,11 @@ def _load_alert(path):
                 post=raw.get("post", ""), url=raw.get("url", ""),
                 when=raw.get("published") or raw.get("detected_at") or "")
 
+def _reddit_search_url(ticker):
+    """Link to the live Reddit discussions for a ticker — a cashtag search sorted by top this
+    week. Built client-agnostically; a human's browser (not a cloud IP) loads it fine."""
+    return f"https://www.reddit.com/search/?q=%24{ticker}&sort=top&t=week"
+
 def _history_series(history, ticker, run_day, days=90):
     """Chronological [{d, m}] mention series within the trailing window, for the
     detail-modal sparkline. Uses the recorded raw mention count per day."""
@@ -256,6 +261,7 @@ def _detail_blob(board, history, run_day):
             state=s.state, pct_bull=int(s.pct_bull), price=s.price, pct_change=s.pct_change,
             upvotes=s.upvotes, themes=(s.themes or []), summary=s.summary, why=_why(s),
             headlines=(s.headlines or [])[:3],   # the actual news driving the chatter
+            reddit=_reddit_search_url(s.ticker),  # link to the live Reddit discussions
             subreddits=(s.subreddits or []), series=_history_series(history, s.ticker, run_day))
     return blob
 

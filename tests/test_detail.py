@@ -1,4 +1,5 @@
-from radar.run import _history_series, _detail_blob
+from radar.run import _history_series, _detail_blob, _reddit_search_url, _build_context
+from radar.render import render_html
 from radar.history import History
 from radar.models import Signal
 
@@ -46,6 +47,21 @@ def test_detail_blob_has_why():
     blob = _detail_blob([s], _hist([("2026-06-01", 300)]), "2026-06-01")
     why = blob["AAA"]["why"]
     assert "2.4×" in why and "300" in why and "AI Compute" in why and "34.7k upvotes" in why
+
+
+def test_reddit_search_url_is_cashtag_search():
+    url = _reddit_search_url("TSLA")
+    assert url == "https://www.reddit.com/search/?q=%24TSLA&sort=top&t=week"
+
+
+def test_detail_blob_has_reddit_link():
+    blob = _detail_blob([_board_sig("AAA")], _hist([("2026-06-01", 100)]), "2026-06-01")
+    assert blob["AAA"]["reddit"].endswith("q=%24AAA&sort=top&t=week")
+
+
+def test_modal_renders_reddit_link_element():
+    html = render_html(**_build_context([_board_sig("AAA")], [_board_sig("AAA")], "2026-06-02", 100))
+    assert 'id="m-reddit"' in html and "see the Reddit discussion" in html
 
 
 def test_detail_blob_has_name_and_about():

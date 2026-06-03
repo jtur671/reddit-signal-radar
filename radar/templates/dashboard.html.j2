@@ -140,6 +140,8 @@ tr[data-ticker]{cursor:pointer}
 #m-news{list-style:none;margin:2px 0 12px;padding:0}
 #m-news li{font-size:11px;line-height:1.5;color:var(--dim);padding-left:13px;position:relative;margin-bottom:4px}
 #m-news li:before{content:'\203A';position:absolute;left:0;color:var(--up)}
+#m-reddit{display:inline-block;font-size:11px;color:var(--gold);text-decoration:none;margin:2px 0 12px}
+#m-reddit:hover{text-decoration:underline}
 #m-src{font-size:10px;color:var(--faint)}
 .alert{border:1px solid var(--down);border-radius:4px;background:linear-gradient(100deg,rgba(224,101,79,.15),rgba(224,101,79,.03));margin:18px 0 4px;padding:13px 17px}
 .alert-tag{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--down)}
@@ -317,6 +319,7 @@ tr[data-ticker]{cursor:pointer}
     <p id="m-why"></p>
     <div id="m-newslabel">in the news</div>
     <ul id="m-news"></ul>
+    <a id="m-reddit" target="_blank" rel="noopener noreferrer">see the Reddit discussion ↗</a>
     <div id="m-src"></div>
   </div>
 </div>
@@ -402,6 +405,7 @@ tr[data-ticker]{cursor:pointer}
     var nl=document.getElementById('m-newslabel'), nu=document.getElementById('m-news'), hs=d.headlines||[];
     nu.innerHTML=''; hs.forEach(function(t){ var li=document.createElement('li'); li.textContent=t; nu.appendChild(li); });
     nl.style.display=hs.length?'':'none'; nu.style.display=hs.length?'':'none';
+    var rl=document.getElementById('m-reddit'); rl.href=d.reddit||'#'; rl.style.display=d.reddit?'':'none';
     document.getElementById('m-src').textContent=(d.subreddits||[]).join(' · ');
     modal.classList.add('open'); modal.setAttribute('aria-hidden','false');
   }
