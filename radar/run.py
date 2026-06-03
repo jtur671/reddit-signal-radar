@@ -87,11 +87,16 @@ def main(argv=None) -> int:
     write_outputs(html, {"board": [s.ticker for s in board]}, out_dir=args.out)
 
     if not args.no_email and not args.dry_run:
+        # Email is best-effort — never fail the publish — but DON'T swallow silently:
+        # log why it didn't go out so a broken key/domain/recipient is visible in CI logs.
         try:
-            send_email(run_day, [_email_row(s) for s in board[:cfg.top_n]],
-                       [_still_email_row(s) for s in still])
-        except Exception:
-            pass                                       # email is best-effort; never fail the publish
+            sent = send_email(run_day, [_email_row(s) for s in board[:cfg.top_n]],
+                              [_still_email_row(s) for s in still])
+            if not sent:
+                print("EMAIL: not sent — RESEND_API_KEY or EMAIL_RECIPIENTS missing/empty",
+                      file=sys.stderr)
+        except Exception as e:                         # surface the provider error, keep publishing
+            print(f"EMAIL: send failed — {e!r}", file=sys.stderr)
     return 0
 
 def _vel(s):
