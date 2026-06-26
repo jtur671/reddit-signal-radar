@@ -62,6 +62,45 @@ def test_fetch_new_keeps_only_large_buys_sorted_by_usd(monkeypatch):
     assert "ACME" in signals[0].summary and "1,200,000" in signals[0].summary
 
 
+def test_fetch_new_debug_logs_resolved_urls_and_summary(monkeypatch, capsys):
+    form4_by_folder = {"00011126000001": BUY, "00022226000002": SALE,
+                       "00033326000003": SALE}
+
+    def fake_get(url, ua):
+        if "getcurrent" in url:
+            return ATOM
+        if url.endswith("index.json"):
+            return INDEX
+        if url.endswith("form4.xml"):
+            for folder, doc in form4_by_folder.items():
+                if folder in url:
+                    return doc
+        return ""
+
+    monkeypatch.setattr(edgar, "_http_get", fake_get)
+    monkeypatch.setenv("EDGAR_DEBUG", "1")
+    m = EdgarMonitor(min_usd=1_000_000, transaction_codes=["P"], max_age_h=24, user_agent="ua")
+    m.fetch_new(set())
+    err = capsys.readouterr().err
+    assert "/00011126000001/form4.xml" in err          # per-filing resolved doc URL logged
+    assert "ACME P $1,200,000" in err                  # per-filing parse outcome logged
+    assert "EDGAR: examined 3 filings" in err          # always-on health summary
+    assert "resolved 3" in err and "parsed 3" in err
+
+
+def test_fetch_new_summary_prints_without_debug(monkeypatch, capsys):
+    # index.json fetch returns "" -> nothing resolves; debug off -> no per-filing lines,
+    # but the one-line health summary still prints every run.
+    monkeypatch.setattr(edgar, "_http_get",
+                        lambda url, ua: ATOM if "getcurrent" in url else "")
+    monkeypatch.delenv("EDGAR_DEBUG", raising=False)
+    m = EdgarMonitor(min_usd=1, transaction_codes=["P"], max_age_h=24, user_agent="ua")
+    m.fetch_new(set())
+    err = capsys.readouterr().err
+    assert "EDGAR: examined 3 filings" in err and "resolved 0" in err
+    assert " -> " not in err                            # no per-filing debug detail
+
+
 def test_form4_url_resolves_root_xml_via_index_json(monkeypatch):
     monkeypatch.setattr(edgar, "_http_get",
                         lambda url, ua: INDEX if url.endswith("index.json") else "")

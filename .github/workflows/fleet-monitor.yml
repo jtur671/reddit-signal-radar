@@ -19,12 +19,16 @@ jobs:
       - uses: actions/setup-python@v6
         with: { python-version: "3.11" }
       - run: pip install -r requirements.txt
-      - name: Check Truth Social
+      - name: Run monitor fleet
         id: mon
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           RESEND_FROM: ${{ secrets.RESEND_FROM }}
           EMAIL_RECIPIENTS: ${{ secrets.EMAIL_RECIPIENTS }}
+          # Verifies EDGAR's live SEC fetch (index.json -> ownership XML) by logging the
+          # per-filing resolved doc URL + parse outcome to the run log, even when no buy
+          # clears the dollar floor. Remove this line once you've confirmed the live path.
+          EDGAR_DEBUG: "1"
         run: python -m radar.monitor
       - name: Commit monitor state
         run: |

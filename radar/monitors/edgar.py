@@ -6,6 +6,8 @@ so no LLM inference is needed (validate() is identity). One alert per tick: the 
 from __future__ import annotations
 
 import json
+import os
+import sys
 import time
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
@@ -193,17 +195,32 @@ class EdgarMonitor:
         return f"{folder}/{primary}" if primary else ""
 
     def fetch_new(self, seen):
+        # The live SEC fetch path (index.json -> ownership XML) can't be exercised offline,
+        # so emit a one-line health summary every run, and — when EDGAR_DEBUG is set — the
+        # per-filing resolved doc URL + parse outcome, so a real CI run confirms the live
+        # path works even when no buy clears the dollar floor. Unset EDGAR_DEBUG once verified.
+        debug = os.environ.get("EDGAR_DEBUG", "").strip().lower() in ("1", "true", "yes")
         atom = _http_get(ATOM_URL, self.user_agent)
         entries = parse_atom(atom)[: self.max_entries]
         buys, evaluated = [], []
+        n_unseen = n_resolved = n_parsed = 0
         for e in entries:
             evaluated.append(e.accession)
             if e.accession in seen:
                 continue
+            n_unseen += 1
             doc_url = self._form4_url(e)
             if not doc_url:
+                if debug:
+                    print(f"EDGAR: {e.accession} -> (no document resolved)", file=sys.stderr)
                 continue
+            n_resolved += 1
             f = parse_form4(_http_get(doc_url, self.user_agent))
+            if f:
+                n_parsed += 1
+            if debug:
+                outcome = f"{f.ticker} {f.code} ${f.usd:,.0f}" if f else "(parse failed)"
+                print(f"EDGAR: {e.accession} -> {doc_url} -> {outcome}", file=sys.stderr)
             if not f or f.code not in self.codes or f.usd < self.min_usd:
                 continue
             summary = (f"Insider buy — {f.title} bought {f.shares:,.0f} sh of ${f.ticker} "
@@ -212,6 +229,9 @@ class EdgarMonitor:
                                        published=e.published, monitor_key=self.key,
                                        link_text="View filing ↗")))
         buys.sort(key=lambda t: t[0], reverse=True)        # largest $ first == most-salient-first
+        print(f"EDGAR: examined {len(entries)} filings (unseen {n_unseen}, "
+              f"resolved {n_resolved}, parsed {n_parsed}, qualifying buys {len(buys)})",
+              file=sys.stderr)
         return [s for _, s in buys], evaluated
 
     def validate(self, signals):
