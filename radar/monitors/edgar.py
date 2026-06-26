@@ -183,12 +183,13 @@ class EdgarMonitor:
             return ""
         try:
             items = json.loads(raw)["directory"]["item"]
+            xmls = [it.get("name", "") for it in items
+                    if it.get("name", "").lower().endswith(".xml")]
+            # The XSLT-rendered Form-4 always lives under an 'xsl...' path; the primary
+            # ownership doc is the first remaining root-level .xml (filer-named).
+            primary = next((n for n in xmls if "xsl" not in n.lower()), "")
         except Exception:
-            return ""
-        xmls = [it.get("name", "") for it in items
-                if it.get("name", "").lower().endswith(".xml")]
-        primary = next((n for n in xmls
-                        if "xsl" not in n.lower() and not n.lower().startswith("r")), "")
+            return ""                                     # malformed/unexpected index.json
         return f"{folder}/{primary}" if primary else ""
 
     def fetch_new(self, seen):
