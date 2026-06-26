@@ -37,8 +37,10 @@ def _strip_html(s: str) -> str:
 
 
 def parse_rss(xml_text: str) -> list[Post]:
-    """Parse a trumpstruth.org RSS document into Posts. Never raises."""
+    """Parse an RSS document into Posts. Never raises. Tolerates a leading UTF-8 BOM /
+    whitespace (the Fed's monetary-policy feed ships a BOM that would otherwise break ET)."""
     posts: list[Post] = []
+    xml_text = (xml_text or "").lstrip("﻿").lstrip()
     try:
         root = ET.fromstring(xml_text)
     except Exception:
@@ -68,7 +70,8 @@ def fetch_rss(url: str = FEED_URL, ua: str = "reddit-signal-radar/0.1",
         try:
             r = requests.get(url, headers={"User-Agent": ua}, timeout=20)
             if r.status_code == 200:
-                return parse_rss(r.text)
+                # decode as utf-8-sig so a BOM is stripped and the XML decl is honored
+                return parse_rss(r.content.decode("utf-8-sig", "replace"))
             if r.status_code in (429, 500, 502, 503):
                 time.sleep(sleep_s * (2 ** attempt)); continue
             return []
