@@ -22,3 +22,16 @@ def test_engagement_proxy_bounds():
     assert engagement_pct(5, 0) == 0.0           # no mentions
     v = engagement_pct(120, 10)                  # ratio 12 -> ~60
     assert 0 < v <= 100
+
+
+def test_validate_prose_tickers_fails_open_without_key(monkeypatch):
+    from radar.sentiment import validate_prose_tickers
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    cands = [dict(ticker="TSLA", name="Tesla"), dict(ticker="ICE", name="Intercontinental")]
+    assert validate_prose_tickers("anything", cands, "a Fed press release") == {"TSLA", "ICE"}
+
+
+def test_validate_trump_delegates_and_still_fails_open(monkeypatch):
+    from radar.sentiment import validate_trump_tickers
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    assert validate_trump_tickers("x", [dict(ticker="DJT", name="Trump Media")]) == {"DJT"}

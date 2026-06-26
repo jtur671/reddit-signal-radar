@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>FRB: Press Releases - Monetary Policy</title>
+    <link>https://www.federalreserve.gov/</link>
+    <item>
+      <title>Federal Reserve issues FOMC statement</title>
+      <link>https://www.federalreserve.gov/newsevents/pressreleases/monetary20260617a.htm</link>
+      <pubDate>Wed, 17 Jun 2026 18:00:00 GMT</pubDate>
+      <guid>https://www.federalreserve.gov/newsevents/pressreleases/monetary20260617a.htm</guid>
+    </item>
+    <item>
+      <title>Minutes of the Federal Open Market Committee, April 28-29, 2026</title>
+      <link>https://www.federalreserve.gov/newsevents/pressreleases/monetary20260520a.htm</link>
+      <pubDate>Wed, 20 May 2026 14:00:00 GMT</pubDate>
+      <guid>https://www.federalreserve.gov/newsevents/pressreleases/monetary20260520a.htm</guid>
+    </item>
+  </channel>
+</rss>

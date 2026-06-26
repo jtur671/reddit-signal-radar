@@ -196,3 +196,41 @@ def send_email(date_str: str, signals: list[dict], still: list[dict] | None = No
 def send_trump_alert(alert: dict) -> bool:
     tickers = ", ".join("$" + t for t in alert.get("tickers", []))
     return _send(f"🚨 Trump post mentions {tickers}", build_trump_alert_email(alert))
+
+
+def build_monitor_alert_email(alert: dict) -> str:
+    """Generic alert email for any monitor. `alert` is the self-describing dict written by
+    monitors.base.write_alert (label, tickers, summary, url, published/detected_at, link_text).
+    summary is HTML-escaped (untrusted source text)."""
+    label = _esc(alert.get("label", "Alert"))
+    tickers = alert.get("tickers", [])
+    accent = DOWN if "trump" in label.lower() else GOLD
+    chips = "".join(
+        f'<span style="display:inline-block;margin:0 6px 6px 0;padding:6px 12px;'
+        f'background:#fdf3df;color:{GOLD};border:1px solid {GOLD};border-radius:6px;'
+        f'font-family:{MONO};font-size:14px;font-weight:700">${_esc(t)}</span>'
+        for t in tickers)
+    summary = _esc(alert.get("summary", ""))
+    when = _esc(alert.get("published") or alert.get("detected_at") or "")
+    link_text = alert.get("link_text") or "View ↗"
+    body = (
+        f'<div style="font-family:{SANS};font-size:13px;font-weight:700;letter-spacing:1px;'
+        f'text-transform:uppercase;color:{accent};margin:10px 0 8px">{label}</div>'
+        f'<div style="margin-bottom:4px">{chips}</div>'
+        f'<table width="100%" cellpadding="0" cellspacing="0" '
+        f'style="margin:12px 0;border-left:3px solid {accent};background:{PANEL};border-radius:4px">'
+        f'<tr><td style="padding:12px 14px;font-family:{SANS};font-size:15px;line-height:1.5;'
+        f'color:{INK}">{summary}</td></tr></table>'
+        f'<table width="100%" cellpadding="0" cellspacing="0"><tr>'
+        f'<td style="font-family:{MONO};font-size:12px;color:{DIM}">{when}</td>'
+        f'<td align="right">{_button(alert.get("url", ""), link_text)}</td>'
+        f'</tr></table>'
+    )
+    pre = label + ": " + ", ".join("$" + t for t in tickers)
+    return _shell(pre, "🚨 SIGNAL ALERT", body, accent=accent)
+
+
+def send_monitor_alert(alert: dict) -> bool:
+    tickers = ", ".join("$" + t for t in alert.get("tickers", []))
+    subject = f"🚨 {alert.get('label', 'Alert')} — {tickers}"
+    return _send(subject, build_monitor_alert_email(alert))

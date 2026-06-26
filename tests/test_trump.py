@@ -104,27 +104,3 @@ def test_validation_fails_open_without_deepseek(monkeypatch):
     monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
     cands = [dict(ticker="TSLA", name="Tesla"), dict(ticker="ICE", name="Intercontinental")]
     assert validate_trump_tickers("anything", cands) == {"TSLA", "ICE"}   # outage never suppresses
-
-
-def test_monitor_validation_drops_rejected_alerts(monkeypatch):
-    """When DeepSeek rejects a candidate, the monitor drops that alert."""
-    import radar.monitor as mon
-    monkeypatch.setattr(mon, "validate_trump_tickers", lambda post, cands: set())
-    assert mon._validate([dict(tickers=["ICE"], post="ICE raids", url="", published="")], {}) == []
-    monkeypatch.setattr(mon, "validate_trump_tickers", lambda post, cands: {"TSLA"})
-    kept = mon._validate([dict(tickers=["TSLA", "ICE"], post="$TSLA", url="", published="")], {})
-    assert len(kept) == 1 and kept[0]["tickers"] == ["TSLA"]
-
-
-def test_monitor_writes_alert_then_dedups(tmp_path, monkeypatch):
-    import radar.monitor as mon
-    monkeypatch.setattr(trump, "fetch_rss", lambda *a, **k: trump.parse_rss(FIX))
-    monkeypatch.setattr(mon, "ALERT_PATH", str(tmp_path / "alert.json"))
-    monkeypatch.setattr(mon, "SEEN_PATH", str(tmp_path / "seen.json"))
-    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)   # validation fails open, no network
-    monkeypatch.delenv("RESEND_API_KEY", raising=False)
-    monkeypatch.delenv("GITHUB_OUTPUT", raising=False)
-    assert mon.main([]) == 0
-    a = trump.load_alert(str(tmp_path / "alert.json"))
-    assert a and a["tickers"]                           # real universe resolves TSLA/BTC/DJT
-    assert mon.main([]) == 0                             # all seen -> no crash, no new alert
