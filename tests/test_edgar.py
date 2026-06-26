@@ -1,5 +1,6 @@
 # tests/test_edgar.py
 import pathlib
+import pytest
 from radar.monitors import edgar
 from radar.monitors.edgar import EdgarMonitor
 
@@ -11,10 +12,12 @@ INDEX = pathlib.Path("tests/fixtures/edgar_index.json").read_text()
 
 def test_parse_atom_extracts_entries():
     entries = edgar.parse_atom(ATOM)
-    assert len(entries) == 3
+    assert len(entries) == 5                              # 3 Form 4 + 1 prospectus + 1 dup
     assert entries[0].accession == "000111-26-000001"
     assert entries[0].doc_url.endswith("000111-26-000001-index.htm")
     assert entries[0].published.startswith("2026-06-26T")
+    assert entries[0].form_type == "4"                    # category term captured
+    assert any(e.form_type == "424B2" for e in entries)   # non-Form-4 entries are parsed too
 
 
 def test_parse_atom_malformed_returns_empty():
@@ -54,10 +57,13 @@ def test_fetch_new_keeps_only_large_buys_sorted_by_usd(monkeypatch):
 
     monkeypatch.setattr(edgar, "_http_get", fake_get)
     m = EdgarMonitor(min_usd=1_000_000, transaction_codes=["P"], max_age_h=24,
-                     user_agent="reddit-signal-radar/0.1 (contact: x@example.com)")
+                     user_agent="reddit-signal-radar/0.1 (contact: x@example.com)",
+                     sleep_seconds=0)
     signals, evaluated = m.fetch_new(set())
-    assert len(evaluated) == 3                       # all three accessions examined
-    assert len(signals) == 1                         # small buy below floor, sale filtered
+    assert len(evaluated) == 4                       # 4 unique accessions (the dup is collapsed)
+    assert evaluated.count("000111-26-000001") == 1  # filing listed twice -> processed once
+    assert "000444-26-000004" in evaluated           # the 424B2 is recorded in the cursor...
+    assert len(signals) == 1                          # ...but only the big Form-4 buy alerts
     assert signals[0].tickers == ["ACME"]
     assert "ACME" in signals[0].summary and "1,200,000" in signals[0].summary
 
@@ -79,13 +85,14 @@ def test_fetch_new_debug_logs_resolved_urls_and_summary(monkeypatch, capsys):
 
     monkeypatch.setattr(edgar, "_http_get", fake_get)
     monkeypatch.setenv("EDGAR_DEBUG", "1")
-    m = EdgarMonitor(min_usd=1_000_000, transaction_codes=["P"], max_age_h=24, user_agent="ua")
+    m = EdgarMonitor(min_usd=1_000_000, transaction_codes=["P"], max_age_h=24,
+                     user_agent="ua", sleep_seconds=0)
     m.fetch_new(set())
     err = capsys.readouterr().err
     assert "/00011126000001/form4.xml" in err          # per-filing resolved doc URL logged
     assert "ACME P $1,200,000" in err                  # per-filing parse outcome logged
-    assert "EDGAR: examined 3 filings" in err          # always-on health summary
-    assert "resolved 3" in err and "parsed 3" in err
+    assert "EDGAR: examined 5 feed entries" in err     # always-on health summary
+    assert "form4 3" in err and "resolved 3" in err and "parsed 3" in err
 
 
 def test_fetch_new_summary_prints_without_debug(monkeypatch, capsys):
@@ -94,10 +101,11 @@ def test_fetch_new_summary_prints_without_debug(monkeypatch, capsys):
     monkeypatch.setattr(edgar, "_http_get",
                         lambda url, ua: ATOM if "getcurrent" in url else "")
     monkeypatch.delenv("EDGAR_DEBUG", raising=False)
-    m = EdgarMonitor(min_usd=1, transaction_codes=["P"], max_age_h=24, user_agent="ua")
+    m = EdgarMonitor(min_usd=1, transaction_codes=["P"], max_age_h=24, user_agent="ua",
+                     sleep_seconds=0)
     m.fetch_new(set())
     err = capsys.readouterr().err
-    assert "EDGAR: examined 3 filings" in err and "resolved 0" in err
+    assert "EDGAR: examined 5 feed entries" in err and "resolved 0" in err
     assert " -> " not in err                            # no per-filing debug detail
 
 
@@ -130,6 +138,22 @@ def test_parse_form4_derivative_only_returns_none():
   </derivativeTable>
 </ownershipDocument>'''
     assert edgar.parse_form4(deriv_only) is None       # no nonDerivativeTable -> not a buy
+
+
+@pytest.mark.parametrize("sentinel", ["NONE", "N/A", "NA", "-", ""])
+def test_fetch_new_skips_no_ticker_sentinels(monkeypatch, sentinel):
+    # Some issuers have no public ticker and report NONE / N/A / etc — never emit a $NONE
+    # or $N/A alert, even for a huge open-market (code P) buy.
+    from radar.monitors.edgar import Form4
+    monkeypatch.setattr(edgar, "_http_get", lambda url, ua: (
+        ATOM if "getcurrent" in url else INDEX if url.endswith("index.json") else "<x/>"))
+    monkeypatch.setattr(edgar, "parse_form4", lambda xml: Form4(
+        ticker=sentinel, issuer="Private Co", owner="Insider", title="Director",
+        code="P", shares=100, price=999_999, usd=99_999_900))
+    m = EdgarMonitor(min_usd=1, transaction_codes=["P"], max_age_h=24, user_agent="ua",
+                     sleep_seconds=0)
+    signals, _ = m.fetch_new(set())
+    assert signals == []
 
 
 def test_validate_is_identity():

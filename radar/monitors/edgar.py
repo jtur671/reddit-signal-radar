@@ -16,9 +16,13 @@ import requests
 
 from radar.monitors.base import Signal
 
+# owner=only restricts the feed to ownership filings (Forms 3/4/5) — without it, type=4 is a
+# PREFIX match and the feed floods with 424B2/485APOS/40-F. We still filter to form type "4".
 ATOM_URL = ("https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=4"
-            "&company=&dateb=&owner=include&count=100&output=atom")
+            "&company=&dateb=&owner=only&count=100&output=atom")
 _ACC_PREFIX = "accession-number="
+# Sentinels issuers use when there's no public ticker — never alert on these (seen live).
+_NO_TICKER = {"", "NONE", "N/A", "NA", "-"}
 
 
 @dataclass
@@ -26,6 +30,7 @@ class EdgarEntry:
     accession: str
     doc_url: str           # the filing index page
     published: str         # ISO-8601 'Z'
+    form_type: str = ""    # SEC <category term="...">, e.g. "4" (vs "4/A", "424B2")
 
 
 @dataclass
@@ -70,7 +75,7 @@ def parse_atom(xml_text: str) -> list[EdgarEntry]:
     for entry in root.iter():
         if _localname(entry.tag) != "entry":
             continue
-        acc, href, updated = "", "", ""
+        acc, href, updated, form_type = "", "", "", ""
         for child in entry:
             name = _localname(child.tag)
             if name == "id" and _ACC_PREFIX in (child.text or ""):
@@ -79,8 +84,11 @@ def parse_atom(xml_text: str) -> list[EdgarEntry]:
                 href = child.get("href")
             elif name == "updated":
                 updated = child.text or ""
+            elif name == "category" and child.get("term"):
+                form_type = child.get("term").strip()
         if acc:
-            out.append(EdgarEntry(accession=acc, doc_url=href, published=_to_z(updated)))
+            out.append(EdgarEntry(accession=acc, doc_url=href, published=_to_z(updated),
+                                  form_type=form_type))
     return out
 
 
@@ -162,7 +170,7 @@ def _http_get(url: str, ua: str) -> str:
 class EdgarMonitor:
     def __init__(self, *, min_usd: float, transaction_codes, max_age_h: int, user_agent: str,
                  key: str = "edgar", label: str = "📄 Insider Buy", card_style: str = "insider",
-                 seen_cap: int = 5000, max_entries: int = 60):
+                 seen_cap: int = 5000, max_entries: int = 60, sleep_seconds: float = 0.2):
         self.key = key
         self.label = label
         self.card_style = card_style
@@ -172,6 +180,7 @@ class EdgarMonitor:
         self.user_agent = user_agent
         self.seen_cap = seen_cap
         self.max_entries = max_entries
+        self.sleep_seconds = sleep_seconds   # courtesy delay between filings (SEC ~10 req/s cap)
 
     def _form4_url(self, entry: EdgarEntry) -> str:
         """Resolve the real Form-4 XML document URL via the filing folder's index.json.
@@ -202,13 +211,20 @@ class EdgarMonitor:
         debug = os.environ.get("EDGAR_DEBUG", "").strip().lower() in ("1", "true", "yes")
         atom = _http_get(ATOM_URL, self.user_agent)
         entries = parse_atom(atom)[: self.max_entries]
-        buys, evaluated = [], []
-        n_unseen = n_resolved = n_parsed = 0
+        buys, evaluated, done = [], [], set()
+        n_form4 = n_resolved = n_parsed = 0
         for e in entries:
+            if e.accession in done:
+                continue                       # SEC lists a filing once per party — process once
+            done.add(e.accession)
             evaluated.append(e.accession)
+            if e.form_type != "4":             # type=4 is a PREFIX match; keep only real Form 4
+                continue
             if e.accession in seen:
                 continue
-            n_unseen += 1
+            n_form4 += 1
+            if self.sleep_seconds:
+                time.sleep(self.sleep_seconds)  # be polite to SEC (~10 req/s)
             doc_url = self._form4_url(e)
             if not doc_url:
                 if debug:
@@ -221,17 +237,18 @@ class EdgarMonitor:
             if debug:
                 outcome = f"{f.ticker} {f.code} ${f.usd:,.0f}" if f else "(parse failed)"
                 print(f"EDGAR: {e.accession} -> {doc_url} -> {outcome}", file=sys.stderr)
-            if not f or f.code not in self.codes or f.usd < self.min_usd:
-                continue
+            if (not f or f.ticker in _NO_TICKER or f.code not in self.codes
+                    or f.usd < self.min_usd):
+                continue                        # skip no-ticker issuers, wrong code, sub-floor
             summary = (f"Insider buy — {f.title} bought {f.shares:,.0f} sh of ${f.ticker} "
                        f"(~${f.usd:,.0f}, Form 4)")
             buys.append((f.usd, Signal(tickers=[f.ticker], summary=summary, url=e.doc_url,
                                        published=e.published, monitor_key=self.key,
                                        link_text="View filing ↗")))
         buys.sort(key=lambda t: t[0], reverse=True)        # largest $ first == most-salient-first
-        print(f"EDGAR: examined {len(entries)} filings (unseen {n_unseen}, "
-              f"resolved {n_resolved}, parsed {n_parsed}, qualifying buys {len(buys)})",
-              file=sys.stderr)
+        print(f"EDGAR: examined {len(entries)} feed entries (unique {len(done)}, "
+              f"form4 {n_form4}, resolved {n_resolved}, parsed {n_parsed}, "
+              f"qualifying buys {len(buys)})", file=sys.stderr)
         return [s for _, s in buys], evaluated
 
     def validate(self, signals):
