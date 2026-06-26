@@ -91,3 +91,28 @@ def test_trump_email_chips_quote_and_button():
     assert "<b>now</b>" not in html
     assert "View post" in html
     assert "https://truthsocial.com/x" in html
+
+
+def test_monitor_alert_email_escapes_and_shows_tickers():
+    from radar.email_report import build_monitor_alert_email
+    html = build_monitor_alert_email(dict(
+        label="📄 Insider Buy", tickers=["ACME"],
+        summary="Insider buy — Director bought 10,000 sh of $ACME (~$1,200,000, Form 4)",
+        url="http://sec", detected_at="2026-06-26T12:00:00Z", link_text="View filing ↗"))
+    assert "$ACME" in html and "Insider buy" in html and "View filing" in html
+
+
+def test_monitor_alert_email_escapes_html_in_summary():
+    from radar.email_report import build_monitor_alert_email
+    html = build_monitor_alert_email(dict(label="⚠ Trump Alert", tickers=["TSLA"],
+        summary="<script>alert(1)</script> buy", url="http://x",
+        detected_at="2026-06-26T12:00:00Z"))
+    assert "<script>alert(1)</script>" not in html and "&lt;script&gt;" in html
+
+
+def test_send_monitor_alert_requires_recipient(monkeypatch):
+    from radar.email_report import send_monitor_alert
+    monkeypatch.delenv("RESEND_API_KEY", raising=False)
+    monkeypatch.delenv("EMAIL_RECIPIENTS", raising=False)
+    assert send_monitor_alert(dict(label="x", tickers=["A"], summary="s", url="",
+                                   detected_at="2026-06-26T12:00:00Z")) is False
