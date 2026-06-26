@@ -620,7 +620,7 @@ def test_fetch_new_keeps_only_large_buys_sorted_by_usd(monkeypatch):
     assert len(evaluated) == 3                       # all three accessions examined
     assert len(signals) == 1                         # small buy below floor, sale filtered
     assert signals[0].tickers == ["ACME"]
-    assert "ACME" in signals[0].summary and "1,200,000" in signals[0].summary.replace(",", ",")
+    assert "ACME" in signals[0].summary and "1,200,000" in signals[0].summary
 
 
 def test_validate_is_identity():
@@ -1056,7 +1056,7 @@ git commit -m "feat(email): generic send_monitor_alert/build_monitor_alert_email
 ```python
 # tests/test_render.py  (append)
 import json
-from radar.run import _build_context, _load_alerts
+from radar.run import _build_context
 from radar.render import render_html
 
 
@@ -1072,7 +1072,7 @@ def test_two_alert_cards_render_both(tmp_path):
         summary="Insider buy — Director bought 10,000 sh of $ACME", url="http://s",
         published="2026-06-26T11:00:00Z", detected_at="2026-06-26T11:00:00Z")))
     import radar.run as run
-    alerts = _load_alerts(str(tmp_path)) if False else run._load_alerts(str(tmp_path))
+    alerts = run._load_alerts(str(tmp_path))
     html = render_html(**_build_context([], [], "2026-06-26", 0, alerts=alerts))
     assert "Trump Alert" in html and "Insider Buy" in html
     assert "$TSLA" in html and "$ACME" in html
