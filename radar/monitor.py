@@ -27,9 +27,9 @@ def _set_output(key: str, val: str) -> None:
 
 def _email(monitor, signal) -> None:
     """Best-effort email per fired alert — never crash the run."""
-    alert = dict(label=monitor.label, tickers=signal.tickers, summary=signal.summary,
-                 url=signal.url, published=signal.published, link_text=signal.link_text)
     try:
+        alert = dict(label=monitor.label, tickers=signal.tickers, summary=signal.summary,
+                     url=signal.url, published=signal.published, link_text=signal.link_text)
         if not send_monitor_alert(alert):
             print(f"EMAIL: {monitor.key} alert not sent — RESEND_API_KEY/EMAIL_RECIPIENTS missing",
                   file=sys.stderr)

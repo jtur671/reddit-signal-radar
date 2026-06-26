@@ -201,12 +201,12 @@ tr[data-ticker]{cursor:pointer}
   {% endif %}
 
   {% for a in alerts %}
-  <div class=”alert alert-{{ a.style }}” data-themes=”{{ a.theme_attr }}” data-ticker=””>
-    <div class=”alert-tag”>{{ a.tag }}</div>
-    <div class=”alert-body”>
-      <div class=”alert-tk”>{{ a.tickers }}</div>
-      <p class=”alert-post”>”{{ a.body }}”</p>
-      <div class=”alert-meta”>{{ a.meta }}{% if a.url %} · <a href=”{{ a.url }}” target=”_blank” rel=”noopener noreferrer”>{{ a.link_text }}</a>{% endif %}</div>
+  <div class="alert alert-{{ a.style }}" data-themes="{{ a.theme_attr }}" data-ticker="">
+    <div class="alert-tag">{{ a.tag }}</div>
+    <div class="alert-body">
+      <div class="alert-tk">{{ a.tickers }}</div>
+      <p class="alert-post">“{{ a.body }}”</p>
+      <div class="alert-meta">{{ a.meta }}{% if a.url %} · <a href="{{ a.url }}" target="_blank" rel="noopener noreferrer">{{ a.link_text }}</a>{% endif %}</div>
     </div>
   </div>
   {% endfor %}

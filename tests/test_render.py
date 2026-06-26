@@ -111,3 +111,19 @@ def test_stale_alert_card_is_dropped(tmp_path, monkeypatch):
         detected_at="2020-01-01T00:00:00Z")))
     import radar.run as run
     assert run._load_alerts(str(tmp_path)) == []     # older than max_age -> filtered
+
+
+def test_alert_card_renders_real_css_class_and_href(tmp_path):
+    import json
+    import radar.run as run
+    from radar.run import _build_context
+    from radar.render import render_html
+    (tmp_path / "trump_alert.json").write_text(json.dumps(dict(
+        monitor_key="trump", label="⚠ Trump Alert", card_style="trump",
+        link_text="Truth Social post ↗", tickers=["TSLA"], summary="hi",
+        url="http://t", published="2026-06-26T12:00:00Z",
+        detected_at="2026-06-26T12:00:00Z")))
+    html = render_html(**_build_context([], [], "2026-06-26", 0,
+                                        alerts=run._load_alerts(str(tmp_path))))
+    assert 'class="alert alert-trump"' in html      # ASCII-quoted attribute -> CSS applies
+    assert 'href="http://t"' in html                # valid link, not a curly-quoted href
