@@ -72,7 +72,7 @@ def run_fleet(monitors, *, now_iso: str, on_alert: Callable | None = None,
         seen_set = set(seen)
         new_seen = list(seen) + [i for i in evaluated if i not in seen_set]
         if new_seen != seen:
-            save_seen(seen_path(m.key, data_dir), new_seen)
+            save_seen(seen_path(m.key, data_dir), new_seen, cap=getattr(m, "seen_cap", 200))
 
         signals = m.validate(signals)          # fail-open lives inside the monitor's validate
         if not signals:

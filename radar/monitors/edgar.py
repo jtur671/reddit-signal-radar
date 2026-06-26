@@ -5,6 +5,7 @@ above a dollar floor — MARKET-WIDE (no universe restriction). The ticker is a 
 so no LLM inference is needed (validate() is identity). One alert per tick: the largest buy."""
 from __future__ import annotations
 
+import json
 import time
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
@@ -91,15 +92,23 @@ def _first_value(node) -> str:
     return (node.text or "").strip()
 
 
-def parse_form4(xml_text: str) -> Form4 | None:
-    """Parse a Form-4 ownership document; return the first non-derivative transaction as a
-    Form4, or None if none is parseable. Never raises."""
+def _find_first(el, localname: str):
+    """First descendant whose tag localname matches, or None."""
+    for d in el.iter():
+        if _localname(d.tag) == localname:
+            return d
+    return None
+
+
+def parse_form4(xml_text: str):
+    """Parse a Form-4 ownership document; return the first NON-DERIVATIVE transaction as a
+    Form4, or None if there is none. Never raises. Transaction fields are read only from
+    within <nonDerivativeTable> so a derivative-only filing is never mis-read as a buy."""
     try:
         root = ET.fromstring(xml_text)
     except Exception:
         return None
-    nodes = {}
-    issuer = owner = title = ticker = ""
+    ticker = issuer = owner = title = ""
     for el in root.iter():
         name = _localname(el.tag)
         if name == "issuerTradingSymbol":
@@ -112,12 +121,19 @@ def parse_form4(xml_text: str) -> Form4 | None:
             title = (el.text or "").strip()
         elif name == "isDirector" and (el.text or "").strip() in ("1", "true") and not title:
             title = "Director"
-        elif name in ("transactionCode", "transactionShares", "transactionPricePerShare"):
-            nodes.setdefault(name, el)
-    code = (nodes.get("transactionCode").text or "").strip() if nodes.get("transactionCode") is not None else ""
+    table = _find_first(root, "nonDerivativeTable")
+    if table is None:
+        return None
+    txn = _find_first(table, "nonDerivativeTransaction")
+    if txn is None:
+        return None
+    code_el = _find_first(txn, "transactionCode")
+    shares_el = _find_first(txn, "transactionShares")
+    price_el = _find_first(txn, "transactionPricePerShare")
+    code = (code_el.text or "").strip() if code_el is not None else ""
     try:
-        shares = float(_first_value(nodes.get("transactionShares")) or 0)
-        price = float(_first_value(nodes.get("transactionPricePerShare")) or 0)
+        shares = float(_first_value(shares_el) or 0)
+        price = float(_first_value(price_el) or 0)
     except ValueError:
         return None
     if not ticker or not code:
@@ -144,7 +160,7 @@ def _http_get(url: str, ua: str) -> str:
 class EdgarMonitor:
     def __init__(self, *, min_usd: float, transaction_codes, max_age_h: int, user_agent: str,
                  key: str = "edgar", label: str = "📄 Insider Buy", card_style: str = "insider",
-                 max_entries: int = 60):
+                 seen_cap: int = 5000, max_entries: int = 60):
         self.key = key
         self.label = label
         self.card_style = card_style
@@ -152,17 +168,28 @@ class EdgarMonitor:
         self.codes = set(transaction_codes)
         self.max_age_h = max_age_h
         self.user_agent = user_agent
+        self.seen_cap = seen_cap
         self.max_entries = max_entries
 
     def _form4_url(self, entry: EdgarEntry) -> str:
-        """Derive the raw Form-4 XML URL from the filing's accession number.
-        EDGAR stores it under the accession folder; the primary doc is <acc-nodashes>.xml."""
-        acc = entry.accession
-        nodash = acc.replace("-", "")
-        # accession format CIK?-YY-NNNNNN; the data folder uses the filer CIK from doc_url.
-        # doc_url: .../Archives/edgar/data/<cik>/<acc-nodash>-index.htm
-        base = entry.doc_url.rsplit("/", 1)[0]
-        return f"{base}/{nodash}.xml"
+        """Resolve the real Form-4 XML document URL via the filing folder's index.json.
+        The atom link is .../<acc-folder>/<accession>-index.htm; the folder's index.json
+        lists its documents. The ownership doc is the root-level .xml that is NOT an
+        XSLT-rendered variant (those live under an 'xsl...' path). Returns '' if it can't
+        be resolved — the caller treats that as 'no document' and skips the filing."""
+        folder = entry.doc_url.rsplit("/", 1)[0]          # strip the -index.htm leaf
+        raw = _http_get(f"{folder}/index.json", self.user_agent)
+        if not raw:
+            return ""
+        try:
+            items = json.loads(raw)["directory"]["item"]
+        except Exception:
+            return ""
+        xmls = [it.get("name", "") for it in items
+                if it.get("name", "").lower().endswith(".xml")]
+        primary = next((n for n in xmls
+                        if "xsl" not in n.lower() and not n.lower().startswith("r")), "")
+        return f"{folder}/{primary}" if primary else ""
 
     def fetch_new(self, seen):
         atom = _http_get(ATOM_URL, self.user_agent)
@@ -172,7 +199,10 @@ class EdgarMonitor:
             evaluated.append(e.accession)
             if e.accession in seen:
                 continue
-            f = parse_form4(_http_get(self._form4_url(e), self.user_agent))
+            doc_url = self._form4_url(e)
+            if not doc_url:
+                continue
+            f = parse_form4(_http_get(doc_url, self.user_agent))
             if not f or f.code not in self.codes or f.usd < self.min_usd:
                 continue
             summary = (f"Insider buy — {f.title} bought {f.shares:,.0f} sh of ${f.ticker} "

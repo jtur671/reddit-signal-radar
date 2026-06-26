@@ -6,6 +6,7 @@ from radar.monitors.edgar import EdgarMonitor
 ATOM = pathlib.Path("tests/fixtures/edgar_atom.xml").read_text()
 BUY = pathlib.Path("tests/fixtures/edgar_form4_buy.xml").read_text()
 SALE = pathlib.Path("tests/fixtures/edgar_form4_sale.xml").read_text()
+INDEX = pathlib.Path("tests/fixtures/edgar_index.json").read_text()
 
 
 def test_parse_atom_extracts_entries():
@@ -35,14 +36,23 @@ def test_parse_form4_sale_is_code_s():
 
 
 def test_fetch_new_keeps_only_large_buys_sorted_by_usd(monkeypatch):
-    # Map each accession -> a fixture: big buy ($1.2M), small buy ($90k), a sale.
     small_buy = BUY.replace("<value>10000</value>", "<value>750</value>")   # 750*120 = 90k
-    by_acc = {"000111-26-000001": BUY, "000222-26-000002": small_buy,
-              "000333-26-000003": SALE}
-    monkeypatch.setattr(edgar, "_http_get", lambda url, ua: ATOM if "getcurrent" in url
-                        else by_acc[[a for a in by_acc if a in url][0]])
-    # form4 doc url is derived from the index url; make derivation a no-op passthrough for the test
-    monkeypatch.setattr(EdgarMonitor, "_form4_url", lambda self, e: e.accession)
+    # route by the accession-nodash folder embedded in each resolved URL
+    form4_by_folder = {"00011126000001": BUY, "00022226000002": small_buy,
+                       "00033326000003": SALE}
+
+    def fake_get(url, ua):
+        if "getcurrent" in url:
+            return ATOM
+        if url.endswith("index.json"):
+            return INDEX
+        if url.endswith("form4.xml"):
+            for folder, doc in form4_by_folder.items():
+                if folder in url:
+                    return doc
+        return ""
+
+    monkeypatch.setattr(edgar, "_http_get", fake_get)
     m = EdgarMonitor(min_usd=1_000_000, transaction_codes=["P"], max_age_h=24,
                      user_agent="reddit-signal-radar/0.1 (contact: x@example.com)")
     signals, evaluated = m.fetch_new(set())
@@ -50,6 +60,37 @@ def test_fetch_new_keeps_only_large_buys_sorted_by_usd(monkeypatch):
     assert len(signals) == 1                         # small buy below floor, sale filtered
     assert signals[0].tickers == ["ACME"]
     assert "ACME" in signals[0].summary and "1,200,000" in signals[0].summary
+
+
+def test_form4_url_resolves_root_xml_via_index_json(monkeypatch):
+    monkeypatch.setattr(edgar, "_http_get",
+                        lambda url, ua: INDEX if url.endswith("index.json") else "")
+    m = EdgarMonitor(min_usd=1, transaction_codes=["P"], max_age_h=24, user_agent="ua")
+    e = edgar.EdgarEntry(
+        accession="000111-26-000001",
+        doc_url="https://www.sec.gov/Archives/edgar/data/111/00011126000001/000111-26-000001-index.htm",
+        published="2026-06-26T12:00:00Z")
+    url = m._form4_url(e)
+    assert url.endswith("/00011126000001/form4.xml")   # root ownership doc...
+    assert "xsl" not in url                             # ...not the XSLT-rendered variant
+
+
+def test_parse_form4_derivative_only_returns_none():
+    deriv_only = '''<?xml version="1.0"?>
+<ownershipDocument>
+  <issuer><issuerName>Deriv Co</issuerName><issuerTradingSymbol>DRV</issuerTradingSymbol></issuer>
+  <reportingOwner><reportingOwnerId><rptOwnerName>Opt Holder</rptOwnerName></reportingOwnerId></reportingOwner>
+  <derivativeTable>
+    <derivativeTransaction>
+      <transactionCoding><transactionCode>P</transactionCode></transactionCoding>
+      <transactionAmounts>
+        <transactionShares><value>9999</value></transactionShares>
+        <transactionPricePerShare><value>500.00</value></transactionPricePerShare>
+      </transactionAmounts>
+    </derivativeTransaction>
+  </derivativeTable>
+</ownershipDocument>'''
+    assert edgar.parse_form4(deriv_only) is None       # no nonDerivativeTable -> not a buy
 
 
 def test_validate_is_identity():

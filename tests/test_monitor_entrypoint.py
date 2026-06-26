@@ -17,7 +17,7 @@ def test_fleet_main_writes_alerts_and_sets_output(tmp_path, monkeypatch):
     monkeypatch.setattr(mon, "load_config", lambda p: object())
     monkeypatch.setattr(mon, "send_monitor_alert", lambda alert: True)
     monkeypatch.setattr(base, "load_seen", lambda p: [])
-    monkeypatch.setattr(base, "save_seen", lambda p, s: None)
+    monkeypatch.setattr(base, "save_seen", lambda p, s, cap=200: None)
     written = {}
     monkeypatch.setattr(base, "write_alert",
                         lambda m, sig, ts, data_dir="data": written.__setitem__(m.key, sig.tickers))
