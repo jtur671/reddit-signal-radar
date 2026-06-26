@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ownershipDocument>
+  <issuer>
+    <issuerName>Acme Robotics Inc</issuerName>
+    <issuerTradingSymbol>ACME</issuerTradingSymbol>
+  </issuer>
+  <reportingOwner>
+    <reportingOwnerId><rptOwnerName>Jane Director</rptOwnerName></reportingOwnerId>
+    <reportingOwnerRelationship><isDirector>1</isDirector><officerTitle>Director</officerTitle></reportingOwnerRelationship>
+  </reportingOwner>
+  <nonDerivativeTable>
+    <nonDerivativeTransaction>
+      <transactionCoding><transactionCode>P</transactionCode></transactionCoding>
+      <transactionAmounts>
+        <transactionShares><value>10000</value></transactionShares>
+        <transactionPricePerShare><value>120.00</value></transactionPricePerShare>
+      </transactionAmounts>
+    </nonDerivativeTransaction>
+  </nonDerivativeTable>
+</ownershipDocument>
