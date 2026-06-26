@@ -1,6 +1,7 @@
 from __future__ import annotations
 import argparse, sys
 from datetime import date
+from pathlib import Path
 from radar.dotenv import load_env
 from radar import clock
 from radar.config import load_config
@@ -80,10 +81,11 @@ def main(argv=None) -> int:
     chips = _chip_list(board, themes)
     reddit_subs = list(getattr(getattr(cfg, "reddit", None), "discussion_subreddits", []) or [])
     detail_json = _detail_blob(board + still, history, run_day, reddit_subs)
-    alert = _load_alert("data/trump_alert.json")       # Trump pump alert (if fresh)
+    alerts = _load_alerts("data")                      # every monitor's fresh alert card
     html = render_html(**_build_context(board, signals, run_day, corpus, refreshed,
-                                        refreshed_iso, today_read, chips, detail_json, alert,
-                                        why_matters, early_plays, still))
+                                        refreshed_iso, today_read, chips, detail_json,
+                                        why_matters=why_matters, early_plays=early_plays,
+                                        still=still, alerts=alerts))
     write_outputs(html, {"board": [s.ticker for s in board]}, out_dir=args.out)
 
     if not args.no_email and not args.dry_run:
@@ -244,15 +246,46 @@ def _read_fallback(top):
     return dict(lead=lead,
                 bullets=[dict(ticker=s.ticker, why=_read_bullet_why(s)) for s in top])
 
-def _load_alert(path):
-    """Load the Trump alert for the dashboard card, but only if still fresh (<48h).
-    Returns a render-ready dict (post text rendered server-side, autoescaped)."""
-    raw = trump.load_alert(path)
-    if not raw or not trump.alert_is_fresh(raw, clock.now_utc()):
-        return None
-    return dict(tickers=" · ".join("$" + t for t in raw.get("tickers", [])),
-                post=raw.get("post", ""), url=raw.get("url", ""),
-                when=raw.get("published") or raw.get("detected_at") or "")
+def _load_alerts(data_dir="data"):
+    """Collect every monitor's fresh alert (data/*_alert.json) into render-ready view-models,
+    newest-first. Self-describing files mean new monitors appear with no render-code change.
+    Tolerates the legacy Trump schema (post/when) alongside the new schema (summary)."""
+    import glob
+    out = []
+    for path in glob.glob(str(Path(data_dir) / "*_alert.json")):
+        raw = trump.load_alert(path)
+        if not raw:
+            continue
+        max_age = int(raw.get("max_age_h") or 48)
+        if not trump.alert_is_fresh(raw, clock.now_utc(), max_age):
+            continue
+        tickers = raw.get("tickers", [])
+        out.append(dict(
+            tag=raw.get("label", "⚠ Alert"),
+            tickers=" · ".join("$" + t for t in tickers),
+            body=raw.get("summary") or raw.get("post", ""),     # new schema | legacy
+            url=raw.get("url", ""),
+            meta=raw.get("published") or raw.get("detected_at") or raw.get("when", ""),
+            style=raw.get("card_style", "trump"),
+            link_text=raw.get("link_text") or "View ↗",
+            theme_attr=(raw.get("monitor_key") or "alert").title(),
+            detected=raw.get("detected_at") or raw.get("published") or "",
+        ))
+    out.sort(key=lambda a: a.get("detected", ""), reverse=True)
+    return out
+
+
+def _coerce_alerts(alerts, legacy_alert):
+    """Prefer the new alerts list; else wrap a legacy single `alert` dict
+    (keys: tickers,str / post / url / when) into the new card view-model."""
+    if alerts is not None:
+        return alerts
+    if not legacy_alert:
+        return []
+    return [dict(tag="⚠ Trump Alert", tickers=legacy_alert.get("tickers", ""),
+                 body=legacy_alert.get("post", ""), url=legacy_alert.get("url", ""),
+                 meta=legacy_alert.get("when", ""), style="trump",
+                 link_text="Truth Social post ↗", theme_attr="Trump")]
 
 def _reddit_search_url(ticker, subs=None):
     """Link to the live Reddit discussions for a ticker — a cashtag search sorted by top this
@@ -304,7 +337,7 @@ def _chip_list(board, themes):
 
 def _build_context(board, signals, run_day, corpus_count, refreshed="", refreshed_iso="",
                    today_read=None, chips=None, detail_json=None, alert=None, why_matters="",
-                   early_plays=None, still=None):
+                   early_plays=None, still=None, alerts=None):
     maxw = max((s.weighted_today for s in board), default=1) or 1
     ranked = [s for s in board if s.vel_24h is not None]
     breakout = max(ranked, key=lambda s: s.vel_24h, default=None) or \
@@ -321,7 +354,7 @@ def _build_context(board, signals, run_day, corpus_count, refreshed="", refreshe
         why_matters=(why_matters or ""),
         early_plays=(early_plays or []),
         detail_json=(detail_json or {}),
-        alert=alert,
+        alerts=_coerce_alerts(alerts, alert),
         board=[dict(rank=i+1, ticker=s.ticker, mentions=s.mentions,
                     vel24_disp=_vel24(s)[0], vel24_num=_vel24(s)[1],
                     state=s.state, emoji=_emoji(s.state), themes_attr="|".join(s.themes or []),

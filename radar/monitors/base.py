@@ -54,6 +54,7 @@ def write_alert(monitor, signal: Signal, detected_at_iso: str, data_dir: str = "
         monitor_key=monitor.key, label=monitor.label, card_style=monitor.card_style,
         link_text=signal.link_text, tickers=signal.tickers, summary=signal.summary,
         url=signal.url, published=signal.published, detected_at=detected_at_iso,
+        max_age_h=getattr(monitor, "max_age_h", 48),
     )
     Path(alert_path(monitor.key, data_dir)).write_text(json.dumps(alert))
 

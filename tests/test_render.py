@@ -79,3 +79,35 @@ def test_still_running_section_hidden_when_empty():
     s = _bsig("IREN", ["AI Compute"])
     html = render_html(**_build_context([s], [s], "2026-06-03", 100))
     assert "Still Running" not in html
+
+
+import json
+from radar.run import _build_context
+from radar.render import render_html
+
+
+def test_two_alert_cards_render_both(tmp_path):
+    (tmp_path / "trump_alert.json").write_text(json.dumps(dict(
+        monitor_key="trump", label="⚠ Trump Alert", card_style="trump",
+        link_text="Truth Social post ↗", tickers=["TSLA"], summary="Tesla is great",
+        url="http://t", published="2026-06-26T12:00:00Z",
+        detected_at="2026-06-26T12:00:00Z")))
+    (tmp_path / "edgar_alert.json").write_text(json.dumps(dict(
+        monitor_key="edgar", label="📄 Insider Buy", card_style="insider",
+        link_text="View filing ↗", tickers=["ACME"],
+        summary="Insider buy — Director bought 10,000 sh of $ACME", url="http://s",
+        published="2026-06-26T11:00:00Z", detected_at="2026-06-26T11:00:00Z")))
+    import radar.run as run
+    alerts = run._load_alerts(str(tmp_path))
+    html = render_html(**_build_context([], [], "2026-06-26", 0, alerts=alerts))
+    assert "Trump Alert" in html and "Insider Buy" in html
+    assert "$TSLA" in html and "$ACME" in html
+
+
+def test_stale_alert_card_is_dropped(tmp_path, monkeypatch):
+    (tmp_path / "edgar_alert.json").write_text(json.dumps(dict(
+        monitor_key="edgar", label="📄 Insider Buy", card_style="insider",
+        tickers=["OLD"], summary="ancient", url="", published="2020-01-01T00:00:00Z",
+        detected_at="2020-01-01T00:00:00Z")))
+    import radar.run as run
+    assert run._load_alerts(str(tmp_path)) == []     # older than max_age -> filtered
