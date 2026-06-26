@@ -33,3 +33,11 @@ still_running:
   lookback_days: 3     # broke out (new/hot) within this many prior days
   max_items: 5         # lane size
   velocity_cap: 10     # cap on the elevation multiplier when ranking
+# EDGAR insider-buy monitor (structured tripwire). Market-wide: no universe restriction —
+# min_usd is the noise floor; only the single largest fresh buy alerts per tick.
+edgar:
+  transaction_codes: [P]     # P = open-market purchase
+  min_usd: 1000000           # dollar floor; tune from observed filing volume
+  restrict_to_universe: false
+  max_age_h: 24
+  user_agent: "reddit-signal-radar/0.1 (contact: baxterboy7720@gmail.com)"
