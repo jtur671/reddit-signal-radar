@@ -1,4 +1,4 @@
-name: trump-monitor
+name: fleet-monitor
 on:
   schedule:
     - cron: "*/30 * * * *"      # every 30 min — tripwire for a Trump pump
@@ -30,8 +30,8 @@ jobs:
         run: |
           git config user.name "radar-bot"
           git config user.email "radar-bot@users.noreply.github.com"
-          git add data/trump_seen.json data/trump_alert.json 2>/dev/null || true
-          git diff --cached --quiet || git commit -m "data: trump monitor $(date -u +%FT%TZ)"
+          git add data/*_seen.json data/*_alert.json 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "data: fleet monitor $(date -u +%FT%TZ)"
           git push origin HEAD:main || echo "nothing to push"
       # On a NEW pump only: rebuild + redeploy the dashboard so the alert card shows.
       - name: Build dashboard with alert
