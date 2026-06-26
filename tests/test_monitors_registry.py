@@ -4,18 +4,22 @@ from radar.monitors import build_registry
 from radar.monitors.prose import ProseMonitor
 from radar.monitors.edgar import EdgarMonitor
 from radar.monitors.events import RssEventMonitor
+from radar.monitors.congress import CongressMonitor
 
 
-def test_registry_has_trump_edgar_and_fed():
+def test_registry_has_all_four_monitors():
     reg = build_registry(load_config("config.yaml"))
     keys = [m.key for m in reg]
-    assert keys == ["trump", "edgar", "fed"]
+    assert keys == ["trump", "edgar", "fed", "congress"]
     trump_m = next(m for m in reg if m.key == "trump")
     edgar_m = next(m for m in reg if m.key == "edgar")
     fed_m = next(m for m in reg if m.key == "fed")
+    cong_m = next(m for m in reg if m.key == "congress")
     assert isinstance(trump_m, ProseMonitor) and isinstance(edgar_m, EdgarMonitor)
-    assert isinstance(fed_m, RssEventMonitor)
+    assert isinstance(fed_m, RssEventMonitor) and isinstance(cong_m, CongressMonitor)
     assert edgar_m.min_usd == 1_000_000 and edgar_m.codes == {"P"}
     assert trump_m.card_style == "trump" and edgar_m.card_style == "insider"
     assert fed_m.card_style == "fed" and fed_m.tickers == ["SPY", "TLT", "IWM", "GLD"]
     assert "federalreserve.gov" in fed_m.feed_url
+    assert cong_m.card_style == "congress" and cong_m.min_usd == 250000
+    assert "pelosi" in cong_m.watch        # surname loaded from data/congress_watch.yaml

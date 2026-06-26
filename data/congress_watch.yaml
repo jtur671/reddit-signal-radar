@@ -1,0 +1,12 @@
+# Curated notable / high-profile congressional traders. A PURCHASE by anyone on this list
+# alerts regardless of size (the "follow the smart money" list); everyone else only alerts
+# above the config `min_usd` floor. Edit freely — matched case-insensitively as a normalized
+# substring of the filer name, so full names are safest (avoid bare common surnames).
+- Nancy Pelosi
+- Dan Crenshaw
+- Tommy Tuberville
+- Ro Khanna
+- Josh Gottheimer
+- Marjorie Taylor Greene
+- Michael McCaul
+- Earl Blumenauer
