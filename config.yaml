@@ -48,3 +48,12 @@ fed:
   feed_url: "https://www.federalreserve.gov/feeds/press_monetary.xml"
   tickers: [SPY, TLT, IWM, GLD]
   max_age_h: 72
+# Congress monitor (structured tripwire): polls a free no-auth JSON feed of STOCK Act
+# disclosures and alerts on a PURCHASE that is either by a curated notable member
+# (data/congress_watch.yaml) OR above min_usd. Disclosures lag the trade up to 45 days.
+congress:
+  feed_url: "https://raw.githubusercontent.com/kadoa-org/congress-trading-monitor/main/public/data/trades.json"
+  watch_path: "data/congress_watch.yaml"
+  min_usd: 250000        # a non-watchlist purchase must be at least this large to alert
+  max_records: 200       # only scan the newest N disclosures each tick
+  max_age_h: 72
