@@ -3,7 +3,7 @@ lookback_hours: 48
 top_n: 15
 history_days: 90
 noise_floor:
-  min_mentions: 5
+  min_mentions: 10   # raised from 5 (Phase B): drops 5-9-mention micro-blips off the live board
   min_distinct_authors: 4
   max_author_weight: 1.5   # cap each author's decay-weighted contribution (anti-whale-brigade)
 ema_alpha: 0.30
