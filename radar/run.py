@@ -8,7 +8,7 @@ from radar.config import load_config
 from radar.themes import Themes
 from radar.history import History
 from radar.apewisdom import fetch_mentions
-from radar.score import score_aggregates, top_signals
+from radar.score import score_aggregates, top_signals, assign_relative_states
 from radar.still_running import still_running
 from radar.sentiment import summarize, engagement_pct, daily_read, why_it_matters, recommend_buys
 from radar.enrich import enrich
@@ -48,6 +48,7 @@ def main(argv=None) -> int:
     signals = score_aggregates(aggregates, history, cfg, run_day)
     board = top_signals(signals, cfg.top_n)
     still = still_running(signals, history, run_day, board, cfg)
+    assign_relative_states(signals, board)              # relative lifecycle tiers (Phase B)
 
     # Tag themes on a wider slice than the board so every category in Today's Read
     # can find its strongest representative even when it's off the top-15 board.
