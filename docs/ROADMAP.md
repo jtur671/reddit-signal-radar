@@ -1,96 +1,109 @@
 ---
 project: Reddit Signal Radar
-status: v1.0 — built, not yet deployed
-updated: 2026-06-01
+status: live (4-monitor fleet) — tuning the core signal (Phase B)
+updated: 2026-06-26
 tags: [roadmap, reddit-signal-radar]
 ---
 
 # Reddit Signal Radar — Roadmap
 
-> Daily zero-touch bot: scans trading subreddits → scores tickers for freshness so stale
-> signals decay off the board → publishes a dashboard (GitHub Pages) + email at 6 AM ET.
-> Plan: [[2026-06-01-reddit-signal-radar]] · Spec: [[2026-06-01-reddit-signal-radar-design]]
+> Daily zero-touch bot: ranks tickers by **freshness** so stale signals decay off the board →
+> publishes a dashboard (GitHub Pages) + a 6 AM ET email. Plus a **fleet of real-time tripwire
+> monitors** (Trump, SEC insider buys, Fed/FOMC, Congress) on an every-30-min cadence.
+> Plan: [[2026-06-01-reddit-signal-radar]] · Spec: [[2026-06-26-monitor-fleet-design]]
 
-## Where it stands
+## Where it stands (2026-06-26)
 
-- ✅ **v1.0 built** — full pipeline, 56 tests passing, INV-1..INV-8 anti-staleness gauntlet green.
-- ✅ KEEL / `infrastructure` theme wired end-to-end.
-- ✅ Survived chaos game day + 3-way bug bounty + final review (CI push + email resilience fixed).
-- ⛔ **Not deployed** — no GitHub remote, Pages not enabled, no secrets set, never run against live Reddit.
+- ✅ **Live & deployed.** Daily radar + the every-30-min `fleet-monitor` job both running in CI.
+- ✅ **v1.0 core** — freshness engine, 90-day EMA baseline, INV-1..INV-8 anti-staleness gauntlet.
+- ✅ **Monitor fleet shipped** (below) — Trump + EDGAR + Fed + Congress on a reusable framework.
+- ⏳ **The core signal is live but UNTUNED on real data** — that's Phase B, now active.
 
-The single most valuable next move is **GO LIVE** — everything else is enhancement.
+The single most valuable next move is **Phase B: trust the signal**. The lifecycle labels and
+noise floor were set before the ApeWisdom switch, and the real board shows they need tuning.
 
 ---
 
-## Phase A — Ship it (this week)
+## Shipped — Monitor Fleet (2026-06-26)
 
-The bot is useless until it runs daily on real data. Blockers, in order:
+Generalized the one-off Trump tripwire into a reusable `radar/monitors/` framework (Signal/
+Monitor contract + `run_fleet`) with two detector families (prose + structured), then added
+three new monitors. All verified against live data. PRs #1 + #2 merged.
 
-- [x] **Create GitHub repo + push.** Public repo `jtur671/reddit-signal-radar`, clean
-  single-commit history (neutral `radar-dev` author, all personal info scrubbed,
-  secrets-detector GO). _Done 2026-06-01._
-- [x] **Enable Pages** → source GitHub Actions. Live: https://jtur671.github.io/reddit-signal-radar/
-- [ ] **Add repo secrets:** `DEEPSEEK_API_KEY`, `RESEND_API_KEY`, `EMAIL_RECIPIENTS` (optional `ALPACA_API_KEY`/`ALPACA_SECRET_KEY`). _Owner sets these via `gh secret set` (not via chat)._
-- [x] **Manual trigger** — validation run `26796498453` succeeded end-to-end (2m34s).
-- [x] **Verify live artifacts:** dashboard renders (HTTP 200); **history commit-back works**
-  (detached-HEAD fix confirmed in real CI — correctly a no-op on an empty board); Pages deploy ✓.
-- [x] ✅ **RESOLVED — Reddit 403 blocker → switched to ApeWisdom.** Reddit's public JSON
-  403s cloud IPs (confirmed even the user's other WSB bot uses the same now-blocked
-  method; the Reddit OAuth script-app path is dead post-2023). Swapped the data source to
-  the free, no-auth **ApeWisdom** aggregator (`apewisdom.io`), which serves per-ticker
-  Reddit mention counts + upvotes and works from cloud IPs. The freshness engine +
-  anti-staleness invariants are unchanged; sentiment became an upvotes engagement proxy.
-- [x] ✅ **Live populated board** — CI run produced a real 15-name board (SPCE, HPE, MU,
-  NVDA, …) on the Pages site, and committed a **206-ticker** `data/history.json` back.
+- **Trump** (prose) — re-homed onto the framework, zero behavior change.
+- **EDGAR insider buys** (structured) — market-wide Form-4 purchases ≥ $1M; resolves the real
+  filing doc via SEC `index.json`. Verified live in CI.
+- **Fed / FOMC** (event) — every monetary-policy release, tagged SPY/TLT/IWM/GLD.
+- **Congress** (structured) — STOCK Act purchases by curated notable members (Pelosi et al.) or
+  ≥ $250k, from a free no-auth feed. Verified live (surfaced Pelosi's $1M–5M INTC buy).
+- Multi-card dashboard (globs `data/*_alert.json`) + generalized alert email; `fleet-monitor.yml`
+  runs the whole fleet, one conditional rebuild.
+- Deferred follow-ons: Musk / other figures (needs a free feed), EDGAR 8-K / 13-D, Congress sells.
 
-**Exit:** ✅ Non-empty board live and history persisting. _Email pending secrets (below)._
+---
 
-### Node deprecation (minor, non-blocking)
-- [ ] Bump `actions/checkout`, `actions/setup-python`, `actions/upload-pages-artifact`,
-  `actions/deploy-pages` when Node-24 versions ship (GitHub forces Node 24 on 2026-06-16).
+## Phase A — Ship it ✅ DONE
 
-## Phase B — Trust the signal (weeks 1–2 after live)
+Live in CI; history persisting; fleet running. (The 6 AM email needs `RESEND_API_KEY` /
+`EMAIL_RECIPIENTS` repo secrets set — owner action, verify it's firing.)
 
-Watch it run, then tune from real output:
+## Phase B — Trust the signal 🎯 ACTIVE
 
-- [ ] **Baseline burn-in.** Velocity/surprise are meaningless until ~1–2 weeks of `history.json` exists. Treat early boards as "new"-heavy and don't over-react.
-- [ ] **Tune the noise floor.** Real subreddit volume may make `min_mentions: 5` / `min_distinct_authors: 4` too loose or too tight — adjust in `config.yaml` from observed false positives/negatives.
-- [ ] **Stoplist gardening.** Log which barewords trend; add any new common-word false positives (the prose-pollution class — e.g. words we missed beyond `SO`/`GO`/`ON`).
-- [ ] **Watch KEEL + your watchlist** specifically — confirm the themes you care about surface correctly.
-- [ ] **Lifecycle-label audit** (review Finding 3): does `classify_state` order `new/hot/sustained/cooling` sensibly on real data? Re-order branches if labels feel wrong.
+> **Reframed for the ApeWisdom data source.** The original Phase B was written for the raw-Reddit
+> path. The live path is ApeWisdom (`radar/score.py:score_aggregates`), where the only noise-floor
+> knob that applies is `min_mentions` — the **distinct-authors floor, per-author whale cap, and
+> stoplist gardening are N/A live** (they only touch the still-tested raw-Reddit `score_signals`).
 
-## Phase C — Harden against manipulation (month 1+)
+Grounded in today's real board (370 ApeWisdom tickers → 129 over the floor → top 15):
 
-The known residuals, in priority order:
+- [ ] **Fix the lifecycle labels — they're broken (highest-value item).** Every one of the top-15
+  board names is tagged `hot` (50 of the full scored set are `hot`, 37 `sustained`, 42 `cooling`).
+  With ~4 weeks of baseline, `classify_state`'s thresholds (`velocity ≥ 1.5 AND surprise > 0.5`)
+  no longer discriminate — `hot` is meaningless. Re-tune so hot / sustained / cooling actually
+  separate (e.g. raise the hot bar; require real volume, not just a tiny-base spike).
+- [ ] **Raise the noise floor.** `min_mentions: 5` fills the board with 5–7-mention micro-blips —
+  a ticker going 1→5 mentions scores `hot` on a near-zero base (e.g. SSD: 5 mentions, 1 yesterday).
+  Experiment with 8–12; measure the share of the board under 10 mentions before/after.
+- [ ] **Tame tiny-base velocity.** Names with ~0 baseline get ∞ engine-velocity and huge surprise
+  (FCEL: 6 mentions, surprise 4.1, ranked #2 above 50-mention names). Check the surprise-vs-volume
+  balance in the composite so a 5-mention blip can't outrank a real climber.
+- [ ] **Confirm theme coverage** — KEEL + the watchlist themes surface correctly on real boards.
 
-- [ ] **Sockpuppet brigades.** Per-author weight cap stops a lone whale, but N throwaway accounts each posting once still inflate distinct-author counts. Mitigations to evaluate: account-age/karma gating (needs authenticated Reddit API), burst-timing detection, cross-ticker stuffing detection.
-- [ ] **Authenticated Reddit API.** Move off unauthenticated public JSON → OAuth app for higher rate limits, more reliable fetches, and the karma/age signals above.
-- [ ] **LLM summary integrity.** Sanitizer is best-effort denylist; consider structured output + an output validator that rejects markup/instructions, and/or a cheaper local model for the bulk pass.
+**Exit:** lifecycle labels that discriminate on real data, a board not dominated by micro-blips,
+and config values (`min_mentions`, lifecycle thresholds) documented and backed by observed output.
 
-## Phase D — Make it more useful (backlog, unordered)
+## Phase C — Harden against manipulation (lower priority now)
 
-- [ ] **Per-ticker history pages / sparklines** — the dashboard `trend` polyline is currently a constant; wire it to real 90-day history per signal.
-- [ ] **Theme/board filtering** that actually works client-side (theme chips are present but static).
-- [ ] **Alerting on big breakouts** — push/email a mid-day flash when a ticker crosses a velocity/surprise threshold, not just the 6 AM digest.
-- [ ] **Crypto coverage check** — verify crypto tickers ($BTC/$ETH/…) score well given 24/7 markets vs the daily cadence.
-- [ ] **Backtest the signal** — does "high velocity + surprise" actually predict next-day price moves? Join history with price data. (This is the bridge to any trading use — but keep this project a *radar*, not a trader.)
-- [ ] **Mobile-friendly dashboard pass.**
+- [ ] **Sockpuppet brigades / account-age gating** — note: the per-author whale cap and distinct-
+  author floor only apply to the raw-Reddit path, which isn't live. For the ApeWisdom path the bot
+  inherits whatever filtering ApeWisdom does (no author signal). Revisit if/when raw Reddit returns.
+- [ ] **LLM summary integrity** — structured output + an output validator that rejects markup.
+
+## Phase D — Make it more useful (backlog)
+
+- [ ] **Backtest the signal** — does freshness (or any fleet monitor) predict next-day price moves?
+  The deepest open question; do it once Phase B has produced a signal worth trusting.
+- [ ] **Per-monitor backtests** — do insider buys / congressional trades / Fed events move the
+  tagged names? (The fleet creates new, cleaner things to backtest than Reddit chatter.)
+- [ ] Per-ticker sparklines (wire the dashboard `trend` polyline to real 90-day history).
+- [ ] Mid-day breakout flash (push when a name crosses a velocity/surprise threshold intraday).
+- [ ] Crypto coverage check (24/7 markets vs the daily cadence); mobile-friendly dashboard pass.
 
 ---
 
 ## Open questions
 
-- Does the freshness signal have *predictive* value, or is it just a popularity mirror? (Phase D backtest answers this.)
-- Is a daily cadence right, or does intraday matter for meme/crypto velocity?
-- Keep DeepSeek for summaries, or swap to a local model to cut cost/latency and remove the external-LLM injection surface?
+- Does freshness have *predictive* value, or is it a popularity mirror? (Phase D backtest.)
+- What are the right `min_mentions` + lifecycle thresholds on real data? (Phase B answers.)
+- Keep DeepSeek for summaries, or a local model (cost + injection surface)?
 
 ## Decision log
 
-- **2026-06-01** — Built v1.0 from the plan via subagent-driven TDD. Adjudicated a plan-defect test fixture, hardened the baseline against silent-day freeze, added a per-author weight cap, fixed a detached-HEAD CI push that would have broken every run. Kept scope as a *signal radar* (publish/notify), explicitly **not** a trader. Roadmap kept separate from the `money` vault per owner.
-
-## Shipped 2026-06-02 (UI sprint + Trump monitor)
-
-- Real 24h velocity (mentions vs yesterday) replacing the meaningless cold-start 99.9×.
-- Today's Read is now per-category (top signal of each tracked theme), never blank.
-- Theme filter chips work (client-side); tiles/cards/rows clickable → detail modal + 90-day sparkline.
-- NEW: Trump Truth Social monitor (trumpstruth.org RSS, every 30 min) → red alert card + instant email when he names a ticker/company. Verified live on a real Fannie Mae/Freddie Mac post.
+- **2026-06-01** — Built v1.0 from the plan via subagent-driven TDD. Kept scope as a *signal
+  radar* (publish/notify), explicitly **not** a trader.
+- **2026-06-02** — UI sprint + the original Trump Truth Social monitor.
+- **2026-06-26** — Shipped the 4-monitor fleet (PRs #1/#2) — reusable framework + EDGAR, Fed,
+  Congress, all verified against live data; EDGAR confirmed firing in production CI. Discovered
+  Phase B was written for the pre-ApeWisdom path and **reframed it** around what's actually live
+  (`min_mentions` + lifecycle labels). The real board exposed the two concrete problems now driving
+  Phase B: every board name is labeled `hot`, and a `min_mentions: 5` floor that's too low.
