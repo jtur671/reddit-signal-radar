@@ -95,3 +95,41 @@ def test_engine_velocity_unchanged_on_cold_start():
     s = score_aggregates([a], FakeHist({}), cfg(), "2026-06-01")[0]
     assert s.velocity == 999.0          # engine velocity still the cold-start sentinel
     assert s.vel_24h == 2.0             # display velocity is meaningful day 1
+
+
+def test_assign_relative_states_even_thirds():
+    from radar.score import assign_relative_states
+    from radar.models import Signal
+    board = [Signal(ticker=f"T{i}", surprise=float(i), baseline_mean=5.0) for i in range(1, 10)]
+    assign_relative_states(board, board)            # surprises 1..9 -> t1=4, t2=7
+    st = {s.ticker: s.state for s in board}
+    assert [st[f"T{i}"] for i in (1, 2, 3)] == ["cooling"] * 3
+    assert [st[f"T{i}"] for i in (4, 5, 6)] == ["sustained"] * 3
+    assert [st[f"T{i}"] for i in (7, 8, 9)] == ["hot"] * 3
+
+
+def test_assign_relative_states_preserves_new_for_no_baseline():
+    from radar.score import assign_relative_states
+    from radar.models import Signal
+    board = [Signal(ticker=f"T{i}", surprise=float(i), baseline_mean=5.0) for i in range(1, 10)]
+    newbie = Signal(ticker="NEW", surprise=9.9, baseline_mean=0.0)   # no baseline
+    assign_relative_states([newbie, *board], board)
+    assert newbie.state == "new"                    # high surprise but no baseline -> still 'new'
+
+
+def test_assign_relative_states_offboard_below_floor_is_cooling():
+    from radar.score import assign_relative_states
+    from radar.models import Signal
+    board = [Signal(ticker=f"T{i}", surprise=float(i), baseline_mean=5.0) for i in range(1, 10)]
+    offboard = Signal(ticker="OFF", surprise=0.5, baseline_mean=5.0)  # below board's t1=4
+    assign_relative_states([offboard, *board], board)
+    assert offboard.state == "cooling"
+
+
+def test_assign_relative_states_degenerate_board_no_crash():
+    from radar.score import assign_relative_states
+    from radar.models import Signal
+    s = Signal(ticker="X", surprise=2.0, baseline_mean=5.0, state="sustained")
+    board_all_new = [Signal(ticker="N", surprise=1.0, baseline_mean=0.0)]  # no baseline -> no thresholds
+    assign_relative_states([s], board_all_new)
+    assert s.state == "sustained"                   # early return -> state unchanged
