@@ -202,6 +202,20 @@ tr[data-ticker]{cursor:pointer}
   </div>
   {% endif %}
 
+  {% if scorecard and scorecard.n_picks %}
+  <div class="plays">
+    <div class="plays-tag">📊 Early Plays Track Record</div>
+    <div class="plays-sub">
+      {{ scorecard.n_picks }} picks since {{ scorecard.since }} ·
+      {% if scorecard.mean_excess_10d is not none %}
+        avg {{ "%+.1f"|format(scorecard.mean_excess_10d * 100) }}% vs SPY over 10 days ·
+        win rate {{ "%.0f"|format((scorecard.win_rate_10d or 0) * 100) }}%
+      {% else %}grading in progress — picks too fresh to score{% endif %}
+    </div>
+    <div class="plays-note">{{ scorecard.disclaimer }}</div>
+  </div>
+  {% endif %}
+
   {% for a in alerts %}
   <div class="alert alert-{{ a.style }}" data-themes="{{ a.theme_attr }}" data-ticker="">
     <div class="alert-tag">{{ a.tag }}</div>

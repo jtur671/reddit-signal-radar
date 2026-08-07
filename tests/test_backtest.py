@@ -102,3 +102,26 @@ def test_power_and_regime_notes():
     pw = power(hist)
     assert pw["days"] == len(DAYS) and pw["sufficient"] is False and pw["target_days"] == 150
     assert any("2026-08-07" in n["date"] for n in REGIME_NOTES)
+
+def test_daily_scorecard_fail_soft(monkeypatch):
+    # Network dead -> None, never an exception (the daily board must not care).
+    import radar.run as run_mod
+    monkeypatch.setattr("radar.backtest.fetch_prices", lambda *a, **k: {})
+    assert run_mod._daily_scorecard("2026-08-08") is None
+
+def test_template_renders_scorecard_block():
+    from radar.render import render_html
+    from radar.run import _build_context
+    ctx = _build_context([], [], "2026-08-08", 0,
+                         scorecard={"n_picks": 3, "since": "2026-08-01",
+                                    "mean_excess_10d": 0.021, "win_rate_10d": 0.67,
+                                    "mean_excess_5d": 0.01, "win_rate_5d": 0.5,
+                                    "picks": [], "disclaimer": "Hypothetical. Not advice."})
+    html = render_html(**ctx)
+    assert "Early Plays Track Record" in html and "+2.1%" in html
+
+def test_template_hides_scorecard_when_absent():
+    from radar.render import render_html
+    from radar.run import _build_context
+    html = render_html(**_build_context([], [], "2026-08-08", 0))
+    assert "Early Plays Track Record" not in html

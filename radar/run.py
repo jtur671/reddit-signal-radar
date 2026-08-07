@@ -19,7 +19,8 @@ from radar.enrich import enrich
 from radar.render import render_html, write_outputs
 from radar.email_report import send_email
 from radar import trump, about, news
-from radar.plays_log import append_picks
+from radar import backtest
+from radar.plays_log import append_picks, load_picks
 
 def _enrich_ticker(s, by_ticker, about_cache, about_ua, themes):
     """Attach themes, engagement, 'what it is', the news catalyst, and a DeepSeek
@@ -84,6 +85,7 @@ def main(argv=None) -> int:
                          {s.ticker: s for s in board})
         except Exception as e:
             degrade.warn("plays-log append", e)
+    scorecard = _daily_scorecard(run_day) if not args.dry_run else None
     if not args.dry_run:
         about.save_cache("data/about.json", about_cache)
 
@@ -110,7 +112,7 @@ def main(argv=None) -> int:
     html = render_html(**_build_context(board, signals, run_day, corpus, refreshed,
                                         refreshed_iso, today_read, chips, detail_json,
                                         why_matters=why_matters, early_plays=early_plays,
-                                        still=still, alerts=alerts))
+                                        still=still, alerts=alerts, scorecard=scorecard))
     health = assess_health(board, degrade.events(),
                            bool(os.environ.get("DEEPSEEK_API_KEY")),
                            sources={
@@ -119,8 +121,10 @@ def main(argv=None) -> int:
                                "tradestie": ("fallback" if board_source == "tradestie-fallback"
                                              else ("ok" if ts_rows else "down"))})
     health["date"] = run_day
-    write_outputs(html, {"board": [s.ticker for s in board], "health": health},
-                  out_dir=args.out)
+    payload = {"board": [s.ticker for s in board], "health": health}
+    if scorecard:
+        payload["scorecard"] = scorecard
+    write_outputs(html, payload, out_dir=args.out)
 
     if not args.no_email and not args.dry_run:
         # Email is best-effort — never fail the publish — but DON'T swallow silently:
@@ -244,6 +248,26 @@ def _today_read(board, themes):
             read["lead"] = _read_fallback(top)["lead"]
         return read
     return _read_fallback(top)                          # no key / DeepSeek down
+
+def _daily_scorecard(run_day):
+    """Grade all logged picks vs SPY — the cheap daily slice of the weekly backtest.
+    Fail-soft: any problem returns None and the board ships without a scorecard."""
+    try:
+        plays = load_picks("data/plays_log.json")
+        if not plays:
+            return None
+        from datetime import date, timedelta
+        first = min(p["date"] for p in plays)
+        start = (date.fromisoformat(first) - timedelta(days=5)).isoformat()
+        tickers = {p["ticker"] for p in plays} | {"SPY"}
+        prices = backtest.fetch_prices(tickers, start, run_day)
+        days = backtest.trading_days(prices)
+        if not days:
+            return None
+        return backtest.scorecard(plays, prices, days)
+    except Exception as e:
+        degrade.warn("daily scorecard", e)
+        return None
 
 def _early_plays(board):
     """DeepSeek 'early plays' card: feed the top of the board (with each name's catalyst summary)
@@ -380,7 +404,7 @@ def _chip_list(board, themes):
 
 def _build_context(board, signals, run_day, corpus_count, refreshed="", refreshed_iso="",
                    today_read=None, chips=None, detail_json=None, alert=None, why_matters="",
-                   early_plays=None, still=None, alerts=None):
+                   early_plays=None, still=None, alerts=None, scorecard=None):
     maxw = max((s.weighted_today for s in board), default=1) or 1
     ranked = [s for s in board if s.vel_24h is not None]
     breakout = max(ranked, key=lambda s: s.vel_24h, default=None) or \
@@ -396,6 +420,7 @@ def _build_context(board, signals, run_day, corpus_count, refreshed="", refreshe
         today_read=(today_read or dict(lead="", bullets=[])),
         why_matters=(why_matters or ""),
         early_plays=(early_plays or []),
+        scorecard=scorecard,
         detail_json=(detail_json or {}),
         alerts=_coerce_alerts(alerts, alert),
         board=[dict(rank=i+1, ticker=s.ticker, mentions=s.mentions,
