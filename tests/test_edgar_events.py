@@ -1,0 +1,47 @@
+import json, pathlib
+from radar.monitors.edgar_events import (EdgarEventsMonitor, parse_hits, ticker_from_display,
+                                         active_tickers)
+
+def test_ticker_from_display():
+    assert ticker_from_display("Acme Corp  (ACME)  (CIK 0001234567)") == "ACME"
+    assert ticker_from_display("No Ticker Holdings  (CIK 0009999999)") == ""
+    assert ticker_from_display("") == ""
+
+def test_parse_hits_from_fixture():
+    raw = json.loads(pathlib.Path("tests/fixtures/efts_8k.json").read_text())
+    rows = parse_hits(raw)
+    assert isinstance(rows, list) and rows
+    r = rows[0]
+    assert set(r) >= {"id", "ticker", "display", "file_date", "url"}
+
+def test_parse_hits_never_raises():
+    for raw in (None, {}, {"hits": None}, {"hits": {"hits": [{"_id": "x"}]}}):
+        assert isinstance(parse_hits(raw), list)
+
+def test_active_tickers(tmp_path):
+    hist = tmp_path / "history.json"
+    hist.write_text(json.dumps({
+        "AAA": {"2026-08-06": {"weighted": 1, "raw": 5, "authors": 0, "pct_bull": 0,
+                                "score": 1.0, "state": "new"}},
+        "OLD": {"2026-01-01": {"weighted": 1, "raw": 5, "authors": 0, "pct_bull": 0,
+                                "score": 1.0, "state": "new"}}}))
+    act = active_tickers(str(hist), days=7, today="2026-08-07")
+    assert "AAA" in act and "OLD" not in act
+    assert active_tickers(str(tmp_path / "missing.json"), days=7, today="2026-08-07") == set()
+
+def test_monitor_filters_to_watchset_and_advances_cursor(monkeypatch):
+    import radar.monitors.edgar_events as ee
+    fixture = {"hits": {"hits": [
+        {"_id": "acc1:doc.htm", "_source": {"display_names": ["Watched Co  (WTCH)  (CIK 1)"],
+                                             "file_date": "2026-08-07"}},
+        {"_id": "acc2:doc.htm", "_source": {"display_names": ["Ignored Co  (IGNR)  (CIK 2)"],
+                                             "file_date": "2026-08-07"}},
+    ]}}
+    monkeypatch.setattr(ee, "_fetch_json", lambda url, ua: fixture)
+    m = EdgarEventsMonitor(phrases=["material definitive agreement"], user_agent="t",
+                            watch=lambda: {"WTCH"}, max_age_h=24)
+    signals, evaluated = m.fetch_new(set())
+    assert len(signals) == 1 and signals[0].tickers == ["WTCH"]
+    assert set(evaluated) == {"acc1:doc.htm", "acc2:doc.htm"}   # non-hits advance the cursor too
+    signals2, _ = m.fetch_new({"acc1:doc.htm", "acc2:doc.htm"})
+    assert signals2 == []                                       # dedup works

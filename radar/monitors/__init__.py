@@ -8,12 +8,14 @@ from radar.monitors.prose import ProseMonitor
 from radar.monitors.edgar import EdgarMonitor
 from radar.monitors.events import RssEventMonitor
 from radar.monitors.congress import CongressMonitor
+from radar.monitors.edgar_events import EdgarEventsMonitor
 
 
 def build_registry(cfg) -> list:
     ec = cfg.edgar
     fc = cfg.fed
     cc = cfg.congress
+    ev = cfg.edgar_events
     return [
         ProseMonitor(
             key="trump", label="⚠ Trump Alert", card_style="trump",
@@ -36,5 +38,8 @@ def build_registry(cfg) -> list:
             key="congress", label="🏛 Congress Buy", card_style="congress",
             feed_url=cc.feed_url, watch_path=cc.watch_path, min_usd=cc.min_usd,
             max_records=cc.max_records, max_age_h=cc.max_age_h,
+        ),
+        EdgarEventsMonitor(
+            phrases=list(ev.phrases), user_agent=ev.user_agent, max_age_h=ev.max_age_h,
         ),
     ]
