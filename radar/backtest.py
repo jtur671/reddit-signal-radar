@@ -258,9 +258,16 @@ def vol_quintiles(history, prices, days, horizon=10):
 
 
 def scorecard(plays, prices, days, benchmark="SPY"):
-    """Grade every logged Early Plays pick from its first tradeable open."""
+    """Grade every logged Early Plays pick from its first tradeable open. Crypto picks
+    (logged with a truthy "crypto" field) are excluded from grading -- yfinance can
+    silently price a same-symbol NYSE equity instead of the crypto asset -- and are
+    counted in `excluded_crypto` instead."""
     rows = []
+    excluded_crypto = 0
     for pk in plays:
+        if pk.get("crypto"):
+            excluded_crypto += 1
+            continue
         i0 = entry_index(days, pk.get("date", ""))
         row = {"date": pk.get("date"), "ticker": pk.get("ticker"),
                "conviction": pk.get("conviction", ""),
@@ -276,6 +283,7 @@ def scorecard(plays, prices, days, benchmark="SPY"):
             "win_rate_5d": (sum(1 for x in g5 if x > 0) / len(g5) if g5 else None),
             "win_rate_10d": (sum(1 for x in g10 if x > 0) / len(g10) if g10 else None),
             "picks": rows,
+            "excluded_crypto": excluded_crypto,
             "disclaimer": "Hypothetical, frictionless, benchmark-adjusted. Not investment advice."}
 
 

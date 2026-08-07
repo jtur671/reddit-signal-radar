@@ -35,3 +35,19 @@ def test_corrupt_file_does_not_lose_new_picks(tmp_path):
     picks = [{"ticker": "BBB", "thesis": "t", "risk": "", "conviction": ""}]
     assert append_picks(bad, "2026-08-08", picks, {}) == 1        # corrupt -> start fresh
     assert [r["ticker"] for r in load_picks(bad)] == ["BBB"]
+
+def test_append_stamps_crypto_field(tmp_path):
+    p = tmp_path / "plays_log.json"
+    picks = [{"ticker": "ETH", "thesis": "t", "risk": "r", "conviction": "high"},
+             {"ticker": "AAA", "thesis": "t", "risk": "r", "conviction": "high"}]
+    append_picks(p, "2026-08-08", picks, {}, crypto_tickers={"ETH"})
+    rows = {r["ticker"]: r for r in load_picks(p)}
+    assert rows["ETH"]["crypto"] is True
+    assert rows["AAA"]["crypto"] is False
+
+def test_append_without_crypto_tickers_defaults_false(tmp_path):
+    p = tmp_path / "plays_log.json"
+    picks = [{"ticker": "AAA", "thesis": "t", "risk": "r", "conviction": "high"}]
+    append_picks(p, "2026-08-08", picks, {})
+    row = load_picks(p)[0]
+    assert row["crypto"] is False

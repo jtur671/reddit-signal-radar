@@ -81,8 +81,9 @@ def main(argv=None) -> int:
     early_plays = _early_plays(board)                  # DeepSeek 'get in early' buy ideas (fail-closed)
     if early_plays and not args.dry_run:
         try:                                            # log the call — the track record
+            crypto_tickers = {t for t, a in by_ticker.items() if a.subreddit == "all-crypto"}
             append_picks("data/plays_log.json", run_day, early_plays,
-                         {s.ticker: s for s in board})
+                         {s.ticker: s for s in board}, crypto_tickers=crypto_tickers)
         except Exception as e:
             degrade.warn("plays-log append", e)
     scorecard = _daily_scorecard(run_day) if not args.dry_run else None

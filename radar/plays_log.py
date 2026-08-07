@@ -21,10 +21,13 @@ def load_picks(path) -> list[dict]:
         return []
 
 
-def append_picks(path, run_day: str, picks: list[dict], board_by_ticker: dict) -> int:
+def append_picks(path, run_day: str, picks: list[dict], board_by_ticker: dict,
+                 crypto_tickers: set | None = None) -> int:
     """Append today's picks (deduped on (date, ticker)); returns how many were new.
     `board_by_ticker` maps ticker -> Signal so each entry snapshots the board metrics
-    that justified the pick (mentions / vel_24h / state)."""
+    that justified the pick (mentions / vel_24h / state). `crypto_tickers` marks which
+    tickers came from the ApeWisdom all-crypto filter, so the scorecard can exclude
+    them from grading (yfinance can silently price a same-symbol equity instead)."""
     existing = load_picks(path)
     seen = {(r.get("date"), r.get("ticker")) for r in existing}
     added = 0
@@ -39,7 +42,8 @@ def append_picks(path, run_day: str, picks: list[dict], board_by_ticker: dict) -
             "conviction": str(pk.get("conviction") or ""),
             "mentions": getattr(s, "mentions", 0) if s else 0,
             "vel": getattr(s, "vel_24h", None) if s else None,
-            "state": getattr(s, "state", "") if s else ""})
+            "state": getattr(s, "state", "") if s else "",
+            "crypto": bool(t in (crypto_tickers or set()))})
         seen.add((run_day, t)); added += 1
     existing.sort(key=lambda r: (r.get("date", ""), r.get("ticker", "")))
     Path(path).write_text(json.dumps({"picks": existing}, indent=0))

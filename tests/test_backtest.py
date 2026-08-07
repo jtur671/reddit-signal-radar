@@ -100,6 +100,26 @@ def test_scorecard_grades_picks():
     assert sc["mean_excess_5d"] is not None
     assert sc["since"] == "2026-07-01"
 
+def test_scorecard_excludes_crypto_picks():
+    plays = [{"date": "2026-07-01", "ticker": "AAA", "conviction": "high"},
+             {"date": "2026-07-01", "ticker": "ETH", "conviction": "high", "crypto": True}]
+    up = {d: 100.0 * (1.02 ** i) for i, d in enumerate(DAYS)}     # winner
+    dn = {d: 100.0 * (0.98 ** i) for i, d in enumerate(DAYS)}     # would tank the mean/win-rate
+    p = _prices({"AAA": up, "ETH": dn, "SPY": _flat()})
+    sc = scorecard(plays, p, trading_days(p))
+    assert sc["n_picks"] == 1                                    # ETH not graded
+    assert sc["excluded_crypto"] == 1
+    assert all(r["ticker"] != "ETH" for r in sc["picks"])
+    assert sc["win_rate_5d"] == 1.0                               # only AAA counts
+    assert sc["mean_excess_5d"] > 0
+
+def test_scorecard_excluded_crypto_zero_when_none():
+    plays = [{"date": "2026-07-01", "ticker": "AAA", "conviction": "high"}]
+    up = {d: 100.0 * (1.02 ** i) for i, d in enumerate(DAYS)}
+    p = _prices({"AAA": up, "SPY": _flat()})
+    sc = scorecard(plays, p, trading_days(p))
+    assert sc["excluded_crypto"] == 0
+
 def test_power_and_regime_notes():
     hist = {"AAA": {d: {"weighted": 1, "raw": 5, "authors": 0, "pct_bull": 0,
                         "score": 1.0, "state": "new"} for d in DAYS}}
