@@ -61,3 +61,10 @@ congress:
   min_usd: 250000        # a non-watchlist purchase must be at least this large to alert
   max_records: 200       # only scan the newest N disclosures each tick
   max_age_h: 72
+# 8-K material-event tripwire (structured event monitor): full-text-searches EDGAR for
+# high-salience 8-K phrases filed in the last day, alerting only when the filer maps to a
+# ticker the radar is actively tracking (recent history.json activity).
+edgar_events:
+  phrases: ["material definitive agreement", "bankruptcy", "departure of directors or certain officers"]
+  max_age_h: 24
+  user_agent: "reddit-signal-radar admin@radar.local"
