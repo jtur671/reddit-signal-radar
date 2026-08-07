@@ -21,6 +21,17 @@ jobs:
       - uses: actions/setup-python@v6
         with: { python-version: "3.11" }
       - run: pip install -r requirements.txt
+      - name: Restore radar state (data branch)
+        # history/seen/alert state lives on the orphan `data` branch, not main —
+        # keeps bot commits out of main's history. Overlay it into the checkout.
+        run: |
+          if git fetch origin data; then
+            git checkout FETCH_HEAD -- data/
+          else
+            echo "no data branch yet — cold start"
+          fi
+      - name: Test gate — a broken repo never publishes
+        run: python -m pytest -q
       - name: Run pipeline
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
@@ -30,15 +41,22 @@ jobs:
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
           EMAIL_RECIPIENTS: ${{ secrets.EMAIL_RECIPIENTS }}
         run: python -m radar.run --out out
-      - name: Commit history
+      - name: Commit state to data branch
+        # State goes to the orphan `data` branch via a throwaway worktree; main's
+        # history stays human-only. Concurrency group `pages` serializes writers.
         run: |
           git config user.name "radar-bot"
           git config user.email "radar-bot@users.noreply.github.com"
-          git add data/history.json data/about.json
-          # commit only if there's a change; checkout is detached on cron/dispatch
-          # events, so push to an explicit branch ref rather than a bare `git push`.
-          git diff --cached --quiet || git commit -m "data: history $(date -u +%F)"
-          git push origin HEAD:main
+          if git fetch origin data; then
+            git worktree add /tmp/state FETCH_HEAD
+          else
+            git worktree add --detach /tmp/state "$(git commit-tree "$(git mktree </dev/null)" -m 'state: seed')"
+          fi
+          mkdir -p /tmp/state/data
+          cp -f data/history.json data/about.json /tmp/state/data/ 2>/dev/null || true
+          git -C /tmp/state add -A data
+          git -C /tmp/state diff --cached --quiet || git -C /tmp/state commit -m "state: daily $(date -u +%F)"
+          git -C /tmp/state push origin HEAD:refs/heads/data
       - uses: actions/upload-pages-artifact@v5
         with: { path: out }
       - uses: actions/deploy-pages@v5

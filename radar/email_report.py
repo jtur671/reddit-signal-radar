@@ -234,3 +234,33 @@ def send_monitor_alert(alert: dict) -> bool:
     tickers = ", ".join("$" + t for t in alert.get("tickers", []))
     subject = f"🚨 {alert.get('label', 'Alert')} — {tickers}"
     return _send(subject, build_monitor_alert_email(alert))
+
+
+def build_health_alert_email(date_str: str, health: dict) -> str:
+    """Self-health alarm: the radar telling its owner the published board is materially
+    degraded (see radar.health.assess). Lists the severe findings first, then every
+    degraded-enrichment event from the run."""
+    rows = "".join(
+        f'<tr><td style="padding:6px 14px;font-family:{SANS};font-size:15px;line-height:1.5;'
+        f'color:{INK};font-weight:700">{_esc(s)}</td></tr>'
+        for s in health.get("severe", []))
+    detail = "".join(
+        f'<tr><td style="padding:2px 14px;font-family:{MONO};font-size:12px;'
+        f'color:{DIM}">{_esc(p)}</td></tr>'
+        for p in health.get("problems", [])[:20])
+    body = (
+        f'<div style="font-family:{SANS};font-size:13px;font-weight:700;letter-spacing:1px;'
+        f'text-transform:uppercase;color:{DOWN};margin:10px 0 8px">Radar health: '
+        f'{_esc(health.get("status", ""))}</div>'
+        f'<table width="100%" cellpadding="0" cellspacing="0" '
+        f'style="margin:12px 0;border-left:3px solid {DOWN};background:{PANEL};border-radius:4px">'
+        f'{rows}{detail}</table>'
+        f'<div style="font-family:{SANS};font-size:13px;color:{DIM}">The board for {_esc(date_str)} '
+        f'was still published; treat it as suspect until this clears.</div>'
+    )
+    return _shell("Radar degraded — today's board is suspect", "⚠ RADAR HEALTH", body, accent=DOWN)
+
+
+def send_health_alert(date_str: str, health: dict) -> bool:
+    return _send(f"⚠ Signal Radar degraded — {date_str}",
+                 build_health_alert_email(date_str, health))

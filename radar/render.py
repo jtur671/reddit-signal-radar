@@ -14,3 +14,5 @@ def write_outputs(html: str, data: dict, out_dir="out"):
     out = Path(out_dir); out.mkdir(exist_ok=True)
     (out / "index.html").write_text(html)
     (out / "data.json").write_text(json.dumps(data))
+    if "health" in data:   # standalone copy so agents can poll health without the board
+        (out / "health.json").write_text(json.dumps(data["health"]))

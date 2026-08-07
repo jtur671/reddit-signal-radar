@@ -15,7 +15,7 @@ import requests
 
 from radar.degrade import warn
 
-REST ="https://en.wikipedia.org/api/rest_v1/page/summary/"
+REST = "https://en.wikipedia.org/api/rest_v1/page/summary/"
 
 
 def fetch_summary(name: str, ua: str = "reddit-signal-radar/0.1") -> dict | None:

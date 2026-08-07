@@ -4,15 +4,16 @@ from radar.degrade import warn
 def _yf_quote(symbol: str):
     """(price, pct_change) from yfinance's fast_info, or None when Yahoo has no quote.
 
-    fast_info's keys are camelCase (`lastPrice`, `previousClose`). The snake_case spellings
-    are not aliases — they return None on current yfinance and raise inside older versions —
-    so ask for the camelCase name first and keep the old one only as a fallback.
+    fast_info's keys are camelCase (`lastPrice`, `previousClose`); the snake_case
+    spellings are not aliases — FastInfo.get() just returns its default for them
+    (measured on both 0.2.51 and 1.5.2), so there is no fallback worth keeping.
+    A price of 0.0 is a real quote (halted/delisted names), not a miss.
     """
     try:
         import yfinance as yf
         fi = yf.Ticker(symbol).fast_info
-        price = fi.get("lastPrice") or fi.get("last_price")
-        prev = fi.get("previousClose") or fi.get("previous_close")
+        price = fi.get("lastPrice")
+        prev = fi.get("previousClose")
         if price is None:
             return None
         chg = ((price - prev) / prev * 100) if prev else None
@@ -28,6 +29,7 @@ def enrich_one(symbol: str):
 def enrich(signals):
     """Attach price + pct_change to every signal. Reports the miss rate: a board that
     silently renders every price as an em dash is the failure this line exists to expose."""
+    signals = list(signals)   # iterated twice (attach, then miss rate) and returned
     for s in signals:
         s.price, s.pct_change = enrich_one(s.ticker)
     missing = [s.ticker for s in signals if s.price is None]

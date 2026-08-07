@@ -4,3 +4,7 @@ __pycache__/
 out/
 .superpowers/
 .env
+data/history.json
+data/about.json
+data/*_seen.json
+data/*_alert.json

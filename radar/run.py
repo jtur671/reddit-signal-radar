@@ -1,8 +1,11 @@
 from __future__ import annotations
-import argparse, sys
+import argparse, os, sys
 from datetime import date
 from pathlib import Path
 from radar.dotenv import load_env
+from radar import degrade
+from radar.health import assess as assess_health
+from radar.email_report import send_health_alert
 from radar import clock
 from radar.config import load_config
 from radar.themes import Themes
@@ -33,6 +36,7 @@ def _enrich_ticker(s, by_ticker, about_cache, about_ua, themes):
 
 def main(argv=None) -> int:
     load_env()                                          # local .env (no-op in CI; env wins)
+    degrade.reset()                                     # health assesses this run only
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--no-email", action="store_true")
@@ -86,7 +90,11 @@ def main(argv=None) -> int:
                                         refreshed_iso, today_read, chips, detail_json,
                                         why_matters=why_matters, early_plays=early_plays,
                                         still=still, alerts=alerts))
-    write_outputs(html, {"board": [s.ticker for s in board]}, out_dir=args.out)
+    health = assess_health(board, degrade.events(),
+                           bool(os.environ.get("DEEPSEEK_API_KEY")))
+    health["date"] = run_day
+    write_outputs(html, {"board": [s.ticker for s in board], "health": health},
+                  out_dir=args.out)
 
     if not args.no_email and not args.dry_run:
         # Email is best-effort — never fail the publish — but DON'T swallow silently:
@@ -99,6 +107,15 @@ def main(argv=None) -> int:
                       file=sys.stderr)
         except Exception as e:                         # surface the provider error, keep publishing
             print(f"EMAIL: send failed — {e!r}", file=sys.stderr)
+    if health["status"] == "severe" and not args.no_email and not args.dry_run:
+        # The radar's own alarm: the published board is materially wrong (empty, mostly
+        # price-less, or summary-less with a key configured). Best-effort like the digest.
+        try:
+            if not send_health_alert(run_day, health):
+                print("HEALTH: severe degradation but alert not sent — RESEND creds missing",
+                      file=sys.stderr)
+        except Exception as e:
+            print(f"HEALTH: alert send failed — {e!r}", file=sys.stderr)
     return 0
 
 def _vel(s):

@@ -1,7 +1,7 @@
 ---
 project: Reddit Signal Radar
-status: v1.0 — built, not yet deployed
-updated: 2026-06-01
+status: live — daily board + email in prod, 4-monitor fleet (Trump/EDGAR/Fed/Congress) on a 30-min tick
+updated: 2026-08-07
 tags: [roadmap, reddit-signal-radar]
 ---
 
@@ -46,8 +46,10 @@ The bot is useless until it runs daily on real data. Blockers, in order:
 **Exit:** ✅ Non-empty board live and history persisting. _Email pending secrets (below)._
 
 ### Node deprecation (minor, non-blocking)
-- [ ] Bump `actions/checkout`, `actions/setup-python`, `actions/upload-pages-artifact`,
+- [x] Bump `actions/checkout`, `actions/setup-python`, `actions/upload-pages-artifact`,
   `actions/deploy-pages` when Node-24 versions ship (GitHub forces Node 24 on 2026-06-16).
+  _Done — workflows now on `checkout@v5` / `setup-python@v6` / `upload-pages-artifact@v5`
+  / `deploy-pages@v5`._
 
 ## Phase B — Trust the signal (weeks 1–2 after live)
 
@@ -86,6 +88,34 @@ The known residuals, in priority order:
 
 ## Decision log
 
+- **2026-08-07 (infra hardening)** — Tests now gate CI (`test.yml` on push/PR plus a
+  pytest gate before the daily publish). The run self-assesses via `radar/health.py`:
+  `out/health.json` + a `health` block in `data.json` (`ok`/`degraded`/`severe`) so
+  consumers can gate on board quality, and severe degradation emails an alert — a
+  degraded board can never ship silently again. Bot state commits moved off main to an
+  orphan `data` branch (workflows overlay it at checkout and push state back;
+  `scripts/seed_data_branch.sh` seeds/refreshes it). Dropped the long-confirmed
+  `EDGAR_DEBUG` flag. **Scope decision:** the board — including Early Plays — is
+  consumed by downstream trader agents, so `recommend_buys` is deliberately in scope
+  as machine-consumable input; the radar itself still never places orders.
+- **2026-08-07** — Diagnosed and fixed a silent week-long enrichment outage: a yfinance
+  API change blanked every price and a stale `DEEPSEEK_API_KEY` CI secret killed every
+  summary, and the fail-soft `except` blocks swallowed both without a word. Upgraded and
+  exact-pinned yfinance (1.5.2), refreshed the secret, and added `radar/degrade.warn` so
+  every degraded enrichment now leaves a `DEGRADED:` line in the CI log. Follow-up
+  review pass: made `warn` genuinely never-raise, kept `0.0` as a real price, made
+  `enrich` generator-safe, and routed all five DeepSeek call sites through one shared
+  `_deepseek_call` helper.
+- **2026-06-26** — Monitor fleet: generalized the one-off Trump tripwire into a
+  `radar/monitors/` framework (`ProseMonitor` for RSS-text → ticker → DeepSeek gate,
+  `EdgarMonitor` for structured filings) with a shared `run_fleet()` runner; re-homed
+  Trump onto it, added EDGAR insider-buy, Fed/FOMC, and Congress STOCK Act monitors,
+  and replaced `trump-monitor.yml` with `fleet-monitor.yml`. Spec:
+  [[2026-06-26-monitor-fleet-design]].
+- **2026-06-03** — Email redesign (branded Gmail-safe HTML, top-3 mover cards, ticker
+  chips on alerts) and the "Still Running" lane (recently-broken-out names that fell
+  off the top-15 stay visible while still elevated). Specs:
+  [[2026-06-03-email-redesign-design]], [[2026-06-03-still-running-lane-design]].
 - **2026-06-01** — Built v1.0 from the plan via subagent-driven TDD. Adjudicated a plan-defect test fixture, hardened the baseline against silent-day freeze, added a per-author weight cap, fixed a detached-HEAD CI push that would have broken every run. Kept scope as a *signal radar* (publish/notify), explicitly **not** a trader. Roadmap kept separate from the `money` vault per owner.
 
 ## Shipped 2026-06-02 (UI sprint + Trump monitor)

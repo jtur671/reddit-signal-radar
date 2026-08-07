@@ -19,7 +19,7 @@ import requests
 
 from radar.degrade import warn
 
-GNEWS ="https://news.google.com/rss/search?q={q}&hl=en-US&gl=US&ceid=US:en"
+GNEWS = "https://news.google.com/rss/search?q={q}&hl=en-US&gl=US&ceid=US:en"
 
 
 def build_query(ticker: str, name: str = "") -> str:
