@@ -1,6 +1,7 @@
 __pycache__/
 *.pyc
 .venv/
+uv.lock          # local byproduct of `uv run --with-requirements ...`; not a real lockfile
 out/
 .superpowers/
 .env

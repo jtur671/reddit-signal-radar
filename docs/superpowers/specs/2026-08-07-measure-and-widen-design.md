@@ -83,14 +83,27 @@ Each source is an independent module with the same contract: fetch → per-ticke
 into enrichment + `history.json` → fail-soft with a `DEGRADED:` log line → a named check
 in `health.json`. Ordered by (verified availability × lift):
 
-| # | Source / module | Adds per ticker-day | Notes |
-|---|---|---|---|
-| 2a | FINRA daily short-sale volume — `radar/shorts.py` | `short_ratio` (ShortVolume/TotalVolume) | CDN text file, keyless, verified |
-| 2b | CBOE delayed options — `radar/options.py` | `pc_ratio`, `uoa` spike flag | Top ~10 board names only (~1.6MB/symbol) |
-| 2c | EDGAR 8-K full-text tripwire — `radar/monitors/edgar_events.py` | fleet alert on material events, plus a per-ticker `events` count (8-K hits in last 24h) written into enrichment for the composite | Monitor #5 on the existing `run_fleet` framework; SEC UA rules already handled |
-| 2d | Finnhub headlines — extend `radar/news.py` | headline count + titles feeding existing summaries | **Needs owner: free `FINNHUB_API_KEY` secret** |
-| 2e | Inverse Cramer — `radar/cramer.py` | `cramer` sentiment enum + `cramer_date` | Fetch pinned `stock_sentiments.json` from the `analyzing-stock-calls` GitHub repo (keyless raw URL); vendor a dated snapshot to `data/` each run so the signal survives upstream disappearance; treat as advisory color |
-| 2f | Composite score — `radar/composite.py` | `composite` 0–100 + `components` map | Last — needs 2a–2e fields |
+| # | Source / module | Adds per ticker-day | Notes | Status |
+|---|---|---|---|---|
+| 2a | FINRA daily short-sale volume — `radar/shorts.py` | `short_ratio` (ShortVolume/TotalVolume) | CDN text file, keyless, verified | Done 2026-08-07 |
+| 2b | CBOE delayed options — `radar/options.py` | `pc_ratio`, `uoa` spike flag | Top ~10 board names only (~1.6MB/symbol) | Done 2026-08-07 |
+| 2c | EDGAR 8-K full-text tripwire — `radar/monitors/edgar_events.py` | fleet alert on material events, plus a per-ticker `events` count (8-K hits in last 24h) written into enrichment for the composite | Monitor #5 on the existing `run_fleet` framework; SEC UA rules already handled | Done 2026-08-07 — **deviation**: see below |
+| 2d | Finnhub headlines — extend `radar/news.py` | headline count + titles feeding existing summaries | **Needs owner: free `FINNHUB_API_KEY` secret** | Done 2026-08-07 — **deviation**: see below |
+| 2e | Inverse Cramer — `radar/cramer.py` | `cramer` sentiment enum + `cramer_date` | Fetch pinned `stock_sentiments.json` from the `analyzing-stock-calls` GitHub repo (keyless raw URL); vendor a dated snapshot to `data/` each run so the signal survives upstream disappearance; treat as advisory color | Done 2026-08-07 — ships `cramer` only; `cramer_date` dropped as redundant with the dated `history.json` entry it's written into |
+| 2f | Composite score — `radar/composite.py` | `composite` 0–100 + `components` map | Last — needs 2a–2e fields | Done 2026-08-07 |
+
+**Sanctioned deviations from this table** (surfaced in review, not silent drift):
+
+- **2c — `events` component.** Shipped as fresh-alert involvement across *all* fleet
+  monitors (any monitor's alert naming the ticker in the last 48h → 100, else 0) rather
+  than a dedicated 8-K-hits-in-24h count. Cheaper (reuses the alert-card plumbing already
+  built for the dashboard instead of a second EDGAR query path) and strictly more
+  informative (an insider buy or Trump mention is as relevant to "something just
+  happened" as an 8-K filing).
+- **2d — Finnhub.** Shipped primary-with-fallback (`radar/news.py`'s `headlines()` tries
+  Finnhub first when `FINNHUB_API_KEY` is set, falling back to Google News RSS only on
+  an empty/failed Finnhub response) rather than an additional feed alongside Google News.
+  Avoids doubling network time per ticker for headlines that serve the same purpose.
 
 **Composite contract** (per board row in `data.json`):
 

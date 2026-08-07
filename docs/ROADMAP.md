@@ -1,6 +1,6 @@
 ---
 project: Reddit Signal Radar
-status: live — daily board + email in prod, 4-monitor fleet (Trump/EDGAR/Fed/Congress) on a 30-min tick
+status: live — daily board + email in prod, 5-monitor fleet (Trump/EDGAR/Fed/Congress/EDGAR-8K) on a 30-min tick
 updated: 2026-08-07
 tags: [roadmap, reddit-signal-radar]
 ---
@@ -88,6 +88,27 @@ The known residuals, in priority order:
 
 ## Decision log
 
+- **2026-08-07 (widen phase 2)** — Widened the signal with five independent sources,
+  each fail-soft with its own `health.json` check: FINRA Reg SHO daily short-sale volume
+  (`radar/shorts.py` → `short_ratio` for every covered ticker), CBOE delayed options
+  chains (`radar/options.py` → `pc_ratio` + a coarse `uoa` flag, top-10 board movers
+  only), an EDGAR full-text 8-K tripwire (`radar/monitors/edgar_events.py`, fleet
+  monitor #5 `edgar8k`, alerting only when the filer maps to a recently-active history
+  ticker), inverse-Cramer sentiment (`radar/cramer.py`, vendoring a dated snapshot to
+  `data/cramer_snapshot.json` on the data branch so the signal survives the upstream
+  hobby repo disappearing), and Finnhub headlines (`radar/news.py`, primary when
+  `FINNHUB_API_KEY` is set, falling back to the existing Google News RSS search).
+  Landed a transparent composite score (`radar/composite.py`): `data.json` now carries a
+  `signals` array (composite 0–100 + a `components` breakdown, each 0–100 or `null`) and
+  the `weights` actually used, blended from `config.yaml`'s heuristic
+  `composite.weights` with null-component renormalization — recalibrated from measured
+  ICs once `backtest.json`'s `power.sufficient` turns true (a config change, not a code
+  change). Two sanctioned deviations from the original spec: the `events` component
+  generalizes "8-K hits in 24h" to fresh-alert involvement across *all* fleet monitors
+  (cheaper, reuses existing plumbing, strictly more information), and Finnhub is
+  primary-with-fallback rather than an additional feed (avoids doubling network time per
+  ticker). No open Phase C/D item is superseded — this is new backlog, not a rework of
+  a listed one. Spec: [[2026-08-07-measure-and-widen-design]].
 - **2026-08-07 (measure phase 1)** — Built the measurement layer: free, keyless
   **Tradestie** WSB sentiment (`ts_bull`/`ts_comments` on covered tickers, plus a
   partial-board fallback when ApeWisdom is empty), an append-only `data/plays_log.json`

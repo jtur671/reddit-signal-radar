@@ -26,9 +26,10 @@ tags themes, adds an upvotes-based **engagement** proxy and yfinance prices, ren
 A rolling 90-day `data/history.json` is the velocity baseline, committed back every run
 to the orphan **`data` branch** (bot state stays out of main's history). Each run also
 publishes `out/health.json` (and a `health` block in `data.json`) — a machine-readable
-self-assessment (`ok` / `degraded` / `severe`, plus a `sources` block reporting
-`apewisdom`/`tradestie` as `ok`/`down`/`fallback`) so downstream consumers can gate on
-board quality; severe degradation also triggers an alert email. The free, keyless
+self-assessment (`ok` / `degraded` / `severe`, plus a `sources` block covering
+`apewisdom`/`tradestie`/`finnhub`/`finra`/`cboe`/`cramer` as `ok`/`down`/`fallback`/
+`unused`) so downstream consumers can gate on board quality; severe degradation also
+triggers an alert email. The free, keyless
 [Tradestie](https://tradestie.com/api/v1/apps/reddit) WSB endpoint annotates covered
 tickers with directional `ts_bull`/`ts_comments` sentiment and doubles as a fallback
 board source when ApeWisdom comes back empty. Early Plays picks are appended to the
@@ -44,6 +45,25 @@ same-symbol NYSE equity instead of the crypto asset. A weekly job commits
 > upvotes-per-mention proxy, and DeepSeek summaries are generated from the numbers.
 > Tradestie fills that gap with real `ts_bull`/`ts_comments` for the tickers it covers
 > (WSB only); everything outside that coverage still relies on the engagement proxy.
+
+Five more sources widen the signal, each writing into that day's `history.json` entry
+and reporting its own `health.json` check, fail-soft on outage: FINRA Reg SHO daily
+short-sale volume (`short_ratio`, all covered tickers), CBOE delayed options chains
+(`pc_ratio` + a coarse `uoa` unusual-activity flag, top `cboe.top_n` board movers only —
+full chains run ~1.6MB/symbol), an EDGAR full-text 8-K tripwire (fleet monitor `edgar8k`,
+see **Monitor fleet** below), inverse-Cramer sentiment (`cramer`, vendored to
+`data/cramer_snapshot.json` on the data branch each run so the signal survives the
+upstream hobby repo disappearing), and Finnhub company headlines feeding the existing
+DeepSeek catalyst summaries when `FINNHUB_API_KEY` is set, falling back to the original
+Google News RSS search otherwise. `data.json` gains a `signals` array (per board row:
+ticker, `composite` 0–100, a `components` breakdown — velocity/direction/engagement/
+short_pressure/options/events/cramer_inverse, each 0–100 or `null` when a source doesn't
+cover that name — plus the raw `short_ratio`/`pc_ratio`/`uoa`/`cramer` values) and the
+`weights` actually used to blend them (`radar/composite.py`, renormalized over non-null
+components). Weights are heuristic (`config.yaml`'s `composite.weights`) until
+`backtest.json`'s `power.sufficient` flips true, then get recalibrated there — a config
+change, not a code change; the consuming bot should trust `components` over the single
+`composite` number. The composite also shows in the dashboard's per-ticker detail modal.
 
 ## Local run
 
@@ -65,9 +85,11 @@ The daily run is driven by `.github/workflows/daily.yml`.
 1. Create a GitHub repo and push this code.
 2. Enable **Settings → Pages → Source: GitHub Actions**.
 3. Add repo **Secrets**: `DEEPSEEK_API_KEY`, `RESEND_API_KEY`, `EMAIL_RECIPIENTS`
-   (and optionally `ALPACA_API_KEY` / `ALPACA_SECRET_KEY`). `RESEND_FROM` is also
-   optional — it defaults to Resend's `onboarding@resend.dev` test sender; set it to an
-   address on a domain you've verified in Resend before adding real recipients.
+   (and optionally `ALPACA_API_KEY` / `ALPACA_SECRET_KEY`, `FINNHUB_API_KEY`).
+   `RESEND_FROM` is also optional — it defaults to Resend's `onboarding@resend.dev` test
+   sender; set it to an address on a domain you've verified in Resend before adding real
+   recipients. `FINNHUB_API_KEY` is free-tier and optional too — without it,
+   `health.json`'s `finnhub` check reports `unused` and headlines fall back to Google News.
 4. Trigger it once via **Actions → daily-radar → Run workflow** to verify everything
    works before the first scheduled 6 AM run.
 5. The schedule is in **UTC**: `17 10 * * *` = 6:17 AM EDT (off the top of the hour on
@@ -81,16 +103,22 @@ The daily run is driven by `.github/workflows/daily.yml`.
   (`history_days`), the `still_running` lane (recently-broken-out names kept visible
   after they fall off the top-N), `reddit.discussion_subreddits` (scopes the modal's
   "see the discussion" link), the `tradestie` block (`url`, `max_retries`,
-  `sleep_seconds` for the WSB sentiment fetch), and the `edgar` / `fed` / `congress`
-  monitor blocks (dollar floors, feed URLs, max ages). (Half-life / lookback / `fetch`
-  apply only to the legacy raw-Reddit path.)
+  `sleep_seconds` for the WSB sentiment fetch), and the `edgar` / `fed` / `congress` /
+  `edgar_events` monitor blocks (dollar floors, feed URLs/phrases, max ages). Also the
+  widen-phase sources: `finra` (`max_lookback_days` for the Reg SHO file walk-back),
+  `cboe` (`top_n` chains to pull, `uoa_vol_oi` / `min_volume` for the UOA flag), `cramer`
+  (feed `url`, `max_age_days`, `snapshot_path`), and `composite` (`weights` per
+  component — heuristic until recalibrated from `backtest.json`). (Half-life / lookback /
+  `fetch` apply only to the legacy raw-Reddit path.)
 - `data/themes.yaml` — theme watchlists (seed tickers + keywords) used to tag the board.
 - `data/trump_watch.yaml` — company/asset name → ticker map for the Trump monitor.
 - `data/congress_watch.yaml` — curated notable members whose purchases always alert.
 - `data/*_seen.json` / `data/*_alert.json` — per-monitor dedup cursors and active alert
   state; don't edit by hand. Together with `history.json`/`about.json`/`plays_log.json`
-  (Early Plays track record) and `backtest.json` (weekly signal grading) these live on
-  the orphan **`data` branch** (CI overlays them at checkout and pushes them back there).
+  (Early Plays track record), `backtest.json` (weekly signal grading), and
+  `cramer_snapshot.json` (vendored inverse-Cramer feed, survives upstream disappearing)
+  these live on the orphan **`data` branch** (CI overlays them at checkout and pushes
+  them back there).
   For a local run with real state: `git fetch origin data && git checkout origin/data -- data/`
   — or start cold; `scripts/seed_data_branch.sh` (re)builds the branch from disk.
 - `data/stoplist.txt`, `data/subreddits.txt`, `data/universe.txt` — used by the legacy
@@ -102,7 +130,7 @@ add your own themes the same way by appending a labelled block with `seeds` and
 
 ## Monitor fleet
 
-A separate workflow (`.github/workflows/fleet-monitor.yml`, every 30 min) runs four
+A separate workflow (`.github/workflows/fleet-monitor.yml`, every 30 min) runs five
 tripwire monitors. When any of them fires, it emails immediately and rebuilds the
 dashboard with an alert card between the masthead and the board (auto-expires after
 48h). Detection is deduped via `data/*_seen.json`; the build/deploy only runs on a new
@@ -122,6 +150,10 @@ alert, so the 30-min cadence is cheap.
   purchase by a curated notable member (`data/congress_watch.yaml`) or any purchase
   above `min_usd` ($250k by default). Note disclosures can lag the trade by up to 45
   days.
+- **EDGAR 8-K events** — full-text-searches EDGAR (`efts.sec.gov`, date-bounded to the
+  last day) for high-salience 8-K phrases (`edgar_events.phrases`, e.g. "material
+  definitive agreement", "bankruptcy"); alerts only when the filer maps to a ticker with
+  recent `history.json` activity (multi-ticker EDGAR display names are matched too).
 
 ## Weekly backtest
 
