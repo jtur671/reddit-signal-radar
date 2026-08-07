@@ -22,6 +22,25 @@ def classify_state(velocity: float, surprise: float, baseline_mean: float) -> st
         return "hot"
     return "sustained"
 
+def assign_relative_states(signals, board):
+    """Relative lifecycle tiers: rank the displayed board by surprise and split into even
+    thirds so the labels discriminate instead of collapsing to all-'hot'. No-baseline names
+    stay 'new'. Thresholds come from the board (what the user sees); off-board names fall
+    below them -> 'cooling' as they fade. Pure mutation; no I/O."""
+    surps = sorted(s.surprise for s in board if s.baseline_mean > 1e-9)
+    if not surps:
+        return
+    t1, t2 = surps[len(surps) // 3], surps[(2 * len(surps)) // 3]
+    for s in signals:
+        if s.baseline_mean <= 1e-9:
+            s.state = "new"
+        elif s.surprise >= t2:
+            s.state = "hot"
+        elif s.surprise < t1:
+            s.state = "cooling"
+        else:
+            s.state = "sustained"
+
 def _finalize(ticker, weighted, mentions, distinct_authors, bonus_basis,
               subreddits, history, cfg, run_day, accel_pts=0.0) -> Signal:
     """Shared scoring core: given today's `weighted` magnitude for a ticker, measure
