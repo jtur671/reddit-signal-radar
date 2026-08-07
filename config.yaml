@@ -72,3 +72,9 @@ edgar_events:
 # symbol from the prior trading day, a bearish-pressure / dark-pool proxy.
 finra:
   max_lookback_days: 5   # Reg SHO files exist only for trading days
+# CBOE delayed options chains (free, keyless): put/call volume ratio + a coarse UOA
+# flag for the top board movers only — full chains are ~1.6MB/symbol.
+cboe:
+  top_n: 10          # board movers to pull chains for (1.6MB each — keep small)
+  uoa_vol_oi: 1.0    # flag when day volume > this multiple of open interest
+  min_volume: 1000   # ...and at least this many contracts traded

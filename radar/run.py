@@ -13,6 +13,7 @@ from radar.history import History
 from radar.apewisdom import fetch_mentions
 from radar import tradestie
 from radar.shorts import fetch_short_ratios
+from radar.options import option_stats
 from radar.score import score_aggregates, top_signals, assign_relative_states
 from radar.still_running import still_running
 from radar.sentiment import summarize, engagement_pct, daily_read, why_it_matters, recommend_buys
@@ -106,6 +107,21 @@ def main(argv=None) -> int:
         if r is not None:
             s.short_ratio = round(r, 4)
             history.annotate(run_day, s.ticker, short_ratio=s.short_ratio)
+    cboe_cfg = getattr(cfg, "cboe", None)
+    cboe_hits = 0
+    for s in board[:int(getattr(cboe_cfg, "top_n", 10))]:
+        stats = option_stats(s.ticker, cfg)
+        if stats is None:
+            degrade.warn("cboe options", s.ticker)
+            continue
+        cboe_hits += 1
+        if stats["pc_ratio"] is not None:
+            s.pc_ratio = round(stats["pc_ratio"], 3)
+        s.uoa = bool(stats["total_oi"] > 0
+                     and stats["total_vol"] >= float(getattr(cboe_cfg, "min_volume", 1000))
+                     and stats["total_vol"] / stats["total_oi"]
+                         > float(getattr(cboe_cfg, "uoa_vol_oi", 1.0)))
+        history.annotate(run_day, s.ticker, pc_ratio=s.pc_ratio, uoa=s.uoa)
     history.prune(keep_through=run_day, days=cfg.history_days)
     if not args.dry_run:
         history.save()
@@ -130,7 +146,8 @@ def main(argv=None) -> int:
                                              else ("ok" if ts_rows else "down")),
                                "finnhub": ("ok" if os.environ.get("FINNHUB_API_KEY")
                                            else "unused"),
-                               "finra": "ok" if short_ratios else "down"})
+                               "finra": "ok" if short_ratios else "down",
+                               "cboe": "ok" if cboe_hits else ("down" if board else "unused")})
     health["date"] = run_day
     payload = {"board": [s.ticker for s in board], "health": health}
     if scorecard:
