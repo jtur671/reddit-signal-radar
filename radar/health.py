@@ -16,7 +16,8 @@ from __future__ import annotations
 SEVERE_PRICE_MISS = 0.5
 
 
-def assess(board, events: list[dict], deepseek_key_present: bool) -> dict:
+def assess(board, events: list[dict], deepseek_key_present: bool,
+           sources: dict | None = None) -> dict:
     """Health block for a finished run. `board` is the rendered top-N signal list
     (objects with .price and .summary); `events` is radar.degrade.events()."""
     severe: list[str] = []
@@ -40,4 +41,4 @@ def assess(board, events: list[dict], deepseek_key_present: bool) -> dict:
 
     status = "severe" if severe else ("degraded" if problems else "ok")
     return {"status": status, "severe": severe, "problems": problems,
-            "board_size": len(board)}
+            "board_size": len(board), "sources": dict(sources or {})}

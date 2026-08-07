@@ -112,7 +112,12 @@ def main(argv=None) -> int:
                                         why_matters=why_matters, early_plays=early_plays,
                                         still=still, alerts=alerts))
     health = assess_health(board, degrade.events(),
-                           bool(os.environ.get("DEEPSEEK_API_KEY")))
+                           bool(os.environ.get("DEEPSEEK_API_KEY")),
+                           sources={
+                               "apewisdom": ("ok" if board_source == "apewisdom" and board
+                                             else "down"),
+                               "tradestie": ("fallback" if board_source == "tradestie-fallback"
+                                             else ("ok" if ts_rows else "down"))})
     health["date"] = run_day
     write_outputs(html, {"board": [s.ticker for s in board], "health": health},
                   out_dir=args.out)

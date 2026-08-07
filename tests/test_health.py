@@ -93,3 +93,14 @@ def test_health_alert_requires_creds(monkeypatch):
     monkeypatch.delenv("EMAIL_RECIPIENTS", raising=False)
     assert send_health_alert("2026-08-07", {"status": "severe",
                                             "severe": ["x"], "problems": []}) is False
+
+
+def test_sources_block_passthrough():
+    from radar.health import assess
+    h = assess([], [], False, sources={"apewisdom": "down", "tradestie": "ok"})
+    assert h["sources"] == {"apewisdom": "down", "tradestie": "ok"}
+
+
+def test_sources_block_defaults_empty():
+    from radar.health import assess
+    assert assess([], [], False)["sources"] == {}
