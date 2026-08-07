@@ -13,6 +13,7 @@ from radar.history import History
 from radar.apewisdom import fetch_mentions
 from radar import tradestie
 from radar.shorts import fetch_short_ratios
+from radar.cramer import fetch_cramer
 from radar.score import score_aggregates, top_signals, assign_relative_states
 from radar.still_running import still_running
 from radar.sentiment import summarize, engagement_pct, daily_read, why_it_matters, recommend_buys
@@ -106,6 +107,12 @@ def main(argv=None) -> int:
         if r is not None:
             s.short_ratio = round(r, 4)
             history.annotate(run_day, s.ticker, short_ratio=s.short_ratio)
+    cramer_by = fetch_cramer(cfg, run_day) if not args.dry_run else {}
+    for s in signals:
+        c = cramer_by.get(s.ticker)
+        if c:
+            s.cramer = c
+            history.annotate(run_day, s.ticker, cramer=c)
     history.prune(keep_through=run_day, days=cfg.history_days)
     if not args.dry_run:
         history.save()
@@ -130,7 +137,8 @@ def main(argv=None) -> int:
                                              else ("ok" if ts_rows else "down")),
                                "finnhub": ("ok" if os.environ.get("FINNHUB_API_KEY")
                                            else "unused"),
-                               "finra": "ok" if short_ratios else "down"})
+                               "finra": "ok" if short_ratios else "down",
+                               "cramer": "ok" if cramer_by else "down"})
     health["date"] = run_day
     payload = {"board": [s.ticker for s in board], "health": health}
     if scorecard:

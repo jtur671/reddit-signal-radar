@@ -72,3 +72,9 @@ edgar_events:
 # symbol from the prior trading day, a bearish-pressure / dark-pool proxy.
 finra:
   max_lookback_days: 5   # Reg SHO files exist only for trading days
+# Inverse-Cramer feed: vendored Mad Money sentiment calls (community-transcribed,
+# keyless). A contrarian data point — the composite decides what "inverse" means.
+cramer:
+  url: "https://raw.githubusercontent.com/jf-silverman/analyzing-stock-calls/main/data/stock_sentiments.json"
+  max_age_days: 30
+  snapshot_path: "data/cramer_snapshot.json"
