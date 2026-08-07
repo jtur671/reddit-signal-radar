@@ -9,7 +9,7 @@ read is real (>=150 days). Runs weekly (backtest.yml); must never touch the dail
 """
 from __future__ import annotations
 
-import argparse, json, math, statistics
+import argparse, json, math, statistics, sys
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -168,7 +168,20 @@ def rank_ic(history, prices, days, horizon):
 
 
 def event_study(history, prices, days, pre=5, post=20):
-    """Mean cumulative excess (close-to-close log) return around transitions INTO 'hot'."""
+    """Mean cumulative excess (close-to-close log) return around transitions INTO 'hot'.
+
+    Only COMPLETE events enter the averages -- every bar from -pre..post must be priced
+    and in range. A partial event (unpriced ticker, or too close to the end of the price
+    series to fill the window) would otherwise dilute the curve with a frozen/zero-padded
+    contribution counted as if it were a full observation. n_events is every transition
+    found; n_used is how many were actually complete enough to average -- that, not
+    n_events, is the real denominator.
+
+    The curve is rebased so offset -1 is 0.0: car["0"] onward is pure post-event drift,
+    not contaminated by the pre-event run-up baked into cumulating from -pre. The
+    offset-0 bar itself spans the signal day's close to the entry day's close -- an
+    event-study measurement window, not a tradeable return (actual entry only happens at
+    the next open, per the look-ahead gate used everywhere else in this module)."""
     events = []
     for t, tdays in history.items():
         ordered = sorted(tdays)
@@ -180,23 +193,37 @@ def event_study(history, prices, days, pre=5, post=20):
         rec = (prices.get(sym) or {}).get(day)
         return rec.get("close") if rec else None
 
-    sums, counts = {}, {}
+    offsets = list(range(-pre, post + 1))
+    sums = {off: 0.0 for off in offsets}
+    n_used = 0
     for t, day0 in events:
         i0 = entry_index(days, day0)
         if i0 is None:
             continue
-        car = 0.0
-        for off in range(-pre, post + 1):
+        bars = {}
+        for off in offsets:
             i = i0 + off
-            if 1 <= i < len(days):
-                a, b = _close(t, days[i - 1]), _close(t, days[i])
-                ba, bb = _close("SPY", days[i - 1]), _close("SPY", days[i])
-                if a and b and ba and bb:
-                    car += math.log(b / a) - math.log(bb / ba)
-            sums[off] = sums.get(off, 0.0) + car
-            counts[off] = counts.get(off, 0) + 1
-    car_mean = {str(off): (sums[off] / counts[off]) for off in sorted(sums)}
-    return {"n_events": len(events), "car": car_mean}
+            if not (1 <= i < len(days)):
+                bars = None
+                break
+            a, b = _close(t, days[i - 1]), _close(t, days[i])
+            ba, bb = _close("SPY", days[i - 1]), _close("SPY", days[i])
+            if not (a and b and ba and bb):
+                bars = None
+                break
+            bars[off] = math.log(b / a) - math.log(bb / ba)
+        if bars is None:
+            continue                                       # incomplete -- excluded from the averages
+        cum, cumulative = 0.0, {}
+        for off in offsets:
+            cum += bars[off]
+            cumulative[off] = cum
+        base = cumulative.get(-1, 0.0)                      # rebase so offset -1 == 0.0
+        n_used += 1
+        for off in offsets:
+            sums[off] += cumulative[off] - base
+    car_mean = {str(off): (sums[off] / n_used if n_used else None) for off in offsets}
+    return {"n_events": len(events), "n_used": n_used, "car": car_mean}
 
 
 def vol_quintiles(history, prices, days, horizon=10):
@@ -258,26 +285,45 @@ def power(history: dict) -> dict:
 
 def fetch_prices(tickers, start: str, end: str) -> dict:
     """Daily open/close via yfinance batch download. Per-ticker fail-soft: a symbol
-    Yahoo can't price is simply absent (every consumer treats missing as None)."""
+    Yahoo can't price is simply absent (every consumer treats missing as None).
+
+    A single bad row does not take its whole ticker down with it: row extraction is
+    guarded per-row, and a ticker's rows are only committed to the result once the
+    whole per-ticker block succeeds -- an exception partway through (frame access or
+    mid-iteration) drops that ticker entirely rather than leaving a silently truncated
+    partial history, which would be worse than absence. One summary breadcrumb reports
+    how many requested tickers came back unpriced (a small sample, not the whole list)
+    instead of staying silent about every failure."""
     from radar import degrade
+    requested = sorted(set(tickers))
     out: dict = {}
     try:
         import yfinance as yf
-        data = yf.download(sorted(set(tickers)), start=start, end=end,
+        data = yf.download(requested, start=start, end=end,
                            interval="1d", auto_adjust=True, progress=False,
                            group_by="ticker", threads=True)
     except Exception as e:
         degrade.warn("backtest price download", e)
         return out
-    for t in set(tickers):
+    for t in requested:
+        ticker_prices: dict = {}
         try:
-            df = data[t] if len(set(tickers)) > 1 else data
+            df = data[t] if len(requested) > 1 else data
             for idx, row in df.iterrows():
-                o, c = float(row["Open"]), float(row["Close"])
-                if o > 0 and c > 0 and o == o and c == c:          # NaN-safe
-                    out.setdefault(t, {})[idx.strftime("%Y-%m-%d")] = {"open": o, "close": c}
+                try:
+                    o, c = float(row["Open"]), float(row["Close"])
+                    if o > 0 and c > 0 and o == o and c == c:      # NaN-safe
+                        ticker_prices[idx.strftime("%Y-%m-%d")] = {"open": o, "close": c}
+                except Exception:
+                    continue                                       # one bad row -> skip just that row
         except Exception:
-            continue                                               # symbol missing -> skip
+            continue                                               # frame access/iteration failed -> drop ticker entirely
+        if ticker_prices:
+            out[t] = ticker_prices
+    missing = [t for t in requested if t not in out]
+    if missing:
+        degrade.warn("backtest prices",
+                     f"{len(missing)}/{len(requested)} tickers unpriced: {missing[:5]}")
     return out
 
 
@@ -298,26 +344,38 @@ def run_backtest(history_path="data/history.json", plays_path="data/plays_log.js
     all_days = sorted({d for t in history.values() for d in t})
     if not all_days:
         result = {"error": "no history", "power": power(history)}
-    else:
-        start = (date.fromisoformat(all_days[0]) - timedelta(days=10)).isoformat()
-        end = (date.fromisoformat(all_days[-1]) + timedelta(days=25)).isoformat()
-        tickers = (_board_universe(history)
-                   | {p.get("ticker") for p in plays if p.get("ticker")}
-                   | {"SPY", "IWM"})
-        prices = fetch_prices(tickers, start, end)
-        days = trading_days(prices)
-        result = {
-            "as_of": all_days[-1],
-            "power": power(history),
-            "regime_notes": REGIME_NOTES,
-            "quintiles": {str(h): quintile_table(history, prices, days, h) for h in HORIZONS},
-            "quintiles_iwm": {str(h): quintile_table(history, prices, days, h, benchmark="IWM")
-                              for h in HORIZONS},
-            "rank_ic": {str(h): rank_ic(history, prices, days, h) for h in HORIZONS},
-            "event_study": event_study(history, prices, days),
-            "vol_test": vol_quintiles(history, prices, days),
-            "scorecard": scorecard(plays, prices, days),
-        }
+        out = Path(out_path)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(result, indent=1))
+        return result
+
+    start = (date.fromisoformat(all_days[0]) - timedelta(days=10)).isoformat()
+    end = (date.fromisoformat(all_days[-1]) + timedelta(days=25)).isoformat()
+    tickers = (_board_universe(history)
+               | {p.get("ticker") for p in plays if p.get("ticker")}
+               | {"SPY", "IWM"})
+    prices = fetch_prices(tickers, start, end)
+    days = trading_days(prices)
+    if not days:
+        # yfinance down / empty batch -- do NOT overwrite the last good artifact with an
+        # all-null one that the weekly workflow would commit and that reads exactly like
+        # "the signal has no power" (Finding 5). Fail loud instead of silently wrong.
+        return {"error": "price fetch failed", "power": power(history)}
+
+    result = {
+        "as_of": all_days[-1],
+        "power": power(history),
+        "regime_notes": REGIME_NOTES,
+        "quintiles": {str(h): quintile_table(history, prices, days, h) for h in HORIZONS},
+        "quintiles_iwm": {str(h): quintile_table(history, prices, days, h, benchmark="IWM")
+                          for h in HORIZONS},
+        "rank_ic": {str(h): rank_ic(history, prices, days, h) for h in HORIZONS},
+        "event_study": event_study(history, prices, days),
+        "vol_test": vol_quintiles(history, prices, days),
+        "scorecard": scorecard(plays, prices, days),
+        "price_coverage": {"requested": len(tickers), "priced": len(prices),
+                           "missing": sorted(tickers - set(prices))[:10]},
+    }
     out = Path(out_path)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(result, indent=1))
@@ -331,6 +389,9 @@ def main(argv=None) -> int:
     ap.add_argument("--out", default="out")
     args = ap.parse_args(argv)
     result = run_backtest(args.history, args.plays, str(Path(args.out) / "backtest.json"))
+    if "error" in result:
+        print(f"backtest: {result['error']}", file=sys.stderr)
+        return 1
     pw = result.get("power", {})
     print(f"backtest: {pw.get('days', 0)} days of history "
           f"(sufficient={pw.get('sufficient')}); wrote backtest.json")
@@ -338,5 +399,4 @@ def main(argv=None) -> int:
 
 
 if __name__ == "__main__":
-    import sys
     sys.exit(main())

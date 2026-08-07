@@ -1,7 +1,11 @@
 import json
+import math
+from datetime import date, timedelta
+
 from radar.backtest import (trading_days, entry_index, window_return, excess_return,
                             spearman, quintile_table, rank_ic, event_study,
-                            vol_quintiles, scorecard, power, REGIME_NOTES)
+                            vol_quintiles, scorecard, power, REGIME_NOTES,
+                            fetch_prices, run_backtest)
 
 def _prices(series):     # {sym: {day: open}} -> full price dicts (close = open)
     return {s: {d: {"open": v, "close": v} for d, v in days.items()} for s, days in series.items()}
@@ -102,3 +106,92 @@ def test_power_and_regime_notes():
     pw = power(hist)
     assert pw["days"] == len(DAYS) and pw["sufficient"] is False and pw["target_days"] == 150
     assert any("2026-08-07" in n["date"] for n in REGIME_NOTES)
+
+
+# ---------- fix round 1: event_study completeness/rebase, fetch_prices, run_backtest ----------
+
+def _bdays(n, start="2026-01-05"):     # n business days (weekdays only) starting Monday
+    d = date.fromisoformat(start)
+    out = []
+    while len(out) < n:
+        if d.weekday() < 5:
+            out.append(d.isoformat())
+        d += timedelta(days=1)
+    return out
+
+def _hot_transition(prev_day, hot_day):
+    return {prev_day: {"weighted": 1, "raw": 5, "authors": 0, "pct_bull": 0,
+                       "score": 1.0, "state": "sustained"},
+            hot_day: {"weighted": 9, "raw": 40, "authors": 0, "pct_bull": 0,
+                     "score": 90.0, "state": "hot"}}
+
+def test_event_study_rebase_and_completeness():
+    # AAA grows at a clean +1% log return/day; SPY flat -> every bar's excess is 0.01.
+    # 40 trading days gives a fully complete default (-5..+20) window around i0=10.
+    days_list = _bdays(40)
+    signal_day = days_list[9]
+    hist = {"AAA": _hot_transition(days_list[8], signal_day)}
+    aaa = {d: 100.0 * math.exp(0.01 * i) for i, d in enumerate(days_list)}
+    p = _prices({"AAA": aaa, "SPY": {d: 100.0 for d in days_list}})
+    days = trading_days(p)
+    es = event_study(hist, p, days)
+    assert es["n_used"] == 1
+    assert abs(es["car"]["-1"]) < 1e-9                      # rebased: -1 is the zero point
+    # off=20 rebased == sum of bars off=0..20 (21 bars), NOT the raw 26-bar (-5..20) sum
+    assert abs(es["car"]["20"] - 21 * 0.01) < 1e-6
+
+def test_event_study_excludes_unpriced_ticker_from_averages():
+    days_list = _bdays(40)
+    signal_day = days_list[9]
+    hist = {"AAA": _hot_transition(days_list[8], signal_day),
+            "ZZZ": _hot_transition(days_list[8], signal_day)}   # ZZZ never gets priced below
+    aaa = {d: 100.0 * math.exp(0.01 * i) for i, d in enumerate(days_list)}
+    p = _prices({"AAA": aaa, "SPY": {d: 100.0 for d in days_list}})   # no ZZZ prices
+    days = trading_days(p)
+    es = event_study(hist, p, days)
+    assert es["n_events"] == 2      # both transitions counted
+    assert es["n_used"] == 1        # only the priced, complete one enters the averages
+
+def test_event_study_excludes_incomplete_tail_event():
+    # Signal too close to the end of the price series for the +20 post window to fit.
+    days_list = _bdays(40)
+    signal_day = days_list[35]
+    hist = {"AAA": _hot_transition(days_list[34], signal_day)}
+    aaa = {d: 100.0 * math.exp(0.01 * i) for i, d in enumerate(days_list)}
+    p = _prices({"AAA": aaa, "SPY": {d: 100.0 for d in days_list}})
+    days = trading_days(p)
+    es = event_study(hist, p, days)
+    assert es["n_events"] == 1
+    assert es["n_used"] == 0        # incomplete window -> excluded, not zero-padded
+
+def test_fetch_prices_skips_bad_row_keeps_good_rows(monkeypatch):
+    import pandas as pd
+
+    idx = pd.to_datetime(["2026-07-01", "2026-07-02", "2026-07-03"])
+    df = pd.DataFrame({"Open": [99.0, "not-a-number", 101.0],
+                       "Close": [100.0, 101.0, 102.0]}, index=idx)
+
+    def fake_download(tickers, **kwargs):
+        return df
+
+    monkeypatch.setattr("yfinance.download", fake_download)
+    out = fetch_prices(["AAA"], "2026-07-01", "2026-07-05")
+    assert "2026-07-01" in out.get("AAA", {})
+    assert "2026-07-03" in out["AAA"]
+    assert "2026-07-02" not in out["AAA"]     # bad row skipped, not the whole ticker
+
+def test_run_backtest_does_not_write_on_price_fetch_failure(tmp_path, monkeypatch):
+    import radar.backtest as bt
+
+    hist_path = tmp_path / "history.json"
+    hist_path.write_text(json.dumps({"AAA": {"2026-07-01": {"weighted": 1, "raw": 5,
+                                                             "authors": 0, "pct_bull": 0,
+                                                             "score": 1.0, "state": "new"}}}))
+    plays_path = tmp_path / "plays.json"
+    plays_path.write_text(json.dumps({"picks": []}))
+    out_path = tmp_path / "out" / "backtest.json"
+
+    monkeypatch.setattr(bt, "fetch_prices", lambda tickers, start, end: {})
+    result = bt.run_backtest(str(hist_path), str(plays_path), str(out_path))
+    assert result["error"] == "price fetch failed"
+    assert not out_path.exists()
