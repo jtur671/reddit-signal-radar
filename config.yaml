@@ -84,3 +84,16 @@ cramer:
   url: "https://raw.githubusercontent.com/jf-silverman/analyzing-stock-calls/main/data/stock_sentiments.json"
   max_age_days: 30
   snapshot_path: "data/cramer_snapshot.json"
+# Transparent composite score: blends every phase-2 signal into one 0-100 number,
+# published alongside its components so the consuming bot can trust the parts over
+# the whole. Heuristic weights until backtest.json's power block turns sufficient;
+# then recalibrate here (a config change, not a code change).
+composite:
+  weights:
+    velocity: 0.30
+    direction: 0.15
+    engagement: 0.10
+    short_pressure: 0.15
+    options: 0.10
+    events: 0.10
+    cramer_inverse: 0.10

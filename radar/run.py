@@ -15,6 +15,7 @@ from radar import tradestie
 from radar.shorts import fetch_short_ratios
 from radar.options import option_stats
 from radar.cramer import fetch_cramer
+from radar.composite import components_for, blend, DEFAULT_WEIGHTS
 from radar.score import score_aggregates, top_signals, assign_relative_states
 from radar.still_running import still_running
 from radar.sentiment import summarize, engagement_pct, daily_read, why_it_matters, recommend_buys
@@ -138,8 +139,16 @@ def main(argv=None) -> int:
     refreshed_iso = clock.now_iso_utc()
     chips = _chip_list(board, themes)
     reddit_subs = list(getattr(getattr(cfg, "reddit", None), "discussion_subreddits", []) or [])
-    detail_json = _detail_blob(board + still, history, run_day, reddit_subs)
     alerts = _load_alerts("data")                      # every monitor's fresh alert card
+    alert_tickers = {t.strip("$") for a in alerts for t in a["tickers"].split(" · ") if t}
+    comp_cfg = getattr(cfg, "composite", None)
+    weights = ({k: float(v) for k, v in vars(comp_cfg.weights).items()}
+               if getattr(comp_cfg, "weights", None) else dict(DEFAULT_WEIGHTS))
+    ts_by_bull = {r.ticker: tradestie.bull_pct(r.score) for r in ts_rows}
+    for s in board:
+        s.components = components_for(s, board, ts_by_bull.get(s.ticker), alert_tickers)
+        s.composite, _used = blend(s.components, weights)
+    detail_json = _detail_blob(board + still, history, run_day, reddit_subs)
     html = render_html(**_build_context(board, signals, run_day, corpus, refreshed,
                                         refreshed_iso, today_read, chips, detail_json,
                                         why_matters=why_matters, early_plays=early_plays,
@@ -157,7 +166,15 @@ def main(argv=None) -> int:
                                "cboe": "ok" if cboe_hits else ("down" if board else "unused"),
                                "cramer": "ok" if cramer_by else "down"})
     health["date"] = run_day
-    payload = {"board": [s.ticker for s in board], "health": health}
+    payload = {"board": [s.ticker for s in board], "health": health,
+               "signals": [dict(ticker=s.ticker, composite=s.composite,
+                                components=s.components,
+                                short_ratio=s.short_ratio, pc_ratio=s.pc_ratio,
+                                uoa=s.uoa, cramer=s.cramer,
+                                mentions=s.mentions, score=round(s.score, 2),
+                                state=s.state, price=s.price)
+                           for s in board],
+               "weights": weights}
     if scorecard:
         payload["scorecard"] = scorecard
     write_outputs(html, payload, out_dir=args.out)
@@ -428,6 +445,7 @@ def _detail_blob(board, history, run_day, reddit_subs=None):
             ticker=s.ticker, name=s.name, about=(s.about_extract or s.about_desc),
             mentions=s.mentions, vel24=_vel24(s)[0], surprise=s.surprise,
             state=s.state, pct_bull=int(s.pct_bull), price=s.price, pct_change=s.pct_change,
+            composite=s.composite,
             upvotes=s.upvotes, themes=(s.themes or []), summary=s.summary, why=_why(s),
             headlines=(s.headlines or [])[:3],   # the actual news driving the chatter
             reddit=_reddit_search_url(s.ticker, reddit_subs),  # link to live Reddit discussions

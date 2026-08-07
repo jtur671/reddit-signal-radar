@@ -434,6 +434,7 @@ tr[data-ticker]{cursor:pointer}
     mx.appendChild(metric('upvotes', d.upvotes));
     mx.appendChild(metric('engagement', d.pct_bull+'%'));
     mx.appendChild(metric('price', d.price==null?'—':('$'+d.price+(d.pct_change==null?'':' '+(d.pct_change>=0?'+':'')+d.pct_change+'%'))));
+    if(d.composite!=null) mx.appendChild(metric('composite', d.composite+'/100'));
     spark(d.series);
     document.getElementById('m-why').textContent=d.summary||d.why||'';  // catalyst first, metrics only as fallback
     var nl=document.getElementById('m-newslabel'), nu=document.getElementById('m-news'), hs=d.headlines||[];
