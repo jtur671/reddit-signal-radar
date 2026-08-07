@@ -22,6 +22,16 @@ class History:
             "weighted": weighted, "raw": raw, "authors": authors,
             "pct_bull": pct_bull, "score": score, "state": state}
 
+    def annotate(self, day: str, ticker: str, **fields) -> bool:
+        """Merge extra keys (e.g. ts_bull) into an EXISTING day-record. Never creates
+        a record: baseline() requires 'weighted' in every day-record, so a ticker not
+        scored today simply drops its annotation. Returns whether it merged."""
+        rec = self.data.get(ticker, {}).get(day)
+        if rec is None:
+            return False
+        rec.update(fields)
+        return True
+
     def baseline(self, ticker, before: str, days: int, alpha: float) -> tuple[float, float]:
         """EMA mean + population std of weighted counts in the trailing `days`-day
         window STRICTLY before `before`.

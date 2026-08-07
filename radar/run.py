@@ -11,6 +11,7 @@ from radar.config import load_config
 from radar.themes import Themes
 from radar.history import History
 from radar.apewisdom import fetch_mentions
+from radar import tradestie
 from radar.score import score_aggregates, top_signals, assign_relative_states
 from radar.still_running import still_running
 from radar.sentiment import summarize, engagement_pct, daily_read, why_it_matters, recommend_buys
@@ -49,6 +50,12 @@ def main(argv=None) -> int:
     history = History.load("data/history.json")
 
     aggregates = fetch_mentions(cfg)                    # ApeWisdom; never raises
+    ts_rows = tradestie.fetch_wsb(cfg)                  # directional sentiment (fail-soft)
+    board_source = "apewisdom"
+    if not aggregates and ts_rows:                      # ApeWisdom down -> partial WSB board
+        degrade.warn("apewisdom empty", "falling back to tradestie top-50 board")
+        aggregates = tradestie.to_aggregates(ts_rows)
+        board_source = "tradestie-fallback"
     signals = score_aggregates(aggregates, history, cfg, run_day)
     board = top_signals(signals, cfg.top_n)
     still = still_running(signals, history, run_day, board, cfg)
@@ -76,6 +83,12 @@ def main(argv=None) -> int:
     for s in signals:
         history.record(run_day, s.ticker, s.weighted_today, s.mentions, s.distinct_authors,
                        s.pct_bull, s.score, s.state)
+    ts_by = {r.ticker: r for r in ts_rows}
+    for s in signals:
+        r = ts_by.get(s.ticker)
+        if r:
+            history.annotate(run_day, s.ticker,
+                             ts_bull=tradestie.bull_pct(r.score), ts_comments=r.comments)
     history.prune(keep_through=run_day, days=cfg.history_days)
     if not args.dry_run:
         history.save()
