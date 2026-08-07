@@ -250,7 +250,11 @@ def vol_quintiles(history, prices, days, horizon=10):
                 v = _fwd_vol(t, i0)
                 if v is not None:
                     per_q[q].append(v)
-    return {f"q{q}": (statistics.fmean(v) if (v := per_q[q]) else None) for q in range(1, 6)}
+    out = {}
+    for q in range(1, 6):
+        v = per_q[q]
+        out[f"q{q}"] = {"mean": (statistics.fmean(v) if v else None), "n": len(v)}
+    return out
 
 
 def scorecard(plays, prices, days, benchmark="SPY"):
@@ -283,7 +287,7 @@ def power(history: dict) -> dict:
 
 # ---------- orchestration (network + I/O) ----------
 
-def fetch_prices(tickers, start: str, end: str) -> dict:
+def fetch_prices(tickers, start: str, end: str, warn_missing: bool = True) -> dict:
     """Daily open/close via yfinance batch download. Per-ticker fail-soft: a symbol
     Yahoo can't price is simply absent (every consumer treats missing as None).
 
@@ -293,7 +297,10 @@ def fetch_prices(tickers, start: str, end: str) -> dict:
     mid-iteration) drops that ticker entirely rather than leaving a silently truncated
     partial history, which would be worse than absence. One summary breadcrumb reports
     how many requested tickers came back unpriced (a small sample, not the whole list)
-    instead of staying silent about every failure."""
+    instead of staying silent about every failure -- unless warn_missing=False, which
+    callers pass when an unpriceable ticker is an expected, permanent fact (e.g. a
+    delisted/crypto pick sitting in the append-only plays log) rather than a transient
+    outage worth surfacing on every run."""
     from radar import degrade
     requested = sorted(set(tickers))
     out: dict = {}
@@ -321,20 +328,18 @@ def fetch_prices(tickers, start: str, end: str) -> dict:
         if ticker_prices:
             out[t] = ticker_prices
     missing = [t for t in requested if t not in out]
-    if missing:
+    if missing and warn_missing:
         degrade.warn("backtest prices",
                      f"{len(missing)}/{len(requested)} tickers unpriced: {missing[:5]}")
     return out
 
 
-def _board_universe(history: dict) -> set[str]:
-    """Tickers worth pricing: anything that ever reached a top-quintile score frame.
-    Keeps the yfinance batch bounded (~hundreds, not thousands)."""
-    keep: set[str] = set()
-    for day, rows in _frames(history).items():
-        rows_sorted = sorted(rows, key=lambda r: r[1])
-        keep.update(t for t, _s in _quintile(rows_sorted, 5))
-    return keep
+def _pricing_universe(history: dict) -> set[str]:
+    """Tickers worth pricing: every ticker that ever appears in history -- not just
+    ones that reached a top-quintile score frame. Restricting to top-quintile-only
+    (the original implementation) priced q5 completely while grading q1-q4 against a
+    survivorship-biased 'formerly hot' subsample, distorting spread and rank_ic."""
+    return set(history.keys())
 
 
 def run_backtest(history_path="data/history.json", plays_path="data/plays_log.json",
@@ -351,7 +356,7 @@ def run_backtest(history_path="data/history.json", plays_path="data/plays_log.js
 
     start = (date.fromisoformat(all_days[0]) - timedelta(days=10)).isoformat()
     end = (date.fromisoformat(all_days[-1]) + timedelta(days=25)).isoformat()
-    tickers = (_board_universe(history)
+    tickers = (_pricing_universe(history)
                | {p.get("ticker") for p in plays if p.get("ticker")}
                | {"SPY", "IWM"})
     prices = fetch_prices(tickers, start, end)
@@ -375,6 +380,8 @@ def run_backtest(history_path="data/history.json", plays_path="data/plays_log.js
         "scorecard": scorecard(plays, prices, days),
         "price_coverage": {"requested": len(tickers), "priced": len(prices),
                            "missing": sorted(tickers - set(prices))[:10]},
+        "universe": {"description": "all history tickers + logged picks + benchmarks",
+                     "n_tickers": len(tickers)},
     }
     out = Path(out_path)
     out.parent.mkdir(parents=True, exist_ok=True)

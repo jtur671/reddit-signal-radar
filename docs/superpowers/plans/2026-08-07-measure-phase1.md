@@ -1194,3 +1194,12 @@ git commit -m "docs: measure-phase-1 — plays log, backtest, Tradestie, scoreca
 - The `pct_bull` field in history keeps its engagement semantics on the ApeWisdom path; directional sentiment lands as new `ts_bull`/`ts_comments` keys (spec's "fills the dead dimension" is delivered as parallel keys so old rows stay interpretable).
 - `fetch_prices` uses `auto_adjust=True` — split/dividend-adjusted opens/closes; fine for excess returns.
 - Survivorship caveat: delisted tickers priced as missing → excluded from means. `backtest.json` inherits this; acceptable at current fidelity (documented in module docstring).
+
+## Addendum (2026-08-07, final-review fix wave)
+
+Task 4's inline `event_study`/`fetch_prices`/`run_backtest` listings above were
+superseded by review fixes: commit `aa20811` (completeness filtering + offset−1 rebase
++ `n_used` in `event_study`; row/ticker-isolated price fetch with `price_coverage`;
+fail-loud on price outage) and this fix wave (`fetch_prices(warn_missing=...)` for
+daily/weekly health isolation; full-history pricing universe instead of top-quintile
+only; `vol_quintiles` mean+n). The code and its tests are ground truth, not the plan text.

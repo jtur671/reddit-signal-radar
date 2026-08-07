@@ -33,8 +33,9 @@ board quality; severe degradation also triggers an alert email. The free, keyles
 tickers with directional `ts_bull`/`ts_comments` sentiment and doubles as a fallback
 board source when ApeWisdom comes back empty. Early Plays picks are appended to the
 append-only `data/plays_log.json`; when picks exist, the board and `data.json` carry an
-"Early Plays Track Record" scorecard graded against SPY. A weekly job publishes
-`out/backtest.json` alongside the board (see **Weekly backtest** below).
+"Early Plays Track Record" scorecard graded against SPY. A weekly job commits
+`data/backtest.json` to the data branch; the next daily run publishes it to Pages as
+`out/backtest.json` (see **Weekly backtest** below).
 
 > Note: ApeWisdom provides mention counts + upvotes but **no directional (bull/bear)
 > sentiment** and no raw comment text — so the dashboard's "engagement" bar is an

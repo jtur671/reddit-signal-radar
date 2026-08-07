@@ -5,7 +5,7 @@ from datetime import date, timedelta
 from radar.backtest import (trading_days, entry_index, window_return, excess_return,
                             spearman, quintile_table, rank_ic, event_study,
                             vol_quintiles, scorecard, power, REGIME_NOTES,
-                            fetch_prices, run_backtest)
+                            fetch_prices, run_backtest, _pricing_universe)
 
 def _prices(series):     # {sym: {day: open}} -> full price dicts (close = open)
     return {s: {d: {"open": v, "close": v} for d, v in days.items()} for s, days in series.items()}
@@ -121,12 +121,41 @@ def test_daily_scorecard_fail_soft_on_exception(monkeypatch):
     assert any(e["what"] == "daily scorecard" for e in degrade.events())
 
 def test_daily_scorecard_none_when_no_prices(monkeypatch):
-    # Non-empty log but empty price data -> None via the no-trading-days path.
+    # Non-empty log but empty price data -> None via the no-trading-days path, plus a
+    # "daily scorecard" breadcrumb (a real, transient benchmark outage should surface).
     import radar.run as run_mod
+    from radar import degrade
+    degrade.reset()
     monkeypatch.setattr("radar.run.load_picks",
                         lambda p: [{"date": "2026-08-01", "ticker": "AAA", "conviction": "high"}])
     monkeypatch.setattr("radar.backtest.fetch_prices", lambda *a, **k: {})
     assert run_mod._daily_scorecard("2026-08-08") is None
+    assert any(e["what"] == "daily scorecard" for e in degrade.events())
+
+def test_daily_scorecard_unpriceable_pick_does_not_degrade_health(monkeypatch):
+    # F1: one pick ticker (e.g. delisted/crypto) never prices while SPY does. Because
+    # the plays log is append-only, this must NOT fire "backtest prices" -- that would
+    # degrade health.status on every future daily run, forever, over one old pick.
+    import radar.run as run_mod
+    from radar import degrade
+    degrade.reset()
+    monkeypatch.setattr("radar.run.load_picks",
+                        lambda p: [{"date": "2026-08-01", "ticker": "AAA", "conviction": "high"}])
+
+    def _fake_fetch_prices(tickers, start, end, warn_missing=True):
+        # Mirrors fetch_prices's own missing-ticker warn, gated the same way, so this
+        # test actually exercises the warn_missing=False wiring rather than assuming it.
+        prices = {"SPY": {"2026-08-01": {"open": 100.0, "close": 100.0},
+                          "2026-08-08": {"open": 101.0, "close": 101.0}}}
+        missing = [t for t in tickers if t not in prices]
+        if missing and warn_missing:
+            degrade.warn("backtest prices", f"{len(missing)} unpriced")
+        return prices
+
+    monkeypatch.setattr("radar.backtest.fetch_prices", _fake_fetch_prices)
+    sc = run_mod._daily_scorecard("2026-08-08")
+    assert sc is not None and sc["n_picks"] == 1
+    assert not any(e["what"] == "backtest prices" for e in degrade.events())
 
 def test_template_renders_scorecard_block():
     from radar.render import render_html
@@ -232,3 +261,71 @@ def test_run_backtest_does_not_write_on_price_fetch_failure(tmp_path, monkeypatc
     result = bt.run_backtest(str(hist_path), str(plays_path), str(out_path))
     assert result["error"] == "price fetch failed"
     assert not out_path.exists()
+
+# ---------- final-review fix wave: warn_missing, full pricing universe, vol_test n ----------
+
+def test_fetch_prices_warn_missing_flag_gates_the_missing_tickers_event(monkeypatch):
+    # An empty batch means every requested ticker comes back unpriced. With the default
+    # (warn_missing=True) that fires "backtest prices"; with warn_missing=False it must not.
+    import pandas as pd
+    from radar import degrade
+
+    monkeypatch.setattr("yfinance.download", lambda tickers, **kwargs: pd.DataFrame())
+
+    degrade.reset()
+    fetch_prices(["ZZZ"], "2026-07-01", "2026-07-05")
+    assert any(e["what"] == "backtest prices" for e in degrade.events())
+
+    degrade.reset()
+    fetch_prices(["ZZZ"], "2026-07-01", "2026-07-05", warn_missing=False)
+    assert not any(e["what"] == "backtest prices" for e in degrade.events())
+
+def test_pricing_universe_includes_non_top_quintile_tickers():
+    # 10 tickers, scores 1..10 on one day -> q5 (top quintile) is only T9/T10. The old
+    # _board_universe restricted pricing to q5; the widened universe must include the
+    # bottom-quintile tickers too, since q1-q4 need to be priced to grade fairly.
+    hist = {f"T{i}": {"2026-07-01": {"weighted": 1.0, "raw": 5, "authors": 0,
+                                     "pct_bull": 0, "score": float(i), "state": "new"}}
+            for i in range(1, 11)}
+    universe = _pricing_universe(hist)
+    assert universe == set(hist.keys())
+    assert "T1" in universe and "T2" in universe   # bottom quintile, previously excluded
+
+def test_vol_quintiles_reports_mean_and_n():
+    hist = {f"T{i}": {d: {"weighted": 1, "raw": 5, "authors": 0, "pct_bull": 0,
+                          "score": float(i), "state": "hot"}
+                      for d in DAYS[:1]}
+            for i in range(1, 11)}
+    series = {f"T{i}": {d: 100.0 * (1 + 0.002 * i) ** n for n, d in enumerate(DAYS)}
+              for i in range(1, 11)}
+    series["SPY"] = _flat()
+    p = _prices(series)
+    vt = vol_quintiles(hist, p, trading_days(p), horizon=3)
+    for q in range(1, 6):
+        block = vt[f"q{q}"]
+        assert set(block.keys()) == {"mean", "n"}
+        assert isinstance(block["n"], int) and block["n"] >= 0
+        if block["n"] == 0:
+            assert block["mean"] is None
+        else:
+            assert isinstance(block["mean"], float)
+
+def test_run_backtest_artifact_has_universe_block(tmp_path, monkeypatch):
+    import radar.backtest as bt
+
+    hist_path = tmp_path / "history.json"
+    hist_path.write_text(json.dumps({"AAA": {"2026-07-01": {"weighted": 1, "raw": 5,
+                                                             "authors": 0, "pct_bull": 0,
+                                                             "score": 1.0, "state": "new"}}}))
+    plays_path = tmp_path / "plays.json"
+    plays_path.write_text(json.dumps({"picks": []}))
+    out_path = tmp_path / "out" / "backtest.json"
+
+    def fake_fetch(tickers, start, end):
+        return {t: {"2026-07-01": {"open": 100.0, "close": 100.0},
+                    "2026-07-02": {"open": 101.0, "close": 101.0}} for t in tickers}
+
+    monkeypatch.setattr(bt, "fetch_prices", fake_fetch)
+    result = bt.run_backtest(str(hist_path), str(plays_path), str(out_path))
+    assert result["universe"]["description"] == "all history tickers + logged picks + benchmarks"
+    assert result["universe"]["n_tickers"] == result["price_coverage"]["requested"]

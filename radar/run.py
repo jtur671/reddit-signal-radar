@@ -251,7 +251,14 @@ def _today_read(board, themes):
 
 def _daily_scorecard(run_day):
     """Grade all logged picks vs SPY — the cheap daily slice of the weekly backtest.
-    Fail-soft: any problem returns None and the board ships without a scorecard."""
+    Fail-soft: any problem returns None and the board ships without a scorecard.
+
+    The plays log is append-only, so one permanently-unpriceable pick (delisted/crypto
+    ticker) would otherwise trip fetch_prices's "backtest prices" warn on every single
+    daily run, degrading health.status forever. warn_missing=False silences that; a
+    genuine benchmark outage (no SPY prices at all, so there are no trading days to grade
+    against) still surfaces its own "daily scorecard" breadcrumb -- transient and heals
+    once yfinance is back, unlike the permanent one it replaces."""
     try:
         plays = load_picks("data/plays_log.json")
         if not plays:
@@ -260,9 +267,10 @@ def _daily_scorecard(run_day):
         first = min(p["date"] for p in plays)
         start = (date.fromisoformat(first) - timedelta(days=5)).isoformat()
         tickers = {p["ticker"] for p in plays} | {"SPY"}
-        prices = backtest.fetch_prices(tickers, start, run_day)
+        prices = backtest.fetch_prices(tickers, start, run_day, warn_missing=False)
         days = backtest.trading_days(prices)
         if not days:
+            degrade.warn("daily scorecard", "no benchmark prices from yfinance")
             return None
         return backtest.scorecard(plays, prices, days)
     except Exception as e:
