@@ -16,7 +16,8 @@ from radar.monitors.edgar import _http_get
 
 EFTS = ("https://efts.sec.gov/LATEST/search-index?q={q}&forms=8-K"
         "&dateRange=custom&startdt={start}&enddt={end}")
-_DISPLAY_TICKER = re.compile(r"\(([A-Z][A-Z0-9.\-]{0,9})\)\s*\(CIK")
+_DISPLAY_TICKER = re.compile(
+    r"\(([A-Z][A-Z0-9.\-]{0,9})(?:,\s*[A-Z][A-Z0-9.\-]{0,9})*\)\s*\(CIK")
 
 
 def ticker_from_display(display: str) -> str:
@@ -69,6 +70,8 @@ def active_tickers(history_path: str = "data/history.json", days: int = 7,
     try:
         data = json.loads(Path(history_path).read_text())
     except (OSError, ValueError):
+        return set()
+    if not isinstance(data, dict):
         return set()
     t = date.fromisoformat(today) if today else date.today()
     cutoff = (t - timedelta(days=days)).isoformat()

@@ -7,6 +7,14 @@ def test_ticker_from_display():
     assert ticker_from_display("No Ticker Holdings  (CIK 0009999999)") == ""
     assert ticker_from_display("") == ""
 
+def test_ticker_from_display_multi_ticker():
+    # Real EDGAR display_names from tests/fixtures/efts_8k.json: dual-class/unit+warrant
+    # issuers list multiple tickers before "(CIK ...)" — the FIRST one is the primary.
+    assert ticker_from_display(
+        "AMERICAN REBEL HOLDINGS INC  (AREB, AREBW)  (CIK 0001648087)") == "AREB"
+    assert ticker_from_display(
+        "Liberty Global Ltd.  (LBTYA, LBTYB, LBTYK)  (CIK 0001570585)") == "LBTYA"
+
 def test_parse_hits_from_fixture():
     raw = json.loads(pathlib.Path("tests/fixtures/efts_8k.json").read_text())
     rows = parse_hits(raw)
@@ -28,6 +36,14 @@ def test_active_tickers(tmp_path):
     act = active_tickers(str(hist), days=7, today="2026-08-07")
     assert "AAA" in act and "OLD" not in act
     assert active_tickers(str(tmp_path / "missing.json"), days=7, today="2026-08-07") == set()
+
+def test_active_tickers_malformed_shapes_never_raise(tmp_path):
+    # A malformed-but-valid-JSON history.json (list / null / number) must not crash the
+    # fleet — run_fleet has no try/except around fetch_new, so one bad file kills all 5.
+    for payload in ("[]", "null", "123"):
+        hist = tmp_path / "history.json"
+        hist.write_text(payload)
+        assert active_tickers(str(hist), days=7, today="2026-08-07") == set()
 
 def test_monitor_filters_to_watchset_and_advances_cursor(monkeypatch):
     import radar.monitors.edgar_events as ee
