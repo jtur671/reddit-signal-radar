@@ -1,0 +1,42 @@
+name: weekly-backtest
+on:
+  schedule:
+    - cron: "41 11 * * 0"      # Sunday 11:41 UTC — off the top of the hour on purpose
+  workflow_dispatch: {}
+permissions:
+  contents: write              # commits data/backtest.json to the data branch
+concurrency:
+  group: pages                 # serialize with daily/fleet writers to the data branch
+  cancel-in-progress: false
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with: { ref: main, fetch-depth: 1 }
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.11" }
+      - run: pip install -r requirements.txt
+      - name: Restore radar state (data branch)
+        run: |
+          if git fetch origin data; then
+            git checkout FETCH_HEAD -- data/
+          else
+            echo "no data branch yet — cold start"
+          fi
+      - name: Run backtest
+        run: python -m radar.backtest --out out
+      - name: Commit backtest.json to data branch
+        run: |
+          git config user.name "radar-bot"
+          git config user.email "radar-bot@users.noreply.github.com"
+          if git fetch origin data; then
+            git worktree add /tmp/state FETCH_HEAD
+          else
+            git worktree add --detach /tmp/state "$(git commit-tree "$(git mktree </dev/null)" -m 'state: seed')"
+          fi
+          mkdir -p /tmp/state/data
+          cp -f out/backtest.json /tmp/state/data/backtest.json
+          git -C /tmp/state add -A data
+          git -C /tmp/state diff --cached --quiet || git -C /tmp/state commit -m "state: backtest $(date -u +%F)"
+          git -C /tmp/state push origin HEAD:refs/heads/data
