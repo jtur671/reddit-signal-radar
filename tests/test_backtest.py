@@ -107,9 +107,24 @@ def test_power_and_regime_notes():
     assert pw["days"] == len(DAYS) and pw["sufficient"] is False and pw["target_days"] == 150
     assert any("2026-08-07" in n["date"] for n in REGIME_NOTES)
 
-def test_daily_scorecard_fail_soft(monkeypatch):
-    # Network dead -> None, never an exception (the daily board must not care).
+def test_daily_scorecard_fail_soft_on_exception(monkeypatch):
+    # A raising price fetch -> None + a degrade breadcrumb; the board must not care.
     import radar.run as run_mod
+    from radar import degrade
+    degrade.reset()
+    monkeypatch.setattr("radar.run.load_picks",
+                        lambda p: [{"date": "2026-08-01", "ticker": "AAA", "conviction": "high"}])
+    def _boom(*a, **k):
+        raise RuntimeError("yfinance down")
+    monkeypatch.setattr("radar.backtest.fetch_prices", _boom)
+    assert run_mod._daily_scorecard("2026-08-08") is None
+    assert any(e["what"] == "daily scorecard" for e in degrade.events())
+
+def test_daily_scorecard_none_when_no_prices(monkeypatch):
+    # Non-empty log but empty price data -> None via the no-trading-days path.
+    import radar.run as run_mod
+    monkeypatch.setattr("radar.run.load_picks",
+                        lambda p: [{"date": "2026-08-01", "ticker": "AAA", "conviction": "high"}])
     monkeypatch.setattr("radar.backtest.fetch_prices", lambda *a, **k: {})
     assert run_mod._daily_scorecard("2026-08-08") is None
 
