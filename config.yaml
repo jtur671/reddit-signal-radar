@@ -15,7 +15,7 @@ apewisdom:
   sleep_seconds: 1.0
   max_retries: 3
 tradestie:
-  url: "https://api.tradestie.com/v1/apps/reddit"
+  url: "https://tradestie.com/api/v1/apps/reddit"
   max_retries: 3
   sleep_seconds: 1.0
 # (legacy raw-Reddit fetch config — kept for the still-tested raw-mention path)

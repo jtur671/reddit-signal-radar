@@ -1,5 +1,5 @@
 """Tradestie WSB sentiment — free, keyless directional (Bullish/Bearish) per-ticker
-sentiment for the top-50 r/wallstreetbets names (api.tradestie.com, 15-min refresh,
+sentiment for the top-50 r/wallstreetbets names (tradestie.com, 15-min refresh,
 20 req/min limit; we make one call per day).
 
 Two jobs: (1) annotate history.json with ts_bull/ts_comments so directional-sentiment
@@ -7,19 +7,13 @@ history accrues from today; (2) serve as a partial-board fallback when ApeWisdom
 down (top-50 WSB only). sentiment_score is a VADER-style compound in [-1, 1] per the
 recorded fixture; bull_pct maps it to 0-100.
 
-Fixture provenance (2026-08-07): api.tradestie.com/v1/apps/reddit itself is currently
-down in production (TLS cert expired 2026-01-03; the origin returns HTTP 502 Bad
-Gateway even with cert verification disabled, confirmed via repeated curl checks).
-Tradestie's own site (tradestie.com/apps/reddit/wallstreetbets/, server-rendered,
-verified HTTP 200 the same day) still serves live sentiment in the exact documented
-shape (ticker / sentiment / score / comments), and their developer-docs page still
-documents this same JSON endpoint and field names, so the schema below is real and
-current -- only the specific JSON endpoint is unreachable. tests/fixtures/tradestie.json
-was built from that live page's real, current per-ticker rows (not invented values)
-since the JSON endpoint could not be curled directly; see task-2-report.md for the
-full verification trail. fetch_wsb's existing fail-soft handling (-> [] + degrade.warn)
-requires no change for this: it already treats any non-200/network failure this way,
-which is exactly what the live endpoint does right now."""
+Endpoint note (2026-08-07): the old api.tradestie.com/v1/apps/reddit subdomain is dead
+in production (TLS cert expired 2026-01-03; the origin returns HTTP 502 Bad Gateway
+even with cert verification disabled) and has been unreliable since at least late 2025.
+The live endpoint is on the apex domain instead: tradestie.com/api/v1/apps/reddit,
+verified live (HTTP 200, real JSON, same documented shape) and used for DEFAULT_URL and
+tests/fixtures/tradestie.json below; see task-2-report.md for the full verification
+trail, including the earlier (now superseded) dead-subdomain diagnosis."""
 from __future__ import annotations
 
 import time
@@ -30,7 +24,7 @@ import requests
 from radar import degrade
 from radar.apewisdom import Aggregate
 
-DEFAULT_URL = "https://api.tradestie.com/v1/apps/reddit"
+DEFAULT_URL = "https://tradestie.com/api/v1/apps/reddit"
 
 
 @dataclass
