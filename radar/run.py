@@ -18,6 +18,7 @@ from radar.enrich import enrich
 from radar.render import render_html, write_outputs
 from radar.email_report import send_email
 from radar import trump, about, news
+from radar.plays_log import append_picks
 
 def _enrich_ticker(s, by_ticker, about_cache, about_ua, themes):
     """Attach themes, engagement, 'what it is', the news catalyst, and a DeepSeek
@@ -70,6 +71,12 @@ def main(argv=None) -> int:
     today_read = _today_read(board, themes)            # DeepSeek smart read (deterministic fallback)
     why_matters = _why_matters(board, today_read)      # DeepSeek 'why you should care' so-what
     early_plays = _early_plays(board)                  # DeepSeek 'get in early' buy ideas (fail-closed)
+    if early_plays and not args.dry_run:
+        try:                                            # log the call — the track record
+            append_picks("data/plays_log.json", run_day, early_plays,
+                         {s.ticker: s for s in board})
+        except Exception as e:
+            degrade.warn("plays-log append", e)
     if not args.dry_run:
         about.save_cache("data/about.json", about_cache)
 

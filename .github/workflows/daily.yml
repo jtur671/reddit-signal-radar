@@ -53,7 +53,7 @@ jobs:
             git worktree add --detach /tmp/state "$(git commit-tree "$(git mktree </dev/null)" -m 'state: seed')"
           fi
           mkdir -p /tmp/state/data
-          cp -f data/history.json data/about.json /tmp/state/data/ 2>/dev/null || true
+          cp -f data/history.json data/about.json data/plays_log.json /tmp/state/data/ 2>/dev/null || true
           git -C /tmp/state add -A data
           git -C /tmp/state diff --cached --quiet || git -C /tmp/state commit -m "state: daily $(date -u +%F)"
           git -C /tmp/state push origin HEAD:refs/heads/data
