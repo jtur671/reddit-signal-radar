@@ -41,6 +41,8 @@ jobs:
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
           EMAIL_RECIPIENTS: ${{ secrets.EMAIL_RECIPIENTS }}
         run: python -m radar.run --out out
+      - name: Publish latest backtest alongside the board
+        run: cp -f data/backtest.json out/backtest.json 2>/dev/null || echo "no backtest yet"
       - name: Commit state to data branch
         # State goes to the orphan `data` branch via a throwaway worktree; main's
         # history stays human-only. Concurrency group `pages` serializes writers.
