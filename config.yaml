@@ -61,3 +61,7 @@ congress:
   min_usd: 250000        # a non-watchlist purchase must be at least this large to alert
   max_records: 200       # only scan the newest N disclosures each tick
   max_age_h: 72
+# FINRA Reg SHO daily short-sale volume (free, keyless): ShortVolume/TotalVolume per
+# symbol from the prior trading day, a bearish-pressure / dark-pool proxy.
+finra:
+  max_lookback_days: 5   # Reg SHO files exist only for trading days

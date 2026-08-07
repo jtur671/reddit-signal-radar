@@ -12,6 +12,7 @@ from radar.themes import Themes
 from radar.history import History
 from radar.apewisdom import fetch_mentions
 from radar import tradestie
+from radar.shorts import fetch_short_ratios
 from radar.score import score_aggregates, top_signals, assign_relative_states
 from radar.still_running import still_running
 from radar.sentiment import summarize, engagement_pct, daily_read, why_it_matters, recommend_buys
@@ -99,6 +100,12 @@ def main(argv=None) -> int:
         if r:
             history.annotate(run_day, s.ticker,
                              ts_bull=tradestie.bull_pct(r.score), ts_comments=r.comments)
+    short_ratios, _shorts_day = fetch_short_ratios(cfg, run_day)   # fail-soft {} on outage
+    for s in signals:
+        r = short_ratios.get(s.ticker)
+        if r is not None:
+            s.short_ratio = round(r, 4)
+            history.annotate(run_day, s.ticker, short_ratio=s.short_ratio)
     history.prune(keep_through=run_day, days=cfg.history_days)
     if not args.dry_run:
         history.save()
@@ -120,7 +127,8 @@ def main(argv=None) -> int:
                                "apewisdom": ("ok" if board_source == "apewisdom" and board
                                              else "down"),
                                "tradestie": ("fallback" if board_source == "tradestie-fallback"
-                                             else ("ok" if ts_rows else "down"))})
+                                             else ("ok" if ts_rows else "down")),
+                               "finra": "ok" if short_ratios else "down"})
     health["date"] = run_day
     payload = {"board": [s.ticker for s in board], "health": health}
     if scorecard:
