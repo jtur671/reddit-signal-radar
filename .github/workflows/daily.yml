@@ -40,6 +40,7 @@ jobs:
           ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
           EMAIL_RECIPIENTS: ${{ secrets.EMAIL_RECIPIENTS }}
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
         run: python -m radar.run --out out
       - name: Publish latest backtest alongside the board
         run: cp -f data/backtest.json out/backtest.json 2>/dev/null || echo "no backtest yet"

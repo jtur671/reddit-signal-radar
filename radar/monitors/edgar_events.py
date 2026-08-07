@@ -88,6 +88,10 @@ class EdgarEventsMonitor:
         self.phrases = list(phrases)
         self.user_agent = user_agent
         self._watch = watch
+        # Three phrases over the rolling window can exceed the base.py default seen_cap
+        # of 200 (one phrase alone returned 72 in-window ids) -> evicted ids re-evaluate
+        # every tick (cursor churn + duplicate alerts). Match EdgarMonitor's 5000.
+        self.seen_cap = 5000
 
     def fetch_new(self, seen: set[str]):
         watch = self._watch() if callable(self._watch) else set(self._watch)

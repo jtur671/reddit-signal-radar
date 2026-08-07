@@ -23,12 +23,18 @@ def is_put(symbol) -> bool | None:
     return None if not m else m.group(1) == "P"
 
 
-def _get_json(url: str, ua: str, retries: int = 2, sleep_s: float = 1.0):
+def _get_json(url: str, ua: str, retries: int = 1, sleep_s: float = 1.0, timeout: float = 10):
+    """GET -> parsed JSON, the sentinel string "missing" on a 404 (no chain for this
+    symbol — not a failure), or None on any other non-retryable outcome (fail-soft,
+    warned/counted by the caller). The fetch budget (attempts/backoff/timeout) is
+    config-driven via cboe.max_retries/sleep_seconds/timeout — see option_stats."""
     for attempt in range(retries):
         try:
-            r = requests.get(url, headers={"User-Agent": ua}, timeout=30)
+            r = requests.get(url, headers={"User-Agent": ua}, timeout=timeout)
             if r.status_code == 200:
                 return r.json()
+            if r.status_code == 404:
+                return "missing"
             if r.status_code in (429, 500, 502, 503):
                 time.sleep(sleep_s * (2 ** attempt)); continue
             return None
@@ -64,10 +70,20 @@ def parse_chain(raw) -> dict:
             "total_vol": total_vol, "total_oi": total_oi}
 
 
-def option_stats(ticker: str, cfg) -> dict | None:
-    """One symbol's chain aggregates, or None (fail-soft, warned by the caller loop)."""
+def option_stats(ticker: str, cfg) -> dict | str | None:
+    """One symbol's chain aggregates, the sentinel string "missing" (no chain — e.g. a
+    crypto/small-cap ticker with no options market, a healthy 404, not a failure), or
+    None (fail-soft, warned/counted by the caller loop). The fetch budget is
+    config-driven from cboe.timeout/max_retries/sleep_seconds (see config.yaml)."""
     ua = "reddit-signal-radar/0.1 (open-source ticker signal bot)"
-    raw = _get_json(CHAIN_URL.format(sym=ticker.upper()), ua)
+    cboe_cfg = getattr(cfg, "cboe", None)
+    timeout = float(getattr(cboe_cfg, "timeout", 10))
+    retries = int(getattr(cboe_cfg, "max_retries", 1))
+    sleep_s = float(getattr(cboe_cfg, "sleep_seconds", 1.0))
+    raw = _get_json(CHAIN_URL.format(sym=ticker.upper()), ua,
+                     retries=retries, sleep_s=sleep_s, timeout=timeout)
+    if raw == "missing":
+        return "missing"
     if raw is None:
         return None
     return parse_chain(raw)

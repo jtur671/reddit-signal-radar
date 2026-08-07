@@ -58,9 +58,11 @@ DeepSeek catalyst summaries when `FINNHUB_API_KEY` is set, falling back to the o
 Google News RSS search otherwise. `data.json` gains a `signals` array (per board row:
 ticker, `composite` 0–100, a `components` breakdown — velocity/direction/engagement/
 short_pressure/options/events/cramer_inverse, each 0–100 or `null` when a source doesn't
-cover that name — plus the raw `short_ratio`/`pc_ratio`/`uoa`/`cramer` values) and the
-`weights` actually used to blend them (`radar/composite.py`, renormalized over non-null
-components). Weights are heuristic (`config.yaml`'s `composite.weights`) until
+cover that name — plus the raw `short_ratio`/`pc_ratio`/`uoa`/`cramer` values) and the raw
+`weights` config (`config.yaml`'s `composite.weights`, before per-row renormalization —
+`radar/composite.py`'s `blend()` drops null components and renormalizes over what's left
+per ticker, but that per-row renormalization isn't what's published here). Weights are
+heuristic until
 `backtest.json`'s `power.sufficient` flips true, then get recalibrated there — a config
 change, not a code change; the consuming bot should trust `components` over the single
 `composite` number. The composite also shows in the dashboard's per-ticker detail modal.

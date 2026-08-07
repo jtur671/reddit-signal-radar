@@ -78,6 +78,9 @@ cboe:
   top_n: 10          # board movers to pull chains for (1.6MB each — keep small)
   uoa_vol_oi: 1.0    # flag when day volume > this multiple of open interest
   min_volume: 1000   # ...and at least this many contracts traded
+  timeout: 10        # per-request timeout (seconds) — was a hardcoded 30
+  max_retries: 1     # fetch attempts per ticker — was a hardcoded 2 (worst case
+                      # was 2×30s×10 tickers ≈ 10.5 min serial stall on outage)
 # Inverse-Cramer feed: vendored Mad Money sentiment calls (community-transcribed,
 # keyless). A contrarian data point — the composite decides what "inverse" means.
 cramer:

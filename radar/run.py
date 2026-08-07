@@ -111,12 +111,23 @@ def main(argv=None) -> int:
             history.annotate(run_day, s.ticker, short_ratio=s.short_ratio)
     cboe_cfg = getattr(cfg, "cboe", None)
     cboe_hits = 0
-    for s in board[:int(getattr(cboe_cfg, "top_n", 10))]:
+    cboe_slice = board[:int(getattr(cboe_cfg, "top_n", 10))]
+    consecutive_failures = 0
+    for i, s in enumerate(cboe_slice):
         stats = option_stats(s.ticker, cfg)
-        if stats is None:
+        if stats is None:                           # real outage — warn + count toward the breaker
             degrade.warn("cboe options", s.ticker)
+            consecutive_failures += 1
+            if consecutive_failures >= 3:
+                remaining = len(cboe_slice) - i - 1
+                degrade.warn("cboe options",
+                             f"skipping remaining {remaining} after 3 consecutive failures")
+                break
             continue
-        cboe_hits += 1
+        consecutive_failures = 0
+        cboe_hits += 1                               # service responded (chain or a clean 404)
+        if stats == "missing":                       # no chain for this name — not a failure
+            continue
         if stats["pc_ratio"] is not None:
             s.pc_ratio = round(stats["pc_ratio"], 3)
         s.uoa = bool(stats["total_oi"] > 0
