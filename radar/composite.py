@@ -36,7 +36,7 @@ def components_for(s, board, ts_bull, alert_tickers) -> dict:
     return {
         "velocity": percentile_rank(s.score, scores),
         "direction": (float(ts_bull) if ts_bull is not None else None),
-        "engagement": (float(s.pct_bull) if s.pct_bull else None),
+        "engagement": (float(s.pct_bull) if s.mentions > 0 else None),
         "short_pressure": (percentile_rank(s.short_ratio, shorts)
                            if s.short_ratio is not None else None),
         "options": (100.0 if s.uoa else 50.0) if (s.uoa or s.pc_ratio is not None) else None,

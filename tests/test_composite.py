@@ -17,7 +17,7 @@ def test_blend_all_null():
     assert blend({"a": None}, {"a": 1.0}) == (None, {})
 
 def test_components_for_shapes():
-    s = Signal(ticker="AAA", score=50.0, pct_bull=40.0, short_ratio=0.5,
+    s = Signal(ticker="AAA", score=50.0, mentions=100, pct_bull=40.0, short_ratio=0.5,
                pc_ratio=1.2, uoa=True, cramer="sell_avoid")
     peer = Signal(ticker="BBB", score=10.0, short_ratio=0.1)
     comps = components_for(s, [s, peer], ts_bull=61.0, alert_tickers={"AAA"})
@@ -31,7 +31,21 @@ def test_components_none_when_uncovered():
     comps = components_for(s, [s], ts_bull=None, alert_tickers=set())
     assert comps["direction"] is None and comps["short_pressure"] is None
     assert comps["options"] is None and comps["cramer_inverse"] is None
+    assert comps["engagement"] is None                   # mentions=0 -> no engagement data
     assert comps["events"] == 0.0
+
+def test_engagement_zero_is_not_none():
+    # A ticker with real mentions and zero bullish upvotes is a legitimate 0.0,
+    # not "no data" -- must not be nulled out and renormalized away. This is also
+    # the Tradestie-fallback board path's shape: to_aggregates hardcodes upvotes=0,
+    # so every ticker's pct_bull is 0.0 while mentions is real.
+    s = Signal(ticker="AAA", score=50.0, mentions=42, pct_bull=0.0)
+    comps = components_for(s, [s], ts_bull=None, alert_tickers=set())
+    assert comps["engagement"] == 0.0
+
+    no_mentions = Signal(ticker="BBB", score=50.0, mentions=0, pct_bull=0.0)
+    comps2 = components_for(no_mentions, [no_mentions], ts_bull=None, alert_tickers=set())
+    assert comps2["engagement"] is None
 
 def test_data_json_signals_block(tmp_path):
     # the payload contract the downstream bot reads
