@@ -75,7 +75,7 @@ The known residuals, in priority order:
 - [ ] **Theme/board filtering** that actually works client-side (theme chips are present but static).
 - [ ] **Alerting on big breakouts** — push/email a mid-day flash when a ticker crosses a velocity/surprise threshold, not just the 6 AM digest.
 - [ ] **Crypto coverage check** — verify crypto tickers ($BTC/$ETH/…) score well given 24/7 markets vs the daily cadence.
-- [ ] **Backtest the signal** — does "high velocity + surprise" actually predict next-day price moves? Join history with price data. (This is the bridge to any trading use — but keep this project a *radar*, not a trader.)
+- [x] **Backtest the signal** — does "high velocity + surprise" actually predict next-day price moves? Join history with price data. (This is the bridge to any trading use — but keep this project a *radar*, not a trader.) _Done 2026-08-07 — weekly `radar/backtest.py` → `backtest.json`; see decision log._
 - [ ] **Mobile-friendly dashboard pass.**
 
 ---
@@ -88,6 +88,20 @@ The known residuals, in priority order:
 
 ## Decision log
 
+- **2026-08-07 (measure phase 1)** — Built the measurement layer: free, keyless
+  **Tradestie** WSB sentiment (`ts_bull`/`ts_comments` on covered tickers, plus a
+  partial-board fallback when ApeWisdom is empty), an append-only `data/plays_log.json`
+  track record for Early Plays picks with a daily "Early Plays Track Record" scorecard
+  on the board when picks exist, and `health.json`'s new `sources` block
+  (`apewisdom`/`tradestie`: `ok`/`down`/`fallback`). Added a weekly `backtest.yml` job
+  (`radar/backtest.py` → `data/backtest.json`, copied to `out/backtest.json` daily):
+  quintile forward excess returns vs SPY/IWM, daily rank IC with Newey-West t-stats, a
+  hot-transition event study, a forward-volatility quintile test, the Early Plays
+  scorecard, `price_coverage`, a `power` gate (needs 150 days; ~66 so far), and dated
+  `regime_notes`. Pricing is look-ahead-safe by construction — every window starts at
+  the first trading day strictly after the signal day — and the weekly job fails loudly
+  on a price-fetch error rather than overwrite the last good artifact. Spec:
+  [[2026-08-07-measure-and-widen-design]].
 - **2026-08-07 (infra hardening)** — Tests now gate CI (`test.yml` on push/PR plus a
   pytest gate before the daily publish). The run self-assesses via `radar/health.py`:
   `out/health.json` + a `health` block in `data.json` (`ok`/`degraded`/`severe`) so

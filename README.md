@@ -16,7 +16,7 @@ still ships and is tested, for anyone running from a non-blocked residential hos
 ## How it works
 
 ```
-fetch (ApeWisdom) → score → engagement + price enrich → render → publish + email
+fetch (ApeWisdom + Tradestie sentiment) → score → enrich → render → publish + email
 ```
 
 Each run pulls per-ticker Reddit mention aggregates, scores them against each ticker's
@@ -26,12 +26,21 @@ tags themes, adds an upvotes-based **engagement** proxy and yfinance prices, ren
 A rolling 90-day `data/history.json` is the velocity baseline, committed back every run
 to the orphan **`data` branch** (bot state stays out of main's history). Each run also
 publishes `out/health.json` (and a `health` block in `data.json`) — a machine-readable
-self-assessment (`ok` / `degraded` / `severe`) so downstream consumers can gate on board
-quality; severe degradation also triggers an alert email.
+self-assessment (`ok` / `degraded` / `severe`, plus a `sources` block reporting
+`apewisdom`/`tradestie` as `ok`/`down`/`fallback`) so downstream consumers can gate on
+board quality; severe degradation also triggers an alert email. The free, keyless
+[Tradestie](https://tradestie.com/api/v1/apps/reddit) WSB endpoint annotates covered
+tickers with directional `ts_bull`/`ts_comments` sentiment and doubles as a fallback
+board source when ApeWisdom comes back empty. Early Plays picks are appended to the
+append-only `data/plays_log.json`; when picks exist, the board and `data.json` carry an
+"Early Plays Track Record" scorecard graded against SPY. A weekly job publishes
+`out/backtest.json` alongside the board (see **Weekly backtest** below).
 
 > Note: ApeWisdom provides mention counts + upvotes but **no directional (bull/bear)
 > sentiment** and no raw comment text — so the dashboard's "engagement" bar is an
 > upvotes-per-mention proxy, and DeepSeek summaries are generated from the numbers.
+> Tradestie fills that gap with real `ts_bull`/`ts_comments` for the tickers it covers
+> (WSB only); everything outside that coverage still relies on the engagement proxy.
 
 ## Local run
 
@@ -68,15 +77,17 @@ The daily run is driven by `.github/workflows/daily.yml`.
   (`noise_floor`), top-N (`top_n`), EMA smoothing (`ema_alpha`), history retention
   (`history_days`), the `still_running` lane (recently-broken-out names kept visible
   after they fall off the top-N), `reddit.discussion_subreddits` (scopes the modal's
-  "see the discussion" link), and the `edgar` / `fed` / `congress` monitor blocks
-  (dollar floors, feed URLs, max ages). (Half-life / lookback / `fetch` apply only to
-  the legacy raw-Reddit path.)
+  "see the discussion" link), the `tradestie` block (`url`, `max_retries`,
+  `sleep_seconds` for the WSB sentiment fetch), and the `edgar` / `fed` / `congress`
+  monitor blocks (dollar floors, feed URLs, max ages). (Half-life / lookback / `fetch`
+  apply only to the legacy raw-Reddit path.)
 - `data/themes.yaml` — theme watchlists (seed tickers + keywords) used to tag the board.
 - `data/trump_watch.yaml` — company/asset name → ticker map for the Trump monitor.
 - `data/congress_watch.yaml` — curated notable members whose purchases always alert.
 - `data/*_seen.json` / `data/*_alert.json` — per-monitor dedup cursors and active alert
-  state; don't edit by hand. Together with `history.json`/`about.json` these live on the
-  orphan **`data` branch** (CI overlays them at checkout and pushes them back there).
+  state; don't edit by hand. Together with `history.json`/`about.json`/`plays_log.json`
+  (Early Plays track record) and `backtest.json` (weekly signal grading) these live on
+  the orphan **`data` branch** (CI overlays them at checkout and pushes them back there).
   For a local run with real state: `git fetch origin data && git checkout origin/data -- data/`
   — or start cold; `scripts/seed_data_branch.sh` (re)builds the branch from disk.
 - `data/stoplist.txt`, `data/subreddits.txt`, `data/universe.txt` — used by the legacy
@@ -109,18 +120,33 @@ alert, so the 30-min cadence is cheap.
   above `min_usd` ($250k by default). Note disclosures can lag the trade by up to 45
   days.
 
+## Weekly backtest
+
+`.github/workflows/backtest.yml` (Sundays 11:41 UTC + manual dispatch) runs
+`python -m radar.backtest`, self-grading whether the velocity/surprise signal actually
+predicts anything: quintile forward excess returns (1/5/10d vs SPY and IWM), daily rank
+IC with Newey-West t-stats, an event study around hot-transitions, a forward-volatility
+quintile test, and the Early Plays scorecard, plus `price_coverage`, a `power` check
+(needs 150 days of history; not there yet), and dated `regime_notes` for signal-changing
+commits. Prices are taken from the first trading day *strictly after* the signal day —
+no same-day look-ahead. Results commit to `data/backtest.json` on the data branch; the
+daily run copies it to `out/backtest.json`. On price-fetch failure the job fails loudly
+rather than overwrite the last good artifact.
+
 ## Known limitations
 
 - **Aggregator trust.** Mention counts come from ApeWisdom, so the bot inherits whatever
-  scraping/filtering it does. No directional sentiment or raw text is available, so the
-  "engagement" bar is an upvotes-per-mention proxy, not a bull/bear reading.
+  scraping/filtering it does. No directional sentiment or raw text is available on that
+  path, so the "engagement" bar stays an upvotes-per-mention proxy, not a bull/bear
+  reading, for tickers Tradestie doesn't cover.
 - **Cold start.** Velocity and surprise are measured against the 90-day baseline, which
   starts empty — the first ~1–2 weeks of boards are dominated by "new" until history fills.
 - **LLM summaries are best-effort.** Summaries are generated from mention metadata and
   HTML-escaped on output (so they can't become XSS); treat them as color, not fact.
-- **Single source of truth.** If ApeWisdom is down, the board is empty for that run; the
-  pipeline degrades gracefully (no crash) but there's no fallback feed today — an empty
-  board is reported as `severe` in `health.json`.
+- **ApeWisdom is still the primary source.** If it's down, Tradestie's WSB top-50 steps
+  in as a partial-board fallback (`health.json`'s `sources.apewisdom` flips to `down`,
+  `sources.tradestie` to `fallback`); if both are empty the board is empty and reported
+  `severe`.
 - **Early Plays are ideas, not orders.** `recommend_buys` surfaces up to 3 LLM-generated
   early-entry candidates as machine-consumable input for downstream trader agents; it
   fails closed (no key or any error → no picks) and the radar itself never places orders.
