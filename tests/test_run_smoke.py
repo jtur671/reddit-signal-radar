@@ -7,6 +7,7 @@ def test_dry_run_writes_dashboard(tmp_path, monkeypatch):
         Aggregate(ticker="KEEL", name="Keel Infrastructure", mentions=80,
                   mentions_24h_ago=10, upvotes=400, subreddit="all-stocks"),
     ])
+    monkeypatch.setattr(run.tradestie, "fetch_wsb", lambda cfg: [])  # no live network in tests
     monkeypatch.setenv("DEEPSEEK_API_KEY", "")    # skip LLM
     monkeypatch.setattr(run.news, "headlines", lambda *a, **k: [])  # no live Google News in tests
     code = run.main(["--dry-run", "--out", str(tmp_path / "out"), "--no-email"])
