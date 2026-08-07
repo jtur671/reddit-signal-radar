@@ -68,3 +68,7 @@ edgar_events:
   phrases: ["material definitive agreement", "bankruptcy", "departure of directors or certain officers"]
   max_age_h: 24
   user_agent: "reddit-signal-radar admin@radar.local"
+# FINRA Reg SHO daily short-sale volume (free, keyless): ShortVolume/TotalVolume per
+# symbol from the prior trading day, a bearish-pressure / dark-pool proxy.
+finra:
+  max_lookback_days: 5   # Reg SHO files exist only for trading days
