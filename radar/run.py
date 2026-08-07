@@ -120,7 +120,9 @@ def main(argv=None) -> int:
                                "apewisdom": ("ok" if board_source == "apewisdom" and board
                                              else "down"),
                                "tradestie": ("fallback" if board_source == "tradestie-fallback"
-                                             else ("ok" if ts_rows else "down"))})
+                                             else ("ok" if ts_rows else "down")),
+                               "finnhub": ("ok" if os.environ.get("FINNHUB_API_KEY")
+                                           else "unused")})
     health["date"] = run_day
     payload = {"board": [s.ticker for s in board], "health": health}
     if scorecard:
