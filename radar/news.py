@@ -9,10 +9,11 @@ Pure parsing here; the network fetch never raises and returns [] on any failure.
 """
 from __future__ import annotations
 
+import os
 import time
 import urllib.parse
 import xml.etree.ElementTree as ET
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 
 import requests
@@ -20,6 +21,8 @@ import requests
 from radar.degrade import warn
 
 GNEWS = "https://news.google.com/rss/search?q={q}&hl=en-US&gl=US&ceid=US:en"
+FINNHUB = ("https://finnhub.io/api/v1/company-news?symbol={sym}"
+           "&from={start}&to={end}&token={key}")
 
 
 def build_query(ticker: str, name: str = "") -> str:
@@ -59,8 +62,8 @@ def parse_news(xml_text: str, now: datetime | None = None,
     return out
 
 
-def headlines(ticker: str, name: str = "", ua: str = "reddit-signal-radar/0.1",
-              retries: int = 2, sleep_s: float = 1.0) -> list[str]:
+def _google_headlines(ticker: str, name: str = "", ua: str = "reddit-signal-radar/0.1",
+                      retries: int = 2, sleep_s: float = 1.0) -> list[str]:
     """Recent news headlines for a ticker via Google News RSS. Never raises; [] on failure."""
     url = GNEWS.format(q=build_query(ticker, name))
     last = ""
@@ -78,3 +81,48 @@ def headlines(ticker: str, name: str = "", ua: str = "reddit-signal-radar/0.1",
             time.sleep(sleep_s * (2 ** attempt))
     warn(f"news {ticker}", last)      # no headlines -> no catalyst summary for this ticker
     return []
+
+
+def parse_finnhub(raw, max_items: int = 6) -> list[str]:
+    """Finnhub company-news list -> recent headline titles. Pure, never raises."""
+    out: list[str] = []
+    if not isinstance(raw, list):
+        return out
+    for item in raw:
+        if not isinstance(item, dict):
+            continue
+        title = str(item.get("headline") or "").strip()
+        if title:
+            out.append(title)
+        if len(out) >= max_items:
+            break
+    return out
+
+
+def finnhub_headlines(ticker: str, key: str, ua: str = "reddit-signal-radar/0.1",
+                      days: int = 5, max_items: int = 6) -> list[str]:
+    """Company headlines from Finnhub (60 calls/min free tier — one call per board
+    ticker per day is far inside it). Never raises; [] on any failure."""
+    end = datetime.now(timezone.utc).date()
+    url = FINNHUB.format(sym=ticker, start=(end - timedelta(days=days)).isoformat(),
+                         end=end.isoformat(), key=key)
+    try:
+        r = requests.get(url, headers={"User-Agent": ua}, timeout=15)
+        if r.status_code == 200:
+            return parse_finnhub(r.json(), max_items=max_items)
+        warn(f"finnhub news {ticker}", f"HTTP {r.status_code}")
+    except requests.RequestException as e:
+        warn(f"finnhub news {ticker}", e)
+    return []
+
+
+def headlines(ticker: str, name: str = "", ua: str = "reddit-signal-radar/0.1",
+              retries: int = 2, sleep_s: float = 1.0) -> list[str]:
+    """Recent headlines: Finnhub when a key is configured (richer, per-symbol),
+    Google News RSS otherwise or as fallback. Same signature as before."""
+    key = os.environ.get("FINNHUB_API_KEY", "").strip()
+    if key:
+        got = finnhub_headlines(ticker, key, ua)
+        if got:
+            return got
+    return _google_headlines(ticker, name, ua, retries, sleep_s)
