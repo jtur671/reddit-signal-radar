@@ -47,3 +47,9 @@ class Signal:
     about_extract: str = ""       # fuller Wikipedia summary sentence(s)
     headlines: list[str] = field(default_factory=list)  # recent news headlines (the catalyst)
     days_running: int | None = None  # Still Running lane: days since the most recent breakout
+    short_ratio: float | None = None  # FINRA daily ShortVolume/TotalVolume (0..1)
+    pc_ratio: float | None = None     # CBOE put/call volume ratio (top movers only)
+    uoa: bool = False                 # unusual options activity flag (top movers only)
+    cramer: str = ""                  # latest Mad Money sentiment enum ("" = no recent mention)
+    composite: int | None = None      # 0-100 blended score (None until composite lands)
+    components: dict = field(default_factory=dict)  # composite inputs, each 0-100 or None
