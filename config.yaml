@@ -78,3 +78,9 @@ cboe:
   top_n: 10          # board movers to pull chains for (1.6MB each — keep small)
   uoa_vol_oi: 1.0    # flag when day volume > this multiple of open interest
   min_volume: 1000   # ...and at least this many contracts traded
+# Inverse-Cramer feed: vendored Mad Money sentiment calls (community-transcribed,
+# keyless). A contrarian data point — the composite decides what "inverse" means.
+cramer:
+  url: "https://raw.githubusercontent.com/jf-silverman/analyzing-stock-calls/main/data/stock_sentiments.json"
+  max_age_days: 30
+  snapshot_path: "data/cramer_snapshot.json"

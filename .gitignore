@@ -8,5 +8,6 @@ data/history.json
 data/about.json
 data/plays_log.json
 data/backtest.json
+data/cramer_snapshot.json
 data/*_seen.json
 data/*_alert.json
