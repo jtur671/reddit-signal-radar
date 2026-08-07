@@ -1,0 +1,37 @@
+{
+"picks": [
+{
+"date": "2026-08-07",
+"ticker": "CAN",
+"thesis": "Mentions up 10x (though cooling) on a concrete capital-allocation move: board authorized monetizing digital asset treasury to fund ADS repurchase. This is a clear, actionable catalyst that could drive further interest if the buyback is executed.",
+"risk": "Bitcoin price volatility and cooling momentum may limit upside.",
+"conviction": "low",
+"mentions": 10,
+"vel": 10.0,
+"state": "cooling",
+"crypto": false
+},
+{
+"date": "2026-08-07",
+"ticker": "MP",
+"thesis": "Mentions up 2.6x with a concrete catalyst: Q2 revenue beat, magnet ramp progress, and Trump's $3B rare-earth push to counter China. This is a fresh, sustained theme with real policy tailwinds, likely to gain more attention as the story develops.",
+"risk": "Commodity price volatility and execution risk on magnet production ramp.",
+"conviction": "high",
+"mentions": 13,
+"vel": 2.6,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-08-07",
+"ticker": "OKLO",
+"thesis": "2.9x mention growth on Q2 earnings with a massive revenue beat ($1.21M vs $126K expected) despite wider loss. The nuclear energy theme is hot, and the stock is likely to see continued momentum as investors digest the revenue surprise.",
+"risk": "High valuation and regulatory hurdles in nuclear sector.",
+"conviction": "medium",
+"mentions": 41,
+"vel": 2.9,
+"state": "sustained",
+"crypto": false
+}
+]
+}
