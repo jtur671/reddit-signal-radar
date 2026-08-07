@@ -17,7 +17,9 @@ from email.utils import parsedate_to_datetime
 
 import requests
 
-GNEWS = "https://news.google.com/rss/search?q={q}&hl=en-US&gl=US&ceid=US:en"
+from radar.degrade import warn
+
+GNEWS ="https://news.google.com/rss/search?q={q}&hl=en-US&gl=US&ceid=US:en"
 
 
 def build_query(ticker: str, name: str = "") -> str:
@@ -61,14 +63,18 @@ def headlines(ticker: str, name: str = "", ua: str = "reddit-signal-radar/0.1",
               retries: int = 2, sleep_s: float = 1.0) -> list[str]:
     """Recent news headlines for a ticker via Google News RSS. Never raises; [] on failure."""
     url = GNEWS.format(q=build_query(ticker, name))
+    last = ""
     for attempt in range(retries):
         try:
             r = requests.get(url, headers={"User-Agent": ua}, timeout=15)
             if r.status_code == 200:
                 return parse_news(r.text)
+            last = f"HTTP {r.status_code}"
             if r.status_code in (429, 500, 502, 503):
                 time.sleep(sleep_s * (2 ** attempt)); continue
-            return []
-        except requests.RequestException:
+            break
+        except requests.RequestException as e:
+            last = repr(e)
             time.sleep(sleep_s * (2 ** attempt))
+    warn(f"news {ticker}", last)      # no headlines -> no catalyst summary for this ticker
     return []

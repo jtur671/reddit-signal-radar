@@ -1,3 +1,5 @@
+from freezegun import freeze_time
+
 from radar.render import render_html
 
 def _mover(**k):
@@ -86,6 +88,7 @@ from radar.run import _build_context
 from radar.render import render_html
 
 
+@freeze_time("2026-06-26 13:00:00")                 # alerts below are 1-2h old, i.e. fresh
 def test_two_alert_cards_render_both(tmp_path):
     (tmp_path / "trump_alert.json").write_text(json.dumps(dict(
         monitor_key="trump", label="⚠ Trump Alert", card_style="trump",
@@ -113,6 +116,7 @@ def test_stale_alert_card_is_dropped(tmp_path, monkeypatch):
     assert run._load_alerts(str(tmp_path)) == []     # older than max_age -> filtered
 
 
+@freeze_time("2026-06-26 13:00:00")                 # alert below is 1h old, i.e. fresh
 def test_alert_card_renders_real_css_class_and_href(tmp_path):
     import json
     import radar.run as run

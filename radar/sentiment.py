@@ -1,6 +1,7 @@
 from __future__ import annotations
 import os, re, json
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+from radar.degrade import warn
 
 FINANCE_LEXICON = {
     "moon": 3.0, "rocket": 2.5, "calls": 1.5, "buy": 1.2, "long": 1.0, "squeeze": 1.5,
@@ -50,7 +51,8 @@ def summarize(ticker: str, headlines: list[str], theme: str) -> str:
         r = client.chat.completions.create(model="deepseek-chat",
             messages=[{"role": "user", "content": prompt}], max_tokens=90, temperature=0.3)
         return r.choices[0].message.content.strip()
-    except Exception:
+    except Exception as e:
+        warn(f"deepseek summary {ticker}", e)
         return ""
 
 def _parse_read(text: str, valid: set[str]) -> dict:
@@ -94,9 +96,13 @@ def daily_read(items: list[dict]) -> dict:
     try:
         r = client.chat.completions.create(model="deepseek-chat",
             messages=[{"role": "user", "content": prompt}], max_tokens=320, temperature=0.4)
-        return _parse_read(r.choices[0].message.content or "",
+        read = _parse_read(r.choices[0].message.content or "",
                            {it["ticker"].upper() for it in items})
-    except Exception:
+        if not read:
+            warn("deepseek today's read", "reply did not parse into a lead or any bullets")
+        return read
+    except Exception as e:
+        warn("deepseek today's read", e)
         return {}
 
 def _parse_validation(out: str, tickers: list[str]) -> set[str]:
@@ -138,7 +144,8 @@ def validate_prose_tickers(post_text: str, candidates: list[dict], source_contex
         r = client.chat.completions.create(model="deepseek-chat",
             messages=[{"role": "user", "content": prompt}], max_tokens=120, temperature=0.0)
         return _parse_validation(r.choices[0].message.content or "", tickers)
-    except Exception:
+    except Exception as e:
+        warn("deepseek ticker validation", e)
         return set(tickers)                              # fail open — never suppress on outage
 
 
@@ -173,7 +180,8 @@ def why_it_matters(items: list[dict], lead: str = "") -> str:
         r = client.chat.completions.create(model="deepseek-chat",
             messages=[{"role": "user", "content": prompt}], max_tokens=180, temperature=0.5)
         return (r.choices[0].message.content or "").strip()
-    except Exception:
+    except Exception as e:
+        warn("deepseek why-it-matters", e)
         return ""
 
 def _parse_buys(text: str, valid: set[str], max_picks: int = 3) -> list[dict]:
@@ -234,7 +242,8 @@ def recommend_buys(candidates: list[dict], max_picks: int = 3) -> list[dict]:
             messages=[{"role": "user", "content": prompt}], max_tokens=600, temperature=0.4,
             response_format={"type": "json_object"})
         return _parse_buys(r.choices[0].message.content or "", {c["ticker"].upper() for c in candidates}, max_picks)
-    except Exception:
+    except Exception as e:
+        warn("deepseek early plays", e)
         return []
 
 def engagement_pct(upvotes: int, mentions: int) -> float:

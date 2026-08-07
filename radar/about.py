@@ -13,7 +13,9 @@ from pathlib import Path
 
 import requests
 
-REST = "https://en.wikipedia.org/api/rest_v1/page/summary/"
+from radar.degrade import warn
+
+REST ="https://en.wikipedia.org/api/rest_v1/page/summary/"
 
 
 def fetch_summary(name: str, ua: str = "reddit-signal-radar/0.1") -> dict | None:
@@ -24,9 +26,11 @@ def fetch_summary(name: str, ua: str = "reddit-signal-radar/0.1") -> dict | None
     try:
         r = requests.get(REST + title, headers={"User-Agent": ua}, timeout=15)
         if r.status_code != 200:
+            warn(f"wikipedia {name}", f"HTTP {r.status_code}")
             return None
         d = r.json()
-    except Exception:
+    except Exception as e:
+        warn(f"wikipedia {name}", e)
         return None
     if d.get("type") == "disambiguation":
         return None
