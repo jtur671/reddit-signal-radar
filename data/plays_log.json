@@ -32,6 +32,39 @@
 "vel": 2.9,
 "state": "sustained",
 "crypto": false
+},
+{
+"date": "2026-08-08",
+"ticker": "LUNR",
+"thesis": "LUNR is an early-entry opportunity because the L3Harris contract win is a concrete, revenue-generating catalyst that has not yet been fully priced in, and the stock's cooling state suggests a potential entry before the next leg up.",
+"risk": "Contract execution and delivery risks could delay revenue recognition.",
+"conviction": "high",
+"mentions": 12,
+"vel": 12.0,
+"state": "cooling",
+"crypto": false
+},
+{
+"date": "2026-08-08",
+"ticker": "MP",
+"thesis": "MP Materials' Q2 revenue beat and Trump's backing of U.S. minerals projects provide a strong fundamental and political tailwind, with the stock still in a hot state, indicating momentum but not yet overextended.",
+"risk": "Commodity price volatility and geopolitical tensions could impact margins.",
+"conviction": "medium",
+"mentions": 13,
+"vel": 1.9,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-08",
+"ticker": "OKLO",
+"thesis": "OKLO's massive revenue beat and nuclear reactor milestone, despite a wider loss, signal long-term growth potential that the market may be underappreciating, offering an early entry before the narrative fully shifts.",
+"risk": "Regulatory hurdles and the high cost of nuclear development could delay profitability.",
+"conviction": "medium",
+"mentions": 33,
+"vel": 1.7,
+"state": "sustained",
+"crypto": false
 }
 ]
 }
