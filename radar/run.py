@@ -160,22 +160,23 @@ def main(argv=None) -> int:
         s.components = components_for(s, board, ts_by_bull.get(s.ticker), alert_tickers)
         s.composite, _used = blend(s.components, weights)
     detail_json = _detail_blob(board + still, history, run_day, reddit_subs)
+    sources = {                                        # shown as footer LEDs + published in health
+        "apewisdom": ("ok" if board_source == "apewisdom" and board else "down"),
+        "tradestie": ("fallback" if board_source == "tradestie-fallback"
+                      else ("ok" if ts_rows else "down")),
+        "finnhub": ("ok" if os.environ.get("FINNHUB_API_KEY") else "unused"),
+        "finra": "ok" if short_ratios else "down",
+        "cboe": "ok" if cboe_hits else ("down" if board else "unused"),
+        "cramer": "ok" if cramer_by else "down",
+    }
     html = render_html(**_build_context(board, signals, run_day, corpus, refreshed,
                                         refreshed_iso, today_read, chips, detail_json,
                                         why_matters=why_matters, early_plays=early_plays,
-                                        still=still, alerts=alerts, scorecard=scorecard))
+                                        still=still, alerts=alerts, scorecard=scorecard,
+                                        sources=sources))
     health = assess_health(board, degrade.events(),
                            bool(os.environ.get("DEEPSEEK_API_KEY")),
-                           sources={
-                               "apewisdom": ("ok" if board_source == "apewisdom" and board
-                                             else "down"),
-                               "tradestie": ("fallback" if board_source == "tradestie-fallback"
-                                             else ("ok" if ts_rows else "down")),
-                               "finnhub": ("ok" if os.environ.get("FINNHUB_API_KEY")
-                                           else "unused"),
-                               "finra": "ok" if short_ratios else "down",
-                               "cboe": "ok" if cboe_hits else ("down" if board else "unused"),
-                               "cramer": "ok" if cramer_by else "down"})
+                           sources=sources)
     health["date"] = run_day
     payload = {"board": [s.ticker for s in board], "health": health,
                "signals": [dict(ticker=s.ticker, composite=s.composite,
@@ -456,7 +457,8 @@ def _detail_blob(board, history, run_day, reddit_subs=None):
             ticker=s.ticker, name=s.name, about=(s.about_extract or s.about_desc),
             mentions=s.mentions, vel24=_vel24(s)[0], surprise=s.surprise,
             state=s.state, pct_bull=int(s.pct_bull), price=s.price, pct_change=s.pct_change,
-            composite=s.composite,
+            composite=s.composite, components=(s.components or {}),
+            short_ratio=s.short_ratio, pc_ratio=s.pc_ratio, uoa=s.uoa, cramer=s.cramer,
             upvotes=s.upvotes, themes=(s.themes or []), summary=s.summary, why=_why(s),
             headlines=(s.headlines or [])[:3],   # the actual news driving the chatter
             reddit=_reddit_search_url(s.ticker, reddit_subs),  # link to live Reddit discussions
@@ -475,9 +477,20 @@ def _chip_list(board, themes):
         chips.append("Trump")
     return chips
 
+_COMP_ORDER = [("velocity", "vel"), ("direction", "dir"), ("engagement", "eng"),
+               ("short_pressure", "shorts"), ("options", "options"),
+               ("events", "alerts"), ("cramer_inverse", "cramer⁻¹")]
+
+def _comp_list(s):
+    """Fixed-order (label, value) pairs for the signal-DNA strip. A None value means
+    the source didn't cover this name today (rendered as an empty cell), which is a
+    different fact than a real 0."""
+    comps = s.components or {}
+    return [dict(key=k, label=lbl, val=comps.get(k)) for k, lbl in _COMP_ORDER]
+
 def _build_context(board, signals, run_day, corpus_count, refreshed="", refreshed_iso="",
                    today_read=None, chips=None, detail_json=None, alert=None, why_matters="",
-                   early_plays=None, still=None, alerts=None, scorecard=None):
+                   early_plays=None, still=None, alerts=None, scorecard=None, sources=None):
     maxw = max((s.weighted_today for s in board), default=1) or 1
     ranked = [s for s in board if s.vel_24h is not None]
     breakout = max(ranked, key=lambda s: s.vel_24h, default=None) or \
@@ -494,6 +507,7 @@ def _build_context(board, signals, run_day, corpus_count, refreshed="", refreshe
         why_matters=(why_matters or ""),
         early_plays=(early_plays or []),
         scorecard=scorecard,
+        sources=(sources or {}),
         detail_json=(detail_json or {}),
         alerts=_coerce_alerts(alerts, alert),
         board=[dict(rank=i+1, ticker=s.ticker, mentions=s.mentions,
@@ -506,12 +520,16 @@ def _build_context(board, signals, run_day, corpus_count, refreshed="", refreshe
                      theme=(s.themes[0] if s.themes else ""), mentions=s.mentions,
                      vel24_disp=_vel24(s)[0], vel24_num=_vel24(s)[1],
                      surprise=s.surprise, authors=s.upvotes,
+                     composite=s.composite, short_ratio=s.short_ratio,
+                     pc_ratio=s.pc_ratio, uoa=s.uoa, cramer=s.cramer,
                      pct_bull=int(s.pct_bull), summary=s.summary, subreddits=" · ".join(s.subreddits[:3]))
                 for i, s in enumerate(board[:6])],
         listings=[dict(ticker=s.ticker, theme=(s.themes[0] if s.themes else ""), score=s.score,
                        mentions=s.mentions, vel24_disp=_vel24(s)[0], vel24_num=_vel24(s)[1],
                        surprise=s.surprise, themes_attr="|".join(s.themes or []),
                        authors=s.upvotes, pct_bull=int(s.pct_bull), price=s.price,
+                       composite=s.composite, comp_list=_comp_list(s),
+                       uoa=s.uoa, cramer=s.cramer,
                        pct_change=s.pct_change, emoji=_emoji(s.state)) for s in board],
         still_running=[dict(rank=i+1, ticker=s.ticker, name=s.name, mentions=s.mentions,
                             vel24_disp=_vel24(s)[0], vel24_num=_vel24(s)[1],

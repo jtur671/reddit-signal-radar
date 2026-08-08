@@ -167,6 +167,40 @@ tr[data-ticker]{cursor:pointer}
 .play-rs{font-size:11px;color:var(--dim)}
 .play-rs b{color:var(--faint);font-weight:600;letter-spacing:.04em;text-transform:uppercase;font-size:9px;margin-right:3px}
 .plays-note{font-size:9.5px;line-height:1.5;color:var(--faint);margin-top:12px;font-style:italic}
+
+/* SIGNAL DNA + COMPOSITE */
+.cmp{font-family:"Martian Mono",monospace;font-weight:700;font-size:12.5px;color:var(--gold)}
+.cmp.na{color:var(--faint);font-weight:400}
+.dna{display:inline-flex;gap:2px;vertical-align:middle}
+.dna i{width:8px;height:13px;border-radius:1px;background:rgba(95,207,151,var(--a,.5))}
+.dna i.nul{background:none;border:1px dashed #262b33}
+.dna-legend{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-top:8px}
+.t-uoa{color:var(--gold)}
+.t-cramer{color:#9b7fc7}
+
+/* MODAL COMPONENT BARS */
+#m-compslabel{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:2px 0 6px}
+.m-comps{margin:2px 0 12px}
+.m-comps .cr{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.m-comps .cl{width:74px;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.m-comps .cb{flex:1;height:6px;background:#141821;border-radius:1px;overflow:hidden}
+.m-comps .cb i{display:block;height:100%;background:var(--up-d)}
+.m-comps .cv{width:34px;text-align:right;font-size:10px;color:var(--dim)}
+
+/* TRACK RECORD ROWS */
+.track{margin-top:10px}
+.track thead th{padding:6px 8px}
+.track tbody td{padding:6px 8px;font-size:11px}
+.trk-grade{color:var(--faint);font-style:italic;font-size:10px}
+
+/* DATA SOURCES LEDS */
+.srcs{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:26px;padding:10px 13px;border:1px solid var(--line2);border-radius:3px;background:var(--panel2);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.srcs .hd{color:var(--faint)}
+.srcs .s{display:flex;align-items:center;gap:5px}
+.srcs .led{width:6px;height:6px;border-radius:50%;background:var(--up);box-shadow:0 0 5px var(--up)}
+.srcs .led.down{background:var(--down);box-shadow:0 0 5px var(--down)}
+.srcs .led.unused{background:#3a4049;box-shadow:none}
+.srcs .led.fallback{background:var(--gold);box-shadow:0 0 5px var(--gold)}
 </style>
 </head>
 <body>
@@ -211,7 +245,20 @@ tr[data-ticker]{cursor:pointer}
         avg {{ "%+.1f"|format(scorecard.mean_excess_10d * 100) }}% vs SPY over 10 days ·
         win rate {{ "%.0f"|format((scorecard.win_rate_10d or 0) * 100) }}%
       {% else %}grading in progress — picks too fresh to score{% endif %}
+      {% if scorecard.excluded_crypto %} · {{ scorecard.excluded_crypto }} crypto pick{{ "s" if scorecard.excluded_crypto != 1 }} excluded from grading{% endif %}
     </div>
+    {% if scorecard.picks %}
+    <table class="track">
+      <thead><tr><th style="text-align:left">Date</th><th style="text-align:left">Ticker</th><th>Conviction</th><th>5d vs SPY</th><th>10d vs SPY</th></tr></thead>
+      <tbody>
+        {% for p in scorecard.picks[-6:]|reverse %}
+        <tr data-ticker="{{ p.ticker }}"><td style="text-align:left">{{ p.date }}</td><td class="tk" style="text-align:left">{{ p.ticker }}</td><td>{{ p.conviction or "—" }}</td>
+          <td>{% if p.excess_5d is not none %}<span class="{% if p.excess_5d < 0 %}down{% else %}up{% endif %}">{{ "%+.1f"|format(p.excess_5d * 100) }}%</span>{% else %}<span class="trk-grade">grading</span>{% endif %}</td>
+          <td>{% if p.excess_10d is not none %}<span class="{% if p.excess_10d < 0 %}down{% else %}up{% endif %}">{{ "%+.1f"|format(p.excess_10d * 100) }}%</span>{% else %}<span class="trk-grade">grading</span>{% endif %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
     <div class="plays-note">{{ scorecard.disclaimer }}</div>
   </div>
   {% endif %}
@@ -273,7 +320,7 @@ tr[data-ticker]{cursor:pointer}
   {% for m in movers %}
   <div class="card{% if m.css %} {{ m.css }}{% endif %}" data-themes="{{ m.themes_attr }}" data-ticker="{{ m.ticker }}">
     <div class="hd">
-      <span class="rk">№{{ m.rank }}</span><span class="tk">{{ m.ticker }}</span><span class="tag {% if m.css == 'cool' %}t-cool{% elif m.css == 'live' %}t-new{% else %}t-sus{% endif %}">{{ m.state_label }}</span>
+      <span class="rk">№{{ m.rank }}</span><span class="tk">{{ m.ticker }}</span><span class="tag {% if m.css == 'cool' %}t-cool{% elif m.css == 'live' %}t-new{% else %}t-sus{% endif %}">{{ m.state_label }}</span>{% if m.composite is defined and m.composite is not none %}<span class="cmp" title="composite score">{{ m.composite }}<span style="font-size:9px;color:var(--faint)">/100</span></span>{% endif %}{% if m.uoa %}<span class="tag t-uoa" title="unusual options activity — day volume outsized vs open interest">UOA</span>{% endif %}{% if m.cramer %}<span class="tag t-cramer" title="latest Mad Money call — the composite fades it">CRAMER: {{ m.cramer|replace("_", " ") }}</span>{% endif %}
       <div class="px"><div class="v {% if m.pct_change is not none and m.pct_change < 0 %}down{% else %}up{% endif %}">{% if m.price is none %}—{% else %}${{ "%.2f"|format(m.price) }}{% endif %} {% if m.pct_change is none %}{% elif m.pct_change < 0 %}▼{{ "%.1f"|format(m.pct_change|abs) }}%{% else %}▲{{ "%.1f"|format(m.pct_change) }}%{% endif %}</div><div class="th">{{ m.theme }}</div></div>
     </div>
     <div class="row">
@@ -281,6 +328,8 @@ tr[data-ticker]{cursor:pointer}
       <div class="metric"><div class="mv {% if m.vel24_num < 1 %}down{% else %}up{% endif %}">{{ m.vel24_disp }}</div><div class="ml">24h velocity</div></div>
       <div class="metric"><div class="mv {% if m.surprise < 0 %}down{% endif %}">{% if m.surprise >= 0 %}+{% else %}−{% endif %}{{ "%.1f"|format(m.surprise|abs) }}σ</div><div class="ml">surprise</div></div>
       <div class="metric"><div class="mv">{{ m.authors }}</div><div class="ml">upvotes</div></div>
+      {% if m.short_ratio is defined and m.short_ratio is not none %}<div class="metric"><div class="mv{% if m.short_ratio >= 0.6 %} down{% endif %}">{{ "%.0f"|format(m.short_ratio * 100) }}%</div><div class="ml">short vol</div></div>{% endif %}
+      {% if m.pc_ratio is defined and m.pc_ratio is not none %}<div class="metric"><div class="mv{% if m.pc_ratio > 1 %} down{% endif %}">{{ "%.2f"|format(m.pc_ratio) }}</div><div class="ml">put/call</div></div>{% endif %}
       <div style="margin-left:auto"><div class="ml">{{ m.pct_bull }}% eng</div><div class="sent"><i style="width:{{ m.pct_bull }}%;background:var(--up-d)"></i><i style="width:{{ 100 - m.pct_bull }}%;background:var(--down)"></i></div></div>
     </div>
     <p class="quote">{{ m.summary }}</p>
@@ -294,17 +343,18 @@ tr[data-ticker]{cursor:pointer}
   <!-- 04 LISTINGS -->
   <div class="sec"><span class="no">05</span><span class="nm">The Listings / Full Metrics</span><span class="ln"></span></div>
   <table>
-    <thead><tr><th>Ticker</th><th>Theme</th><th>Score</th><th>Ment.</th><th>Vel</th><th>Surprise</th><th>Upv.</th><th>Eng</th><th>Last</th><th>Δ</th><th></th></tr></thead>
+    <thead><tr><th>Ticker</th><th>Theme</th><th>Score</th><th>Cmp</th><th>Signal DNA</th><th>Ment.</th><th>Vel</th><th>Surprise</th><th>Upv.</th><th>Eng</th><th>Last</th><th>Δ</th><th></th></tr></thead>
     <tbody>
       {% if listings %}
       {% for r in listings %}
-      <tr data-themes="{{ r.themes_attr }}" data-ticker="{{ r.ticker }}"><td class="tk">{{ r.ticker }}</td><td style="text-align:left">{{ r.theme }}</td><td>{{ r.score }}</td><td>{{ r.mentions }}</td><td class="{% if r.vel24_num < 1 %}down{% else %}up{% endif %}">{{ r.vel24_disp }}</td><td>{% if r.surprise >= 0 %}+{% else %}−{% endif %}{{ "%.1f"|format(r.surprise|abs) }}σ</td><td>{{ r.authors }}</td><td>{{ r.pct_bull }}%</td><td>{% if r.price is none %}—{% else %}{{ r.price }}{% endif %}</td><td class="{% if r.pct_change is not none and r.pct_change < 0 %}down{% else %}up{% endif %}">{% if r.pct_change is none %}—{% else %}{% if r.pct_change >= 0 %}+{% endif %}{{ "%.1f"|format(r.pct_change) }}%{% endif %}</td><td>{{ r.emoji }}</td></tr>
+      <tr data-themes="{{ r.themes_attr }}" data-ticker="{{ r.ticker }}"><td class="tk">{{ r.ticker }}</td><td style="text-align:left">{{ r.theme }}</td><td>{{ r.score }}</td><td>{% if r.composite is defined and r.composite is not none %}<span class="cmp">{{ r.composite }}</span>{% else %}<span class="cmp na">—</span>{% endif %}</td><td><span class="dna">{% for c in r.comp_list|default([], true) %}{% if c.val is not none %}<i style="--a:{{ "%.2f"|format(0.15 + (c.val / 100) * 0.85) }}" title="{{ c.label }} {{ c.val|round|int }}"></i>{% else %}<i class="nul" title="{{ c.label }} — not covered"></i>{% endif %}{% endfor %}</span>{% if r.uoa %} <span title="unusual options activity" style="color:var(--gold);font-size:10px">◆</span>{% endif %}</td><td>{{ r.mentions }}</td><td class="{% if r.vel24_num < 1 %}down{% else %}up{% endif %}">{{ r.vel24_disp }}</td><td>{% if r.surprise >= 0 %}+{% else %}−{% endif %}{{ "%.1f"|format(r.surprise|abs) }}σ</td><td>{{ r.authors }}</td><td>{{ r.pct_bull }}%</td><td>{% if r.price is none %}—{% else %}{{ r.price }}{% endif %}</td><td class="{% if r.pct_change is not none and r.pct_change < 0 %}down{% else %}up{% endif %}">{% if r.pct_change is none %}—{% else %}{% if r.pct_change >= 0 %}+{% endif %}{{ "%.1f"|format(r.pct_change) }}%{% endif %}</td><td>{{ r.emoji }}</td></tr>
       {% endfor %}
       {% else %}
-      <tr><td colspan="11" style="text-align:left">No listings today.</td></tr>
+      <tr><td colspan="13" style="text-align:left">No listings today.</td></tr>
       {% endif %}
     </tbody>
   </table>
+  <div class="dna-legend">signal dna: vel · dir · eng · shorts · options · alerts · cramer⁻¹ — cell brightness = 0–100 · empty cell = source didn't cover this name today · ◆ = unusual options activity</div>
 
   <!-- 06 STILL RUNNING -->
   {% if still_running %}
@@ -333,7 +383,14 @@ tr[data-ticker]{cursor:pointer}
   </div>
   <div class="method">
     <b>// how signals are scored.</b> Daily per-ticker Reddit mention counts (via the ApeWisdom aggregator) drive two numbers: <b>24h velocity</b> (today's mentions vs yesterday's — what the board shows) and a <b>surprise</b> z-score measured against each ticker's adaptive 90-day EMA baseline, which is what the engine actually ranks by. A noise floor on minimum mentions filters thin signals, and silent days decay a ticker's baseline so stale names fall off the board. The engagement bar is an upvotes-per-mention proxy (the aggregator provides no directional sentiment), with a DeepSeek summary on the top names. Prices via yfinance. 90 days of history retained.
+    The <b>composite</b> (0–100, per listing) blends seven components — velocity percentile, Tradestie bull share, engagement, FINRA short-volume pressure, options activity, fresh monitor alerts, and an inverse read of Mad Money calls — with heuristic weights until the weekly backtest accrues enough history to calibrate them. Empty signal-DNA cells mean a source didn't cover that name today.
   </div>
+
+  {% if sources %}
+  <div class="srcs"><span class="hd">data sources</span>
+    {% for name, st in sources.items() %}<span class="s"><span class="led{% if st != 'ok' %} {{ st }}{% endif %}"></span>{{ name }}{% if st != 'ok' %} · {{ st }}{% endif %}</span>{% endfor %}
+  </div>
+  {% endif %}
 
   <div class="foot"><span>Reddit Signal Radar</span><span>Not Investment Advice</span><span>{% if meta.refreshed %}Generated {{ meta.refreshed }}{% else %}Auto-generated daily{% endif %}</span></div>
 
@@ -347,6 +404,8 @@ tr[data-ticker]{cursor:pointer}
     <div id="m-aboutlabel">what it is</div>
     <p id="m-about"></p>
     <div class="modal-metrics" id="m-metrics"></div>
+    <div id="m-compslabel">signal components</div>
+    <div class="m-comps" id="m-comps"></div>
     <svg id="m-spark" class="modal-spark" viewBox="0 0 240 48" preserveAspectRatio="none"></svg>
     <div id="m-sparklabel"></div>
     <div id="m-whylabel">why it's trending</div>
@@ -435,6 +494,29 @@ tr[data-ticker]{cursor:pointer}
     mx.appendChild(metric('engagement', d.pct_bull+'%'));
     mx.appendChild(metric('price', d.price==null?'—':('$'+d.price+(d.pct_change==null?'':' '+(d.pct_change>=0?'+':'')+d.pct_change+'%'))));
     if(d.composite!=null) mx.appendChild(metric('composite', d.composite+'/100'));
+    if(d.short_ratio!=null) mx.appendChild(metric('short vol', Math.round(d.short_ratio*100)+'%'));
+    if(d.pc_ratio!=null) mx.appendChild(metric('put/call', d.pc_ratio));
+    if(d.cramer) mx.appendChild(metric('cramer call', String(d.cramer).replace(/_/g,' ')));
+    // signal-component bars: null = source didn't cover the name (bar hidden at 0,
+    // value shows an em dash) — a different fact than a real 0.
+    var CO=[['velocity','vel'],['direction','dir'],['engagement','eng'],
+            ['short_pressure','shorts'],['options','options'],
+            ['events','alerts'],['cramer_inverse','cramer⁻¹']];
+    var cw=document.getElementById('m-comps'), cl=document.getElementById('m-compslabel');
+    while(cw.firstChild) cw.removeChild(cw.firstChild);
+    var comps=d.components||{}, any=false;
+    CO.forEach(function(p){
+      var v=comps[p[0]];
+      if(v!=null) any=true;
+      var row=document.createElement('div'); row.className='cr';
+      var l=document.createElement('div'); l.className='cl'; l.textContent=p[1];
+      var b=document.createElement('div'); b.className='cb';
+      var f=document.createElement('i'); f.style.width=((v==null||v<=0)?0:Math.max(2,v))+'%';
+      b.appendChild(f);
+      var val=document.createElement('div'); val.className='cv'; val.textContent=(v==null?'—':Math.round(v));
+      row.appendChild(l); row.appendChild(b); row.appendChild(val); cw.appendChild(row);
+    });
+    cw.style.display=any?'':'none'; cl.style.display=any?'':'none';
     spark(d.series);
     document.getElementById('m-why').textContent=d.summary||d.why||'';  // catalyst first, metrics only as fallback
     var nl=document.getElementById('m-newslabel'), nu=document.getElementById('m-news'), hs=d.headlines||[];
