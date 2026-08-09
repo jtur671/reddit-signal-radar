@@ -65,6 +65,39 @@
 "vel": 1.7,
 "state": "sustained",
 "crypto": false
+},
+{
+"date": "2026-08-09",
+"ticker": "IQ",
+"thesis": "iQIYI's new content slate and upcoming earnings, with a 2.5x mention surge, suggest early momentum ahead of a potential re-rating.",
+"risk": "Chinese regulatory and market risks could impact performance.",
+"conviction": "medium",
+"mentions": 15,
+"vel": 2.5,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-09",
+"ticker": "ONDS",
+"thesis": "Ondas has a concrete $50M+ Army order and new contracts, driving a 1.2x mention increase, positioning it as an early defense-tech play with tangible catalysts.",
+"risk": "Small-cap volatility and dependence on government contracts.",
+"conviction": "medium",
+"mentions": 20,
+"vel": 1.2,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-09",
+"ticker": "POET",
+"thesis": "POET is riding the AI semiconductor wave from Cerebras' successful IPO, with a massive 11x surge in mentions indicating fresh, fast-moving interest before the broader market catches on.",
+"risk": "High valuation and reliance on sector sentiment could lead to sharp pullbacks.",
+"conviction": "high",
+"mentions": 11,
+"vel": 11.0,
+"state": "hot",
+"crypto": false
 }
 ]
 }
