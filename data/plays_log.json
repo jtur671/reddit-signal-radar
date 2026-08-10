@@ -98,6 +98,39 @@
 "vel": 11.0,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-08-10",
+"ticker": "COHR",
+"thesis": "Rapid acceleration (10x) driven by anticipation of Lumentum's earnings, as COHR often trades in tandem; early positioning before the catalyst could capture a sympathy move.",
+"risk": "If Lumentum's results disappoint, COHR could drop in sympathy.",
+"conviction": "medium",
+"mentions": 10,
+"vel": 10.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-10",
+"ticker": "INFQ",
+"thesis": "Fresh new mention with 13x growth, backed by a concrete defense contract catalyst that validates quantum computing's real-world applications, likely to attract more attention as sector peers like IonQ move.",
+"risk": "Quantum sector is highly speculative and could see sharp pullbacks on any negative news.",
+"conviction": "high",
+"mentions": 13,
+"vel": 13.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-08-10",
+"ticker": "ONDS",
+"thesis": "Sustained momentum with a strong $50M+ Army order and multiple new contracts, indicating growing defense and commercial traction; still early enough to ride the news cycle.",
+"risk": "Execution risks on large orders and potential dilution from capital raises.",
+"conviction": "medium",
+"mentions": 23,
+"vel": 1.1,
+"state": "sustained",
+"crypto": false
 }
 ]
 }
