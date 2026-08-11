@@ -131,6 +131,39 @@
 "vel": 1.1,
 "state": "sustained",
 "crypto": false
+},
+{
+"date": "2026-08-11",
+"ticker": "FRMI",
+"thesis": "Fermi's first AI data center lease with TensorWave is a massive $6.5B, 15-year contract, marking a concrete commercial breakthrough that could drive significant revenue growth and stock appreciation before the market fully prices it in.",
+"risk": "The lease is a single contract and may face execution risks or delays in deployment.",
+"conviction": "high",
+"mentions": 10,
+"vel": null,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-11",
+"ticker": "HIMS",
+"thesis": "Hims & Hers' 40% revenue surge and a $225M buyback signal strong fundamentals and management confidence, suggesting the stock is undervalued and poised for a rebound.",
+"risk": "Regulatory pressures or competitive dynamics in telehealth could impact future growth.",
+"conviction": "medium",
+"mentions": 40,
+"vel": 13.3,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-11",
+"ticker": "USAR",
+"thesis": "USA Rare Earth's strong IPO debut and Q2 earnings beat highlight robust demand for domestic rare-earth supply, positioning the stock for continued upside as the sector gains strategic importance.",
+"risk": "Post-IPO volatility and potential profit-taking could lead to short-term price swings.",
+"conviction": "medium",
+"mentions": 18,
+"vel": 18.0,
+"state": "hot",
+"crypto": false
 }
 ]
 }
