@@ -164,6 +164,39 @@
 "vel": 18.0,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-08-12",
+"ticker": "FLY",
+"thesis": "Firefly's massive revenue surge and Space Force contract highlight a strong growth trajectory, with the stock still in early stages of discussion, offering a chance to get in before broader recognition.",
+"risk": "High volatility and potential overreaction to earnings.",
+"conviction": "medium",
+"mentions": 10,
+"vel": 10.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-12",
+"ticker": "LITE",
+"thesis": "Lumentum's strong beat and guidance, driven by AI data center optical demand, positions it well for continued upside as the AI infrastructure buildout accelerates.",
+"risk": "Sustained state may mean the move is partially priced in.",
+"conviction": "medium",
+"mentions": 34,
+"vel": 4.9,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-08-12",
+"ticker": "RXT",
+"thesis": "Rackspace's Q2 beat with AMD and Palantir monetization opportunities, despite guidance cut, suggests the market is focusing on the upside potential, making it an early entry before the narrative fully shifts.",
+"risk": "Guidance cut may weigh on sentiment if the market focuses on it.",
+"conviction": "high",
+"mentions": 17,
+"vel": 17.0,
+"state": "hot",
+"crypto": false
 }
 ]
 }
