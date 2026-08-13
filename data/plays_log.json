@@ -197,6 +197,39 @@
 "vel": 17.0,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-08-13",
+"ticker": "CSCO",
+"thesis": "CSCO's massive 99.9x mention surge is fresh and tied to a record Q4 earnings report and an 'AI Super Cycle' narrative, which could drive continued momentum as the market digests the strong results.",
+"risk": "The stock may have already priced in the earnings beat, leading to a pullback.",
+"conviction": "high",
+"mentions": 119,
+"vel": 119.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-08-13",
+"ticker": "INFQ",
+"thesis": "INFQ's 6.3x mention growth is driven by a concrete partnership with Eaton for quantum computing research, a niche but real catalyst that could attract early attention.",
+"risk": "Quantum computing is still nascent, and the commercial impact may take time to materialize.",
+"conviction": "low",
+"mentions": 38,
+"vel": 6.3,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-08-13",
+"ticker": "ONDS",
+"thesis": "ONDS is hot with a 2.9x mention surge, backed by a multi-million-dollar Israel drone contract and a Buy rating from Roth Capital, suggesting institutional validation and potential for further upside.",
+"risk": "Contract execution and geopolitical factors could introduce volatility.",
+"conviction": "medium",
+"mentions": 115,
+"vel": 2.9,
+"state": "hot",
+"crypto": false
 }
 ]
 }
