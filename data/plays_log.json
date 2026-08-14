@@ -230,6 +230,39 @@
 "vel": 2.9,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-08-14",
+"ticker": "IREN",
+"thesis": "Microsoft formally accepting the first AI data center under the $9.7B deal is a major validation, and the sustained momentum suggests the market hasn't fully priced in the long-term revenue stream.",
+"risk": "Execution risks on the massive buildout could delay revenue recognition.",
+"conviction": "medium",
+"mentions": 41,
+"vel": 2.9,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-08-14",
+"ticker": "UMAC",
+"thesis": "Fresh catalyst from new drone tariffs plus a bullish analyst initiation, with mentions just starting to spike\u2014early entry before the move is fully recognized.",
+"risk": "Policy-driven spikes can reverse quickly if tariff details change or if the stock has already priced in the news.",
+"conviction": "high",
+"mentions": 21,
+"vel": null,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-14",
+"ticker": "WDAY",
+"thesis": "Potential Silver Lake buyout is a concrete, high-impact catalyst that just surfaced, and the stock is still in the early 'new' lifecycle stage with room to run.",
+"risk": "Deal talks could fall through, leaving the stock to revert to fundamentals.",
+"conviction": "medium",
+"mentions": 28,
+"vel": 28.0,
+"state": "new",
+"crypto": false
 }
 ]
 }
