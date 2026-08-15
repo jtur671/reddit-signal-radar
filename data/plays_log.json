@@ -263,6 +263,39 @@
 "vel": 28.0,
 "state": "new",
 "crypto": false
+},
+{
+"date": "2026-08-15",
+"ticker": "AAOI",
+"thesis": "AAOI is benefiting from a broad small-cap rally and Nvidia's strategic financing narrative, with mentions up 29x, signaling a fresh wave of interest. The lack of a company-specific catalyst makes it a speculative play, but the momentum and sector tailwinds could drive further upside.",
+"risk": "The move is driven by macro factors and could fizzle if the small-cap rally loses steam.",
+"conviction": "low",
+"mentions": 29,
+"vel": 29.0,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-08-15",
+"ticker": "NOK",
+"thesis": "Nokia's optical networking business is gaining traction as a growth driver, and the stock's recent surge on a bullish analyst note suggests the market is just beginning to re-rate the company. With mentions up 99.9x, this is a fresh, fast-moving opportunity before the broader crowd catches on.",
+"risk": "The move could be a short-term spike if the analyst's thesis fails to materialize in upcoming earnings.",
+"conviction": "high",
+"mentions": 123,
+"vel": 123.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-15",
+"ticker": "UMAC",
+"thesis": "Unusual Machines is riding a powerful policy catalyst with Trump's executive action on drone supply chains, and the stock is still in the early stages of a sector-wide rally. The 1.8x mention growth indicates accelerating interest, making it a prime early entry before the move becomes obvious.",
+"risk": "Policy-driven rallies can reverse quickly if the executive action faces legal challenges or implementation delays.",
+"conviction": "medium",
+"mentions": 37,
+"vel": 1.8,
+"state": "hot",
+"crypto": false
 }
 ]
 }
