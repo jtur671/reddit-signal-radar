@@ -296,6 +296,39 @@
 "vel": 1.8,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-08-16",
+"ticker": "API",
+"thesis": "Agora's Q2 earnings beat and raised guidance, along with a B of A price target hike, signal a turnaround that is still early in its recognition phase.",
+"risk": "Q3 guidance may prove optimistic if demand softens.",
+"conviction": "medium",
+"mentions": 24,
+"vel": 2.4,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-16",
+"ticker": "IP",
+"thesis": "The public conflict with AICC over containerboard price hikes directly threatens IP's pricing power, but the market hasn't fully priced in the potential margin impact, offering a short-term opportunity.",
+"risk": "Price hikes may still go through, reducing the downside.",
+"conviction": "medium",
+"mentions": 12,
+"vel": 12.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-16",
+"ticker": "RMD",
+"thesis": "ResMed's soft FY27 outlook and analyst flag of 31% undervaluation, coupled with a bigger payout, create an early entry before the market fully reprices the stock's recovery potential.",
+"risk": "Recall-hit outlook could worsen, delaying recovery.",
+"conviction": "high",
+"mentions": 19,
+"vel": 19.0,
+"state": "hot",
+"crypto": false
 }
 ]
 }
