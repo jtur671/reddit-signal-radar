@@ -54,7 +54,8 @@ def parse_hits(raw) -> list[dict]:
                if cik and acc_no and fname
                else "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&type=8-K")
         out.append({
-            "id": acc,
+            "id": acc_no,                    # accession, NOT acc_no:fname -- EFTS indexes
+                                             # every file in a submission separately
             "ticker": ticker_from_display(display),
             "display": display,
             "file_date": str(src.get("file_date") or ""),
@@ -95,6 +96,9 @@ class EdgarEventsMonitor:
         self.seen_cap = 5000
 
     def fetch_new(self, seen: set[str]):
+        # Cursors written before the accession-dedup change hold "<accession>:<filename>".
+        # Normalise so the first tick after deploy does not re-alert on seen filings.
+        seen = {str(s).partition(":")[0] for s in seen}
         watch = self._watch() if callable(self._watch) else set(self._watch)
         end = date.today().isoformat()
         start = (date.today() - timedelta(days=1)).isoformat()

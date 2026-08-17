@@ -65,6 +65,53 @@ def test_monitor_filters_to_watchset_and_advances_cursor(monkeypatch):
                             watch=lambda: {"WTCH"}, max_age_h=24)
     signals, evaluated = m.fetch_new(set())
     assert len(signals) == 1 and signals[0].tickers == ["WTCH"]
-    assert set(evaluated) == {"acc1:doc.htm", "acc2:doc.htm"}   # non-hits advance the cursor too
-    signals2, _ = m.fetch_new({"acc1:doc.htm", "acc2:doc.htm"})
-    assert signals2 == []                                       # dedup works
+    assert set(evaluated) == {"acc1", "acc2"}       # non-hits advance the cursor too
+    signals2, _ = m.fetch_new({"acc1", "acc2"})
+    assert signals2 == []                            # dedup works
+
+
+def test_parse_hits_id_is_the_accession_number():
+    # EFTS indexes every FILE in a submission separately -- the primary document AND
+    # each exhibit. Measured 2026-08-10..14: S-3,S-3ASR returned 100 hits for only 35
+    # filings, one filing yielding SIX. Keying on "<accession>:<filename>" would alert
+    # once per exhibit. The live 8-K monitor is accidentally immune (ratio exactly 1.0)
+    # because "material definitive agreement" appears only in the primary document.
+    raw = {"hits": {"hits": [
+        {"_id": "0001213900-26-087891:form-s3.htm",
+         "_source": {"ciks": ["0000012345"], "display_names": ["Acme  (ACME)  (CIK 1)"],
+                     "file_date": "2026-08-12"}},
+        {"_id": "0001213900-26-087891:ex-5_1.htm",
+         "_source": {"ciks": ["0000012345"], "display_names": ["Acme  (ACME)  (CIK 1)"],
+                     "file_date": "2026-08-12"}},
+    ]}}
+    rows = parse_hits(raw)
+    assert [r["id"] for r in rows] == ["0001213900-26-087891"] * 2
+    assert rows[0]["url"].endswith("form-s3.htm")     # url still needs the filename
+
+
+def test_fetch_new_emits_one_signal_per_filing(monkeypatch):
+    import radar.monitors.edgar_events as ee
+    six_files = {"hits": {"hits": [
+        {"_id": f"acc1:ex-{i}.htm",
+         "_source": {"ciks": ["1"], "display_names": ["Watched Co  (WTCH)  (CIK 1)"],
+                     "file_date": "2026-08-12"}} for i in range(6)]}}
+    monkeypatch.setattr(ee, "_fetch_json", lambda url, ua: six_files)
+    m = EdgarEventsMonitor(phrases=["offering"], user_agent="t", watch=lambda: {"WTCH"})
+    signals, evaluated = m.fetch_new(set())
+    assert len(signals) == 1                      # six files, one filing, one alert
+    assert evaluated == ["acc1"]
+
+
+def test_fetch_new_honours_a_legacy_accession_colon_filename_cursor(monkeypatch):
+    # data/edgar8k_seen.json holds "<accession>:<filename>" entries written before this
+    # change. Without normalisation the first tick after deploy re-alerts on filings
+    # already seen.
+    import radar.monitors.edgar_events as ee
+    fixture = {"hits": {"hits": [
+        {"_id": "acc1:doc.htm",
+         "_source": {"ciks": ["1"], "display_names": ["Watched Co  (WTCH)  (CIK 1)"],
+                     "file_date": "2026-08-12"}}]}}
+    monkeypatch.setattr(ee, "_fetch_json", lambda url, ua: fixture)
+    m = EdgarEventsMonitor(phrases=["x"], user_agent="t", watch=lambda: {"WTCH"})
+    signals, _ = m.fetch_new({"acc1:some-other-file.htm"})
+    assert signals == []
