@@ -1,10 +1,12 @@
-requests==2.32.3
+# Exact pins: CI installs these into a runner that holds every repo secret, so the
+# version that publishes is the version the test gate ran against — no silent drift.
+requests==2.33.0          # 2.32.3 -> CVE-2024-47081 (.netrc leak), CVE-2026-25645 (temp reuse)
 vaderSentiment==3.3.2
 yfinance==1.5.2
 alpaca-py==0.33.1
-jinja2==3.1.4
+jinja2==3.1.6             # 3.1.4 -> CVE-2024-56201/56326, CVE-2025-27516 (sandbox breakout)
 pyyaml==6.0.2
-openai>=1.59.0,<2
+openai==1.109.1           # was >=1.59.0,<2 — a floating range resolves at CI runtime
 resend==2.5.1
 pytest==8.3.4
 freezegun==1.5.1

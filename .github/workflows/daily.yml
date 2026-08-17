@@ -16,9 +16,11 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      # Actions pinned to commit SHAs, not tags: a tag is mutable, and this runner holds
+      # every repo secret. Bump deliberately (`gh api repos/<a>/git/ref/tags/<v>`).
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09   # v5
         with: { ref: main, fetch-depth: 1 }
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1   # v6
         with: { python-version: "3.11" }
       - run: pip install -r requirements.txt
       - name: Restore radar state (data branch)
@@ -37,8 +39,6 @@ jobs:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           RESEND_FROM: ${{ secrets.RESEND_FROM }}
-          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
-          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
           EMAIL_RECIPIENTS: ${{ secrets.EMAIL_RECIPIENTS }}
           FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
         run: python -m radar.run --out out
@@ -60,6 +60,6 @@ jobs:
           git -C /tmp/state add -A data
           git -C /tmp/state diff --cached --quiet || git -C /tmp/state commit -m "state: daily $(date -u +%F)"
           git -C /tmp/state push origin HEAD:refs/heads/data
-      - uses: actions/upload-pages-artifact@v5
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9   # v5
         with: { path: out }
-      - uses: actions/deploy-pages@v5
+      - uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128   # v5

@@ -12,9 +12,11 @@ jobs:
   backtest:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      # Actions pinned to commit SHAs, not tags — a tag is mutable and this runner can
+      # push to the data branch. Bump deliberately (`gh api repos/<a>/git/ref/tags/<v>`).
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09   # v5
         with: { ref: main, fetch-depth: 1 }
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1   # v6
         with: { python-version: "3.11" }
       - run: pip install -r requirements.txt
       - name: Restore radar state (data branch)

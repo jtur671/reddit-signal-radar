@@ -1,6 +1,8 @@
 from __future__ import annotations
 import os, html as _html
 
+from radar.urls import safe_url
+
 DASHBOARD_URL = "https://jtur671.github.io/reddit-signal-radar/"
 
 # brand palette (light variant of the dashboard's terminal theme)
@@ -35,6 +37,10 @@ def _money(value) -> str:
 
 
 def _button(href: str, label: str) -> str:
+    """Alert URLs come from feeds we don't control; a non-http(s) scheme drops the button."""
+    href = safe_url(href)
+    if not href:
+        return ""
     return (f'<a href="{_esc(href)}" style="display:inline-block;padding:10px 18px;'
             f'background:{INK};color:#ffffff;text-decoration:none;border-radius:6px;'
             f'font-family:{SANS};font-size:13px;font-weight:600">{_esc(label)}</a>')
