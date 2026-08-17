@@ -26,18 +26,12 @@ of this document.
 |---|---|
 | Branch | `harden/audit-fixes` (ahead of `main`; security-audit fixes + this research) |
 | Prod | daily board + email 6:17 AM ET; 5-monitor fleet on a 30-min tick |
-| Tests | **327 passed in 48.9s** (measured 2026-08-17, `.venv`). Re-run rather than quote: `source .venv/bin/activate && python -m pytest` |
+| Tests | **351 passed in 49.54s** (measured 2026-08-17, `.venv`). Re-run rather than quote: `source .venv/bin/activate && python -m pytest` |
 | Data branch | `origin/data` — 654 tickers, 76 daily snapshots, 8,364 ticker-days (measured 2026-08-17) |
 | Backtest power gate | needs 150 days, has 76 → opens ≈ **2026-11-01** |
-| Current phase | **E1 — Catalyst layer**, spec not yet written |
+| Current phase | **E2 — Non-social attention**, spec not yet written |
 
-### Open defect found during research (blocks E1)
-
-`radar/composite.py:43` — `"events": 100.0 if s.ticker in alert_tickers else 0.0`, and
-`radar/run.py:154` builds `alert_tickers` as a flat set across all monitors, discarding
-which monitor fired. Every other component is oriented higher-is-more-bullish. So the
-catalyst layer would score a 424B5 dilution and a 25-NSE delisting as **+100** — the
-radar would rank a diluting company *higher* for diluting. Sign this before E1 ships.
+### ~~Open defect found during research (blocks E1)~~ — RESOLVED `e602bce`, see §5.
 
 ### Known, accepted, not a bug
 
@@ -65,24 +59,28 @@ An item is not done until its hook has been run.
       without ever putting the file on `main`.
 - [x] Delete `.github/workflows/probe-sources.yml` — see §5 for the recovery SHA.
 
-### E1 — Catalyst layer · next
+### E1 — Catalyst layer · **landed 2026-08-17** (see §5); one follow-up still open
 
-- [ ] Sign the `events` composite component
+- [x] Sign the `events` composite component
       **↪ hook:** strike the "Open defect" block in §1 and move it to §5 with the commit SHA.
-- [ ] Write the spec → `docs/superpowers/specs/YYYY-MM-DD-catalyst-layer-design.md`
-      **↪ hook:** link it here and in [[ROADMAP]]'s E1 block.
-- [ ] Form-parameterized EDGAR monitor (`forms=` and `q=` from config)
-- [ ] Wire the four classes (`dilution` / `shelf` / `activist` / `delisting`)
-- [ ] Widen the watch gate to the full 90-day history
+      Done — struck in §1, full record in §5 (`e602bce`).
+- [x] Write the spec → `docs/superpowers/specs/2026-08-17-catalyst-layer-design.md`
+      **↪ hook:** link it here and in [[ROADMAP]]'s E1 block. Done.
+- [x] Form-parameterized EDGAR monitor (`forms=` and `q=` from config)
+- [x] Wire the four classes (`dilution` / `shelf` / `activist` / `delisting`)
+- [x] Widen the watch gate to the full 90-day history
 - [ ] **Measure real alert volume after 1 week live** and compare to the ~3.2/day estimate
       **↪ hook:** put the measured number in §4 next to the estimate. If it is 2× off,
       say so — a wrong estimate that goes uncorrected is how the next plan gets built wrong.
       **↪ hook:** add a `regime_notes` entry — a new alert class changes the `events`
       component, which changes every composite, which is a backtest regime boundary.
-- [ ] Update [[ROADMAP]] decision log
+      Second hook done (`radar/backtest.py` `REGIME_NOTES`, dated 2026-08-17); the volume
+      measurement itself is still outstanding — not enough days live yet.
+- [x] Update [[ROADMAP]] decision log
       **↪ hook:** tick E1 in [[ROADMAP]], move this whole block to §5, set §1 phase to E2.
+      Done.
 
-### E2 — Non-social attention
+### E2 — Non-social attention · next
 
 - [ ] Decide: new weighted components, or published-but-unweighted until the power gate
       **↪ hook:** record the decision and its reason in §5 — this one will be re-litigated.
@@ -159,7 +157,7 @@ fact. Replace with a measurement when you can.
 | Board names/day (post-floor) | ~54 | history, 2026-08-08→17 | monthly |
 | Reddit RSS budget | 1 req / ~60s / IP | `x-ratelimit-*` headers | if RSS is ever used |
 | EFTS page cap | 100 hits | `len(hits)` vs `total` | if paging is added |
-| Test suite | 327 passed / 48.9s | measured 2026-08-17 | every branch |
+| Test suite | 351 passed / 49.54s | measured 2026-08-17 | every branch |
 
 ---
 
@@ -168,6 +166,29 @@ fact. Replace with a measurement when you can.
 Move completed checklist blocks here with the date and commit SHA. Keep it short — the
 decision log in [[ROADMAP]] is where *why* lives; this is just *what*, so a future
 session can tell "not done yet" from "done and reverted".
+
+- **2026-08-17** — **E1 done.** Signed the `events` composite component (`bearish 0 /
+  neutral 50 / bullish 100`, `None` when no fresh alert covers the ticker — was `100`/`0`
+  with `0` doing double duty as both "bearish" and "no alert"), generalized the EDGAR
+  full-text monitor to take `forms=`/`q=` from config instead of hardcoding `8-K`, and
+  wired four new classes watching the full 90-day history: `dilution` (424B5, "at the
+  market offering", bearish), `shelf` (S-3/S-3ASR, "offering", neutral), `activist`
+  (SCHEDULE 13D, "common stock", bullish), `delisting` (25-NSE, "delisting", bearish);
+  `edgar8k` keeps its own 7-day gate. Fleet: five monitors → nine (`trump, edgar, fed,
+  congress, edgar8k, dilution, shelf, activist, delisting`). `radar/backtest.py`
+  `REGIME_NOTES` stamped 2026-08-17 — every composite before/after is incomparable.
+  Tests: 351 passing (was 327). Commits: `c85e5a0` (monitor direction), `e602bce`
+  (signed events component), `68897a7` (accession dedup), `d46ce3c` + `c8f094e`
+  (form-parameterize + fix round), `de2456b` (wire the four classes). Spec:
+  [[2026-08-17-catalyst-layer-design]]. Not landed yet: measuring real alert volume
+  after 1 week live (§2, §4).
+- **2026-08-17** — **Open defect (blocked E1) resolved**, commit `e602bce`.
+  `radar/composite.py:43` previously read `"events": 100.0 if s.ticker in alert_tickers
+  else 0.0`, and `radar/run.py:154` built `alert_tickers` as a flat set across all
+  monitors, discarding which monitor fired — so a 424B5 dilution or a 25-NSE delisting
+  would have scored **+100**, the same as a bullish insider buy, and the catalyst layer
+  would have ranked a diluting company *higher* for diluting. Fixed by signing `events`
+  per monitor direction (see the E1 entry above). Struck from §1.
 
 - **2026-08-17** — **E0 done.** Probe run
   [`32049892277`](https://github.com/jtur671/reddit-signal-radar/actions/runs/32049892277)

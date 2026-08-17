@@ -99,20 +99,20 @@ Live status lives in [[HANDOFF]]; this section is the shape, that doc is the sta
       backing off — only by a self-hosted runner. Wikimedia / Nasdaq / FINRA / SEC FTD
       all answered 200. Full results: [[HANDOFF]] §3.
 
-### E1 — Catalyst layer  ← **next**
+### E1 — Catalyst layer  ✅ **done 2026-08-17**
 EDGAR full-text search already runs from CI; `edgar_events.py:17` just hardcodes
 `&forms=8-K`. Generalize it to form classes. Measured ~3.2 alerting tickers/day at the
 chosen 90-day watch gate.
 
-- [ ] **Sign the `events` composite component first.** `composite.py:43` scores any
+- [x] **Sign the `events` composite component first.** `composite.py:43` scores any
       fresh alert as `100.0`, and `run.py:154` discards monitor identity — so a 424B5
       dilution would *raise* a ticker's composite. Blocking defect for this phase.
-- [ ] Form-parameterized EDGAR monitor (the EFTS `forms=` and `q=` both come from config).
-- [ ] Classes: `dilution` (424B5, `q="at the market offering"`), `shelf` (S-3/S-3ASR),
+- [x] Form-parameterized EDGAR monitor (the EFTS `forms=` and `q=` both come from config).
+- [x] Classes: `dilution` (424B5, `q="at the market offering"`), `shelf` (S-3/S-3ASR),
       `activist` (SCHEDULE 13D), `delisting` (25-NSE). Form code is `SCHEDULE 13D`, not
       `SC 13D`. Per-class `q` is the debt/equity discriminator — measured, see spec.
-- [ ] Widen the watch gate to the full 90-day history (654 tickers, vs 148 at 7 days).
-- [ ] Skip `SCHEDULE 13G` (~1,300/week) and `NT 10-Q` (~96/6d) — volume, not signal.
+- [x] Widen the watch gate to the full 90-day history (654 tickers, vs 148 at 7 days).
+- [x] Skip `SCHEDULE 13G` (~1,300/week) and `NT 10-Q` (~96/6d) — volume, not signal.
 
 ### E2 — Non-social attention
 - [ ] Wikimedia pageviews (keyless, verified) — the discriminator between a real story
@@ -145,6 +145,24 @@ chosen 90-day watch gate.
 
 ## Decision log
 
+- **2026-08-17 (E1 catalyst layer)** — Landed E1: signed the `events` composite
+  component first (`radar/composite.py`) — `bearish 0 / neutral 50 / bullish 100`,
+  `None` when no fresh alert covers the ticker — fixing the open defect where every
+  component was unsigned and a 424B5 dilution would have *raised* a ticker's
+  composite. Generalized the EDGAR full-text monitor to take `forms=`/`q=` from config
+  instead of hardcoding `8-K`, and wired four new form classes via config's new
+  `edgar_forms` list: `dilution` (424B5, "at the market offering", bearish), `shelf`
+  (S-3/S-3ASR, "offering", neutral), `activist` (SCHEDULE 13D, "common stock", bullish),
+  `delisting` (25-NSE, "delisting", bearish) — all four watch the full 90-day history
+  (654 tickers); `edgar8k` keeps its own 7-day gate. Fleet monitor count: five → nine
+  (`trump, edgar, fed, congress, edgar8k, dilution, shelf, activist, delisting`).
+  Stamped a `radar/backtest.py` `regime_notes` entry dated 2026-08-17: every composite
+  before/after this date is incomparable. Test suite: 351 passing (up from 327 pre-E1).
+  Spec: [[2026-08-17-catalyst-layer-design]]. Commits: `c85e5a0` (monitor direction),
+  `e602bce` (signed events component), `68897a7` (accession dedup), `d46ce3c` +
+  `c8f094e` (form-parameterize + fix round), `de2456b` (wire the four classes). Not yet
+  measured: real alert volume after 1 week live vs. the ~3.2/day estimate — see
+  [[HANDOFF]] §4.
 - **2026-08-17 (community mining)** — Mined Reddit (RSS), GitHub and other forums for
   the next upgrade; notes in [[2026-08-17-community-mining]], live state in [[HANDOFF]].
   Owner took all four candidate directions, sequenced as **Phase E** above, one spec per

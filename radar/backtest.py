@@ -17,6 +17,12 @@ from radar.history import History
 from radar.plays_log import load_picks
 
 REGIME_NOTES = [
+    {"date": "2026-08-17",
+     "note": "E1 catalyst layer: composite `events` became signed (bearish 0 / "
+             "neutral 50 / bullish 100) and None when no fresh alert covers the "
+             "ticker, where it was previously 100/0 with 0 for 'no alert'. Every "
+             "composite before and after this date is incomparable. Four new alert "
+             "classes (dilution/shelf/activist/delisting) also feed `events`."},
     {"date": "2026-08-07",
      "note": "PR #4 merged: history 'state' becomes board-relative for board names; "
              "noise floor min_mentions 5 -> 10."},

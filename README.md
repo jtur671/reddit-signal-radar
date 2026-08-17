@@ -58,7 +58,9 @@ DeepSeek catalyst summaries when `FINNHUB_API_KEY` is set, falling back to the o
 Google News RSS search otherwise. `data.json` gains a `signals` array (per board row:
 ticker, `composite` 0–100, a `components` breakdown — velocity/direction/engagement/
 short_pressure/options/events/cramer_inverse, each 0–100 or `null` when a source doesn't
-cover that name — plus the raw `short_ratio`/`pc_ratio`/`uoa`/`cramer` values) and the raw
+cover that name (`events` is signed by the fleet monitor that fired — bearish 0 / neutral
+50 / bullish 100 — and `null` when no fresh alert covers the ticker, so a quiet name isn't
+punished with a real zero) — plus the raw `short_ratio`/`pc_ratio`/`uoa`/`cramer` values) and the raw
 `weights` config (`config.yaml`'s `composite.weights`, before per-row renormalization —
 `radar/composite.py`'s `blend()` drops null components and renormalizes over what's left
 per ticker, but that per-row renormalization isn't what's published here). Weights are
@@ -106,7 +108,9 @@ The daily run is driven by `.github/workflows/daily.yml`.
   after they fall off the top-N), `reddit.discussion_subreddits` (scopes the modal's
   "see the discussion" link), the `tradestie` block (`url`, `max_retries`,
   `sleep_seconds` for the WSB sentiment fetch), and the `edgar` / `fed` / `congress` /
-  `edgar_events` monitor blocks (dollar floors, feed URLs/phrases, max ages). Also the
+  `edgar_events` / `edgar_forms` monitor blocks (dollar floors, feed URLs/phrases, max
+  ages; `edgar_forms` is a list of the four catalyst classes — `forms`, `phrases`,
+  `direction`, `watch_days` per class). Also the
   widen-phase sources: `finra` (`max_lookback_days` for the Reg SHO file walk-back),
   `cboe` (`top_n` chains to pull, `uoa_vol_oi` / `min_volume` for the UOA flag), `cramer`
   (feed `url`, `max_age_days`, `snapshot_path`), and `composite` (`weights` per
@@ -132,7 +136,7 @@ add your own themes the same way by appending a labelled block with `seeds` and
 
 ## Monitor fleet
 
-A separate workflow (`.github/workflows/fleet-monitor.yml`, every 30 min) runs five
+A separate workflow (`.github/workflows/fleet-monitor.yml`, every 30 min) runs nine
 tripwire monitors. When any of them fires, it emails immediately and rebuilds the
 dashboard with an alert card between the masthead and the board (auto-expires after
 48h). Detection is deduped via `data/*_seen.json`; the build/deploy only runs on a new
@@ -156,6 +160,16 @@ alert, so the 30-min cadence is cheap.
   last day) for high-salience 8-K phrases (`edgar_events.phrases`, e.g. "material
   definitive agreement", "bankruptcy"); alerts only when the filer maps to a ticker with
   recent `history.json` activity (multi-ticker EDGAR display names are matched too).
+- **EDGAR dilution** — Form `424B5` filings matching "at the market offering"; shares
+  being sold into the market now — **bearish**. Watches the full 90-day history.
+- **EDGAR shelf** — Form `S-3`/`S-3ASR` filings matching "offering"; permission to sell
+  shares later, not a sale in progress — **neutral**. Watches the full 90-day history.
+- **EDGAR activist** — `SCHEDULE 13D` filings matching "common stock"; an investor
+  crossing 5% ownership with intent to influence the company — **bullish**. Watches the
+  full 90-day history.
+- **EDGAR delisting** — Form `25-NSE` filings matching "delisting"; notification of
+  removal from a national securities exchange — **bearish**. Watches the full 90-day
+  history.
 
 ## Weekly backtest
 
