@@ -1,8 +1,10 @@
-"""8-K material-event tripwire (structured). Full-text-searches EDGAR (efts.sec.gov,
-free, UA-header etiquette) for high-salience 8-K phrases filed in the last day, and
-alerts when the filer maps to a ticker the radar is actively tracking (recent
-history.json activity — the data branch is overlaid on fleet ticks). Date-bounds every
-query: the unbounded endpoint returns decade-old filings."""
+"""EDGAR full-text tripwire (structured). Searches efts.sec.gov (free, UA-header
+etiquette) for a configured phrase within a configured form class, filed in the last
+day, and alerts when the filer maps to a ticker the radar tracks. One instance per form
+class: 8-K material events, 424B5 dilution, S-3 shelves, SCHEDULE 13D activist stakes,
+25-NSE delistings. Date-bounds every query — the unbounded endpoint returns decade-old
+filings — and dedups on the accession number, because EFTS indexes every file in a
+submission separately."""
 from __future__ import annotations
 
 import json
@@ -11,10 +13,11 @@ import urllib.parse
 from datetime import date, timedelta
 from pathlib import Path
 
+from radar import degrade
 from radar.monitors.base import Signal
 from radar.monitors.edgar import _http_get
 
-EFTS = ("https://efts.sec.gov/LATEST/search-index?q={q}&forms=8-K"
+EFTS = ("https://efts.sec.gov/LATEST/search-index?q={q}&forms={forms}"
         "&dateRange=custom&startdt={start}&enddt={end}")
 _DISPLAY_TICKER = re.compile(
     r"\(([A-Z][A-Z0-9.\-]{0,9})(?:,\s*[A-Z][A-Z0-9.\-]{0,9})*\)\s*\(CIK")
@@ -83,11 +86,16 @@ def active_tickers(history_path: str = "data/history.json", days: int = 7,
 class EdgarEventsMonitor:
     """Fleet monitor #5 — see radar.monitors.base.Monitor for the contract."""
     def __init__(self, phrases: list[str], user_agent: str,
-                 watch=active_tickers, max_age_h: int = 24):
-        self.key, self.label, self.card_style = "edgar8k", "📢 8-K Event", "insider"
-        self.direction = "neutral"
+                 watch=active_tickers, max_age_h: int = 24, *,
+                 key: str = "edgar8k", label: str = "📢 8-K Event",
+                 card_style: str = "insider", direction: str = "neutral",
+                 forms: str = "8-K", watch_days: int = 7):
+        self.key, self.label, self.card_style = key, label, card_style
+        self.direction = direction
         self.max_age_h = max_age_h
         self.phrases = list(phrases)
+        self.forms = forms
+        self.watch_days = watch_days
         self.user_agent = user_agent
         self._watch = watch
         # Three phrases over the rolling window can exceed the base.py default seen_cap
@@ -99,14 +107,24 @@ class EdgarEventsMonitor:
         # Cursors written before the accession-dedup change hold "<accession>:<filename>".
         # Normalise so the first tick after deploy does not re-alert on seen filings.
         seen = {str(s).partition(":")[0] for s in seen}
-        watch = self._watch() if callable(self._watch) else set(self._watch)
+        try:
+            watch = self._watch(days=self.watch_days) if callable(self._watch) else set(self._watch)
+        except TypeError:
+            watch = self._watch() if callable(self._watch) else set(self._watch)
         end = date.today().isoformat()
         start = (date.today() - timedelta(days=1)).isoformat()
         signals, evaluated = [], []
         for phrase in self.phrases:
             q = urllib.parse.quote(f'"{phrase}"', safe="")
-            raw = _fetch_json(EFTS.format(q=q, start=start, end=end), self.user_agent)
-            for row in parse_hits(raw):
+            raw = _fetch_json(
+                EFTS.format(q=q, forms=urllib.parse.quote(self.forms, safe=""),
+                            start=start, end=end),
+                self.user_agent)
+            hits = parse_hits(raw)
+            if len(hits) >= 100:        # EFTS caps a page at 100; we read page 1 only
+                degrade.warn(f"{self.key}: EFTS returned a full page for "
+                             f"{self.forms}/{phrase!r} — filings are being dropped")
+            for row in hits:
                 if row["id"] in seen or row["id"] in evaluated:
                     continue
                 evaluated.append(row["id"])

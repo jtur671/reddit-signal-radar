@@ -115,3 +115,63 @@ def test_fetch_new_honours_a_legacy_accession_colon_filename_cursor(monkeypatch)
     m = EdgarEventsMonitor(phrases=["x"], user_agent="t", watch=lambda: {"WTCH"})
     signals, _ = m.fetch_new({"acc1:some-other-file.htm"})
     assert signals == []
+
+
+def test_efts_url_carries_configured_forms_and_phrase(monkeypatch):
+    import radar.monitors.edgar_events as ee
+    seen_urls = []
+    def fake(url, ua):
+        seen_urls.append(url)
+        return {"hits": {"hits": []}}
+    monkeypatch.setattr(ee, "_fetch_json", fake)
+    m = EdgarEventsMonitor(phrases=["at the market offering"], user_agent="t",
+                           watch=lambda: set(), key="dilution", forms="424B5")
+    m.fetch_new(set())
+    assert "forms=424B5" in seen_urls[0]
+    assert "at%20the%20market%20offering" in seen_urls[0]
+
+
+def test_comma_separated_forms_are_url_encoded(monkeypatch):
+    # forms= accepts several codes; S-3,S-3ASR is additive (verified 2026-08-17).
+    import radar.monitors.edgar_events as ee
+    seen_urls = []
+    monkeypatch.setattr(ee, "_fetch_json",
+                        lambda url, ua: (seen_urls.append(url), {"hits": {"hits": []}})[1])
+    m = EdgarEventsMonitor(phrases=["offering"], user_agent="t", watch=lambda: set(),
+                           key="shelf", forms="S-3,S-3ASR")
+    m.fetch_new(set())
+    assert "forms=S-3%2CS-3ASR" in seen_urls[0] or "forms=S-3,S-3ASR" in seen_urls[0]
+
+
+def test_defaults_reproduce_todays_8k_monitor(monkeypatch):
+    import radar.monitors.edgar_events as ee
+    seen_urls = []
+    monkeypatch.setattr(ee, "_fetch_json",
+                        lambda url, ua: (seen_urls.append(url), {"hits": {"hits": []}})[1])
+    m = EdgarEventsMonitor(phrases=["material definitive agreement"], user_agent="t",
+                           watch=lambda: set())
+    m.fetch_new(set())
+    assert m.key == "edgar8k" and m.label == "📢 8-K Event"
+    assert m.card_style == "insider" and m.direction == "neutral"
+    assert m.watch_days == 7 and "forms=8-K" in seen_urls[0]
+
+
+def test_identity_fields_are_configurable():
+    m = EdgarEventsMonitor(phrases=["x"], user_agent="t", watch=lambda: set(),
+                           key="dilution", label="💧 Dilution", card_style="trump",
+                           direction="bearish", forms="424B5", watch_days=90)
+    assert (m.key, m.label, m.card_style, m.direction) == (
+        "dilution", "💧 Dilution", "trump", "bearish")
+
+
+def test_watch_days_is_passed_to_the_default_watch(tmp_path, monkeypatch):
+    import json
+    import radar.monitors.edgar_events as ee
+    hist = tmp_path / "history.json"
+    hist.write_text(json.dumps({
+        "RECENT": {"2026-08-16": {"raw": 5}},
+        "OLD":    {"2026-06-20": {"raw": 5}}}))
+    narrow = ee.active_tickers(str(hist), days=7,  today="2026-08-17")
+    wide   = ee.active_tickers(str(hist), days=90, today="2026-08-17")
+    assert narrow == {"RECENT"}
+    assert wide == {"RECENT", "OLD"}       # the 90-day gate is what catches pre-discovery names
