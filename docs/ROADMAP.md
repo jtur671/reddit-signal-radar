@@ -83,9 +83,10 @@ The known residuals, in priority order:
 ## Phase E — Deepen the signal (2026-08-17 → )
 
 Four sub-phases from the community-mining pass
-([[2026-08-17-community-mining]]). Sequenced by dependency: 3a needs nothing new,
-3c is blocked on a CI probe, 3d reasons over whatever 3a–3c produce. **One spec per
-sub-phase**, written when the prior one lands — not all four up front.
+([[2026-08-17-community-mining]]). Sequenced by dependency: E1 needs no new source,
+E2's sources are verified, E3 needed a CI probe (now passed), and E4 reasons over
+whatever E1–E3 produce. **One spec per sub-phase**, written when the prior one lands —
+not all four up front.
 
 Live status lives in [[HANDOFF]]; this section is the shape, that doc is the state.
 
