@@ -84,6 +84,7 @@ class EdgarEventsMonitor:
     def __init__(self, phrases: list[str], user_agent: str,
                  watch=active_tickers, max_age_h: int = 24):
         self.key, self.label, self.card_style = "edgar8k", "📢 8-K Event", "insider"
+        self.direction = "neutral"
         self.max_age_h = max_age_h
         self.phrases = list(phrases)
         self.user_agent = user_agent

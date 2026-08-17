@@ -57,7 +57,8 @@ class CongressMonitor:
     def __init__(self, *, watch_path: str, min_usd: float, key: str = "congress",
                  label: str = "🏛 Congress Buy", card_style: str = "congress",
                  feed_url: str = FEED_URL, user_agent: str = "reddit-signal-radar/0.1",
-                 max_records: int = 200, max_age_h: int = 72, seen_cap: int = 5000):
+                 max_records: int = 200, max_age_h: int = 72, seen_cap: int = 5000,
+                 direction: str = "neutral"):
         self.key = key
         self.label = label
         self.card_style = card_style
@@ -68,6 +69,7 @@ class CongressMonitor:
         self.max_age_h = max_age_h
         self.seen_cap = seen_cap
         self.watch = load_watch(watch_path)
+        self.direction = direction
 
     def _is_notable(self, filer_name) -> bool:
         return bool(self.watch & set(_norm(filer_name).split()))

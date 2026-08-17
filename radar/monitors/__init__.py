@@ -27,7 +27,7 @@ def build_registry(cfg) -> list:
         EdgarMonitor(
             key="edgar", label="📄 Insider Buy", card_style="insider",
             transaction_codes=list(ec.transaction_codes), min_usd=ec.min_usd,
-            max_age_h=ec.max_age_h, user_agent=ec.user_agent,
+            max_age_h=ec.max_age_h, user_agent=ec.user_agent, direction="bullish",
         ),
         RssEventMonitor(
             key="fed", label="🏛 Fed / FOMC", card_style="fed",

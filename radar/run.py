@@ -410,6 +410,7 @@ def _load_alerts(data_dir="data"):
             link_text=raw.get("link_text") or "View ↗",
             theme_attr=(raw.get("monitor_key") or "alert").title(),
             detected=raw.get("detected_at") or raw.get("published") or "",
+            direction=raw.get("direction") or "neutral",   # legacy alert files predate this
         ))
     out.sort(key=lambda a: a.get("detected", ""), reverse=True)
     return out

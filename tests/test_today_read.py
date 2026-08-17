@@ -99,3 +99,22 @@ def test_today_read_renders_and_is_never_blank(monkeypatch):
     assert "BTC" in html
     assert "Today's Read" in html
     assert "(100 mentions)" not in html                   # mechanical counts are gone
+
+
+def test_load_alerts_surfaces_direction_and_defaults_legacy_to_neutral(tmp_path):
+    # The five alert files live on the data branch today WITHOUT a direction key.
+    # They must load as neutral rather than crashing or scoring as good news.
+    import json
+    from radar.run import _load_alerts
+    fresh = "2026-08-17T12:00:00Z"
+    (tmp_path / "new_alert.json").write_text(json.dumps(
+        {"monitor_key": "new", "label": "L", "card_style": "insider", "tickers": ["AAA"],
+         "summary": "s", "url": "u", "published": fresh, "detected_at": fresh,
+         "max_age_h": 100000, "direction": "bearish"}))
+    (tmp_path / "legacy_alert.json").write_text(json.dumps(
+        {"monitor_key": "legacy", "label": "L", "card_style": "trump", "tickers": ["BBB"],
+         "summary": "s", "url": "u", "published": fresh, "detected_at": fresh,
+         "max_age_h": 100000}))
+    by_key = {a["theme_attr"].lower(): a for a in _load_alerts(str(tmp_path))}
+    assert by_key["new"]["direction"] == "bearish"
+    assert by_key["legacy"]["direction"] == "neutral"

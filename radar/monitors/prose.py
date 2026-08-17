@@ -15,7 +15,8 @@ class ProseMonitor:
     def __init__(self, *, key: str, label: str, feed_url: str, watch_map_path: str,
                  card_style: str, source_context: str, link_text: str = "",
                  universe_path: str = "data/universe.txt",
-                 stoplist_path: str = "data/stoplist.txt", max_age_h: int = 48):
+                 stoplist_path: str = "data/stoplist.txt", max_age_h: int = 48,
+                 direction: str = "neutral"):
         self.key = key
         self.label = label
         self.feed_url = feed_url
@@ -26,6 +27,7 @@ class ProseMonitor:
         self.universe_path = universe_path
         self.stoplist_path = stoplist_path
         self.max_age_h = max_age_h
+        self.direction = direction
         self._watch = trump.load_watch_map(watch_map_path)
         self._inv = {v: k for k, v in self._watch.items()}   # ticker -> curated name
 

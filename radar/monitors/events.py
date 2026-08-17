@@ -13,7 +13,7 @@ from radar.monitors.base import Signal
 
 class RssEventMonitor:
     def __init__(self, *, key: str, label: str, feed_url: str, tickers, card_style: str,
-                 link_text: str = "", max_age_h: int = 72):
+                 link_text: str = "", max_age_h: int = 72, direction: str = "neutral"):
         self.key = key
         self.label = label
         self.feed_url = feed_url
@@ -21,6 +21,7 @@ class RssEventMonitor:
         self.card_style = card_style
         self.link_text = link_text
         self.max_age_h = max_age_h
+        self.direction = direction
 
     def fetch_new(self, seen):
         posts = trump.fetch_rss(self.feed_url)               # newest-first; never raises

@@ -170,7 +170,8 @@ def _http_get(url: str, ua: str) -> str:
 class EdgarMonitor:
     def __init__(self, *, min_usd: float, transaction_codes, max_age_h: int, user_agent: str,
                  key: str = "edgar", label: str = "📄 Insider Buy", card_style: str = "insider",
-                 seen_cap: int = 5000, max_entries: int = 60, sleep_seconds: float = 0.2):
+                 seen_cap: int = 5000, max_entries: int = 60, sleep_seconds: float = 0.2,
+                 direction: str = "neutral"):
         self.key = key
         self.label = label
         self.card_style = card_style
@@ -181,6 +182,7 @@ class EdgarMonitor:
         self.seen_cap = seen_cap
         self.max_entries = max_entries
         self.sleep_seconds = sleep_seconds   # courtesy delay between filings (SEC ~10 req/s cap)
+        self.direction = direction
 
     def _form4_url(self, entry: EdgarEntry) -> str:
         """Resolve the real Form-4 XML document URL via the filing folder's index.json.

@@ -31,6 +31,7 @@ class Monitor(Protocol):
     label: str                   # card/email title
     card_style: str              # dashboard card variant
     max_age_h: int               # freshness window for the dashboard card
+    direction: str               # "bullish" | "bearish" | "neutral" — signs composite `events`
 
     def fetch_new(self, seen: set[str]) -> tuple[list[Signal], list[str]]:
         """Fetch source, skip ids in `seen`. Return (new signals most-salient-first,
@@ -55,6 +56,7 @@ def write_alert(monitor, signal: Signal, detected_at_iso: str, data_dir: str = "
         link_text=signal.link_text, tickers=signal.tickers, summary=signal.summary,
         url=signal.url, published=signal.published, detected_at=detected_at_iso,
         max_age_h=getattr(monitor, "max_age_h", 48),
+        direction=getattr(monitor, "direction", "neutral"),
     )
     Path(alert_path(monitor.key, data_dir)).write_text(json.dumps(alert))
 
