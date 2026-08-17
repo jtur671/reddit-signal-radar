@@ -329,6 +329,39 @@
 "vel": 19.0,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-08-17",
+"ticker": "KEEL",
+"thesis": "CEO insider buying at $3.33 with a 58,888-share purchase signals strong confidence, and the stock's early-stage surge with 18x mention growth suggests the market hasn't fully priced in this positive signal yet.",
+"risk": "Illiquidity and small-cap volatility could amplify downside moves.",
+"conviction": "medium",
+"mentions": 18,
+"vel": 18.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-17",
+"ticker": "KLAR",
+"thesis": "Morgan Stanley's price target hike to $21 provides a concrete analyst catalyst, and the 13x mention surge indicates growing interest before the broader market catches on.",
+"risk": "Analyst targets can be revised downward if fundamentals disappoint.",
+"conviction": "medium",
+"mentions": 13,
+"vel": 13.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-17",
+"ticker": "LTC",
+"thesis": "RBC's upgrade to Outperform with a $45 target, backed by a cooling inflation narrative, offers a fundamental catalyst that's still early in its lifecycle with 36x mention growth.",
+"risk": "Rate-sensitive REITs could face headwinds if inflation expectations reverse.",
+"conviction": "low",
+"mentions": 36,
+"vel": 36.0,
+"state": "hot",
+"crypto": true
 }
 ]
 }
