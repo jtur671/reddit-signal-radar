@@ -1,7 +1,7 @@
 ---
 project: Reddit Signal Radar
 status: live — daily board + email in prod, 5-monitor fleet (Trump/EDGAR/Fed/Congress/EDGAR-8K) on a 30-min tick
-updated: 2026-08-07
+updated: 2026-08-17
 tags: [roadmap, reddit-signal-radar]
 ---
 
@@ -80,6 +80,57 @@ The known residuals, in priority order:
 
 ---
 
+## Phase E — Deepen the signal (2026-08-17 → )
+
+Four sub-phases from the community-mining pass
+([[2026-08-17-community-mining]]). Sequenced by dependency: 3a needs nothing new,
+3c is blocked on a CI probe, 3d reasons over whatever 3a–3c produce. **One spec per
+sub-phase**, written when the prior one lands — not all four up front.
+
+Live status lives in [[HANDOFF]]; this section is the shape, that doc is the state.
+
+### E0 — Settle the cloud-IP question (blocks E3)
+- [ ] Run `.github/workflows/probe-sources.yml` (`workflow_dispatch`, no secrets) and
+      record the result in [[HANDOFF]]. Answers: does StockTwits answer a cloud IP, and
+      does `reddit.com/*.rss`?
+- [ ] Delete the probe workflow once the answer is recorded.
+
+### E1 — Catalyst layer  ← **next**
+EDGAR full-text search already runs from CI; `edgar_events.py:17` just hardcodes
+`&forms=8-K`. Generalize it to form classes. Measured ~3.2 alerting tickers/day at the
+chosen 90-day watch gate.
+
+- [ ] **Sign the `events` composite component first.** `composite.py:43` scores any
+      fresh alert as `100.0`, and `run.py:154` discards monitor identity — so a 424B5
+      dilution would *raise* a ticker's composite. Blocking defect for this phase.
+- [ ] Form-parameterized EDGAR monitor (the EFTS `forms=` and `q=` both come from config).
+- [ ] Classes: `dilution` (424B5, `q="at the market offering"`), `shelf` (S-3/S-3ASR),
+      `activist` (SCHEDULE 13D), `delisting` (25-NSE). Form code is `SCHEDULE 13D`, not
+      `SC 13D`. Per-class `q` is the debt/equity discriminator — measured, see spec.
+- [ ] Widen the watch gate to the full 90-day history (654 tickers, vs 148 at 7 days).
+- [ ] Skip `SCHEDULE 13G` (~1,300/week) and `NT 10-Q` (~96/6d) — volume, not signal.
+
+### E2 — Non-social attention
+- [ ] Wikimedia pageviews (keyless, verified) — the discriminator between a real story
+      and a Reddit brigade, and the Google Trends replacement Phase D wanted.
+- [ ] Short **interest** + days-to-cover (Nasdaq and/or FINRA, both keyless, verified) —
+      distinct from the FINRA daily short *volume* already ingested.
+- [ ] Decide: new composite components (new heuristic weights, more recalibration debt)
+      or published-but-unweighted until the power gate opens.
+
+### E3 — Second attention source  *(blocked on E0)*
+- [ ] StockTwits ingest — an ApeWisdom-independent board source, directional bull/bear
+      outside Tradestie's WSB-only coverage, and `watchlist_count` as an attention-*stock*
+      axis rather than another flow.
+
+### E4 — Reason over it (agent layer)
+- [ ] LLM analyst/debate layer over board + tripwires (thesis + confidence,
+      decision-shaped), TradingAgents-style. Last, because it reasons over E1–E3 output —
+      and it partly dissolves the weighting problem, since an agent reading `components`
+      doesn't need calibrated weights the way a single blended number does.
+
+---
+
 ## Open questions
 
 - Does the freshness signal have *predictive* value, or is it just a popularity mirror? (Phase D backtest answers this.)
@@ -88,6 +139,22 @@ The known residuals, in priority order:
 
 ## Decision log
 
+- **2026-08-17 (community mining)** — Mined Reddit (RSS), GitHub and other forums for
+  the next upgrade; notes in [[2026-08-17-community-mining]], live state in [[HANDOFF]].
+  Owner took all four candidate directions, sequenced as **Phase E** above, one spec per
+  sub-phase rather than one spec for all four. Catalyst monitors will watch the **full
+  90-day history** (654 tickers), not the 7-day active set (148) — measured cost ~3.2
+  alerting tickers/day vs ~1.2, and the motivating case (MVIS: a live 424B5 the same
+  week r/pennystocks called it a reverse-split squeeze) is invisible to the narrow gate.
+  Three measured facts changed the plan: EDGAR full-text search accepts any `forms=`
+  code (the monitor merely hardcodes `8-K`) and the `q` phrase — not a market-cap
+  filter — separates equity ATMs from investment-grade debt takedowns; StockTwits sits
+  behind the *same* Cloudflare posture as ApeWisdom, which runs green from CI daily, so
+  it is no longer "marginal"; and `composite.py:43`'s `events` component is unsigned, so
+  the catalyst layer would score dilution as bullish unless signed first. Also recorded,
+  not acted on: board breadth halved on 2026-08-08 (min raw mentions 5→10, the Phase B
+  floor landing as designed) — names/day fell ~119→~54, thinning the backtest's
+  cross-sections while the 150-day power gate is still ~74 days out (≈2026-11-01).
 - **2026-08-07 (widen phase 2)** — Widened the signal with five independent sources,
   each fail-soft with its own `health.json` check: FINRA Reg SHO daily short-sale volume
   (`radar/shorts.py` → `short_ratio` for every covered ticker), CBOE delayed options
