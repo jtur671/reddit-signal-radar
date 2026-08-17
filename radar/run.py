@@ -151,13 +151,13 @@ def main(argv=None) -> int:
     chips = _chip_list(board, themes)
     reddit_subs = list(getattr(getattr(cfg, "reddit", None), "discussion_subreddits", []) or [])
     alerts = _load_alerts("data")                      # every monitor's fresh alert card
-    alert_tickers = {t.strip("$") for a in alerts for t in a["tickers"].split(" · ") if t}
+    alert_direction = alert_direction_map(alerts)
     comp_cfg = getattr(cfg, "composite", None)
     weights = ({k: float(v) for k, v in vars(comp_cfg.weights).items()}
                if getattr(comp_cfg, "weights", None) else dict(DEFAULT_WEIGHTS))
     ts_by_bull = {r.ticker: tradestie.bull_pct(r.score) for r in ts_rows}
     for s in board:
-        s.components = components_for(s, board, ts_by_bull.get(s.ticker), alert_tickers)
+        s.components = components_for(s, board, ts_by_bull.get(s.ticker), alert_direction)
         s.composite, _used = blend(s.components, weights)
     detail_json = _detail_blob(board + still, history, run_day, reddit_subs)
     sources = {                                        # shown as footer LEDs + published in health
@@ -385,6 +385,26 @@ def _read_fallback(top):
             f"{len(top)} names are drawing the most Reddit attention.")
     return dict(lead=lead,
                 bullets=[dict(ticker=s.ticker, why=_read_bullet_why(s)) for s in top])
+
+_DIRECTION_RANK = {"bearish": 0, "bullish": 1, "neutral": 2}   # most-negative wins
+
+
+def alert_direction_map(alerts) -> dict[str, str]:
+    """Ticker -> direction across every fresh alert. When one ticker draws several
+    alerts the most negative wins: a filed dilution is a harder fact than an
+    activist's intentions, and a radar should fail toward warning. Every individual
+    alert card still renders — only the blended number is opinionated."""
+    out: dict[str, str] = {}
+    for a in alerts:
+        direction = a.get("direction") or "neutral"
+        for raw in (a.get("tickers") or "").split(" · "):
+            t = raw.strip().lstrip("$")
+            if not t:
+                continue
+            if t not in out or _DIRECTION_RANK[direction] < _DIRECTION_RANK[out[t]]:
+                out[t] = direction
+    return out
+
 
 def _load_alerts(data_dir="data"):
     """Collect every monitor's fresh alert (data/*_alert.json) into render-ready view-models,
