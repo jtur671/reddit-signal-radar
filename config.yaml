@@ -68,6 +68,23 @@ edgar_events:
   phrases: ["material definitive agreement", "bankruptcy", "departure of directors or certain officers"]
   max_age_h: 24
   user_agent: "reddit-signal-radar admin@radar.local"
+# Catalyst tripwires (E1): one EDGAR full-text monitor per form class. The `phrases`
+# entry is the debt/equity discriminator, not a market-cap filter — with q="offering"
+# the 424B5 hits are dominated by investment-grade BOND shelf takedowns (AMD, IBM, UPS);
+# "at the market offering" returns only small/mid-cap equity ATMs (measured 2026-08-17).
+# Form code is "SCHEDULE 13D", not "SC 13D" (the latter returns zero hits).
+# Deliberately excluded: SCHEDULE 13G (~1,300/5d, passive) and NT 10-Q (~96/6d) —
+# volume, not signal. watch_days: 90 covers the full history (654 tickers) so a filing
+# on a name Reddit is ABOUT to discover still fires; edgar8k keeps its own 7-day gate.
+edgar_forms:
+  - {key: dilution,  label: "💧 Dilution",      direction: bearish, card_style: dilution,
+     forms: "424B5",          phrases: ["at the market offering"], watch_days: 90, max_age_h: 24}
+  - {key: shelf,     label: "📄 Shelf Filed",   direction: neutral, card_style: fed,
+     forms: "S-3,S-3ASR",     phrases: ["offering"],               watch_days: 90, max_age_h: 24}
+  - {key: activist,  label: "🎯 Activist 13D",  direction: bullish, card_style: insider,
+     forms: "SCHEDULE 13D",   phrases: ["common stock"],           watch_days: 90, max_age_h: 48}
+  - {key: delisting, label: "🚫 Delisting",     direction: bearish, card_style: delisting,
+     forms: "25-NSE",         phrases: ["delisting"],              watch_days: 90, max_age_h: 48}
 # FINRA Reg SHO daily short-sale volume (free, keyless): ShortVolume/TotalVolume per
 # symbol from the prior trading day, a bearish-pressure / dark-pool proxy.
 finra:

@@ -16,7 +16,7 @@ def build_registry(cfg) -> list:
     fc = cfg.fed
     cc = cfg.congress
     ev = cfg.edgar_events
-    return [
+    monitors = [
         ProseMonitor(
             key="trump", label="⚠ Trump Alert", card_style="trump",
             feed_url="https://www.trumpstruth.org/feed",
@@ -43,3 +43,14 @@ def build_registry(cfg) -> list:
             phrases=list(ev.phrases), user_agent=ev.user_agent, max_age_h=ev.max_age_h,
         ),
     ]
+    # config.py's _ns() only recurses into dicts, so a YAML list arrives as a list of
+    # plain dicts -- index with row["key"], never row.key.
+    for row in (getattr(cfg, "edgar_forms", None) or []):
+        monitors.append(EdgarEventsMonitor(
+            phrases=list(row["phrases"]), user_agent=ev.user_agent,
+            max_age_h=int(row.get("max_age_h", 24)),
+            key=row["key"], label=row["label"], card_style=row["card_style"],
+            direction=row["direction"], forms=row["forms"],
+            watch_days=int(row.get("watch_days", 90)),
+        ))
+    return monitors
