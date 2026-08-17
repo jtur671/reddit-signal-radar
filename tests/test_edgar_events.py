@@ -175,3 +175,38 @@ def test_watch_days_is_passed_to_the_default_watch(tmp_path, monkeypatch):
     wide   = ee.active_tickers(str(hist), days=90, today="2026-08-17")
     assert narrow == {"RECENT"}
     assert wide == {"RECENT", "OLD"}       # the 90-day gate is what catches pre-discovery names
+
+
+def test_summary_carries_the_configured_form_code(monkeypatch):
+    # summary is user-facing: it renders verbatim in the dashboard alert card and the
+    # alert email body. A dilution (424B5) monitor must never claim "8-K" in the text.
+    import radar.monitors.edgar_events as ee
+    fixture = {"hits": {"hits": [
+        {"_id": "acc1:doc.htm", "_source": {"ciks": ["1"],
+         "display_names": ["Watched Co  (WTCH)  (CIK 1)"], "file_date": "2026-08-12"}}]}}
+    monkeypatch.setattr(ee, "_fetch_json", lambda url, ua: fixture)
+    m = EdgarEventsMonitor(phrases=["at the market offering"], user_agent="t",
+                           watch=lambda: {"WTCH"}, forms="424B5")
+    signals, _ = m.fetch_new(set())
+    assert len(signals) == 1
+    assert "424B5" in signals[0].summary
+    assert "8-K" not in signals[0].summary
+
+
+def test_watch_days_reaches_a_days_accepting_watch(monkeypatch):
+    # The default watch (active_tickers) accepts days= -- that's the ONLY path
+    # production ever takes. Every other test here uses a zero-arg lambda that always
+    # raises TypeError and falls into the except fallback, so without this test the
+    # try branch is never exercised.
+    import radar.monitors.edgar_events as ee
+    got = {}
+    def watch(days=None):
+        got["days"] = days
+        return {"WTCH"}
+    monkeypatch.setattr(ee, "_fetch_json", lambda url, ua: {"hits": {"hits": [
+        {"_id": "acc1:doc.htm", "_source": {"ciks": ["1"],
+         "display_names": ["Watched Co  (WTCH)  (CIK 1)"], "file_date": "2026-08-12"}}]}})
+    m = EdgarEventsMonitor(phrases=["x"], user_agent="t", watch=watch, watch_days=90)
+    signals, _ = m.fetch_new(set())
+    assert got["days"] == 90          # the try-branch ran, not the TypeError fallback
+    assert len(signals) == 1

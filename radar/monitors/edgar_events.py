@@ -84,7 +84,7 @@ def active_tickers(history_path: str = "data/history.json", days: int = 7,
 
 
 class EdgarEventsMonitor:
-    """Fleet monitor #5 — see radar.monitors.base.Monitor for the contract."""
+    """EDGAR full-text tripwire — see radar.monitors.base.Monitor for the contract."""
     def __init__(self, phrases: list[str], user_agent: str,
                  watch=active_tickers, max_age_h: int = 24, *,
                  key: str = "edgar8k", label: str = "📢 8-K Event",
@@ -131,7 +131,7 @@ class EdgarEventsMonitor:
                 if row["ticker"] and row["ticker"] in watch:
                     signals.append(Signal(
                         tickers=[row["ticker"]],
-                        summary=f"8-K “{phrase}” filed by {row['display']}",
+                        summary=f"{self.forms} “{phrase}” filed by {row['display']}",
                         url=row["url"], published=row["file_date"] + "T00:00:00Z",
                         monitor_key=self.key, link_text="EDGAR filing ↗"))
         return signals, evaluated
