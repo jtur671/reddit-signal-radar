@@ -6,6 +6,12 @@ name: probe-sources
 #
 # Deliberately carries NO secrets and touches no repo state. Delete after reading.
 on:
+  # A workflow_dispatch-only workflow is invisible to the API until it lands on the
+  # DEFAULT branch — and this one is throwaway, so it should never go near main.
+  # Branch+path-scoped push trigger instead: editing this file on this branch runs it.
+  push:
+    branches: [harden/audit-fixes]
+    paths: [.github/workflows/probe-sources.yml]
   workflow_dispatch: {}
 permissions:
   contents: read
