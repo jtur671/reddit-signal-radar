@@ -235,3 +235,14 @@ session can tell "not done yet" from "done and reverted".
 - **Never quote a test count, ticker count, or date you did not run a command for.**
   This project's docs have been wrong that way before; the tables above exist so the
   next session measures instead of remembering.
+- **The test suite makes live network calls, and it gates the daily publish.**
+  `tests/test_run_cboe.py`'s three tests call `run.main()` end-to-end. They stub
+  mentions, Tradestie, short ratios, DeepSeek, news and `option_stats` — but leave
+  **yfinance price enrichment and the Cramer feed live**. Measured 2026-08-17: those
+  three account for **~44 s of the suite's ~48 s**, and on one slow-network window the
+  whole suite took **786 s (13 min)** instead of 48 s while still passing 353/353.
+  Both `test.yml` and `daily.yml` run pytest as a gate, and five modules
+  (`apewisdom`, `fetch`, `shorts`, `cramer`, `news`) use real `time.sleep` exponential
+  backoff — so a slow upstream host slows or stalls the 6:17 AM publish. Not fixed:
+  stubbing those two calls would make the suite hermetic and ~45 s faster. Worth doing
+  before the suite grows.
