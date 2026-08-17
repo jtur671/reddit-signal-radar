@@ -89,11 +89,14 @@ sub-phase**, written when the prior one lands — not all four up front.
 
 Live status lives in [[HANDOFF]]; this section is the shape, that doc is the state.
 
-### E0 — Settle the cloud-IP question (blocks E3)
-- [ ] Run `.github/workflows/probe-sources.yml` (`workflow_dispatch`, no secrets) and
-      record the result in [[HANDOFF]]. Answers: does StockTwits answer a cloud IP, and
-      does `reddit.com/*.rss`?
-- [ ] Delete the probe workflow once the answer is recorded.
+### E0 — Settle the cloud-IP question ✅ **done 2026-08-17**
+- [x] Probed from a real Actions runner (no secrets, throwaway, since deleted).
+      **StockTwits answers a cloud IP** — real JSON, not a challenge page — so E3 is
+      unblocked. **Reddit RSS does not**: 429 with `x-ratelimit-remaining: 0.0` on the
+      first request, because the Actions IP range shares one exhausted Reddit bucket.
+      That is a different failure than the JSON path's 403, and it is not fixable by
+      backing off — only by a self-hosted runner. Wikimedia / Nasdaq / FINRA / SEC FTD
+      all answered 200. Full results: [[HANDOFF]] §3.
 
 ### E1 — Catalyst layer  ← **next**
 EDGAR full-text search already runs from CI; `edgar_events.py:17` just hardcodes
@@ -118,10 +121,12 @@ chosen 90-day watch gate.
 - [ ] Decide: new composite components (new heuristic weights, more recalibration debt)
       or published-but-unweighted until the power gate opens.
 
-### E3 — Second attention source  *(blocked on E0)*
+### E3 — Second attention source  *(unblocked 2026-08-17)*
 - [ ] StockTwits ingest — an ApeWisdom-independent board source, directional bull/bear
       outside Tradestie's WSB-only coverage, and `watchlist_count` as an attention-*stock*
       axis rather than another flow.
+- [ ] ~~Reddit RSS as a raw-text path~~ — **dead from CI** (E0). Only a self-hosted
+      runner could revive it; not worth it for post titles alone.
 
 ### E4 — Reason over it (agent layer)
 - [ ] LLM analyst/debate layer over board + tripwires (thesis + confidence,

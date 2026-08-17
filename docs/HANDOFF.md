@@ -54,18 +54,16 @@ simultaneous regime changes (composite merge + noise floor) — keep them distin
 Each item carries its **update hook**: the exact thing to do to this doc when it's done.
 An item is not done until its hook has been run.
 
-### E0 — Settle the cloud-IP question · blocks E3
+### E0 — Settle the cloud-IP question · **DONE 2026-08-17**
 
-- [ ] Run the probe
-      ```bash
-      git push -u origin harden/audit-fixes
-      gh workflow run probe-sources.yml --ref harden/audit-fixes
-      sleep 90 && gh run view --log
-      ```
-      **↪ hook:** paste the `HTTP=` line for every endpoint into §3 below, set each
-      row's verdict, and stamp the date. Then unblock or kill E3 accordingly.
-- [ ] Delete `.github/workflows/probe-sources.yml`
-      **↪ hook:** tick this, and note in §5 that the probe is gone so nobody hunts for it.
+- [x] Run the probe — run [`32049892277`](https://github.com/jtur671/reddit-signal-radar/actions/runs/32049892277),
+      results in §3. StockTwits ✅ (E3 unblocked), reddit RSS ❌ (dead from CI),
+      all four E2 sources ✅.
+      *Gotcha for next time:* a `workflow_dispatch`-only workflow is **invisible to
+      `gh workflow run`** until it lands on the **default branch** — `gh` returns a bare
+      `HTTP 404`. A branch+path-scoped `push:` trigger runs it from a feature branch
+      without ever putting the file on `main`.
+- [x] Delete `.github/workflows/probe-sources.yml` — see §5 for the recovery SHA.
 
 ### E1 — Catalyst layer · next
 
@@ -93,7 +91,7 @@ An item is not done until its hook has been run.
       **↪ hook:** if these become composite components, add a `regime_notes` entry and
       update `config.yaml`'s `composite.weights` comment.
 
-### E3 — Second attention source · blocked on E0
+### E3 — Second attention source · ✅ unblocked 2026-08-17 (StockTwits answers CI)
 
 - [ ] StockTwits ingest (board source + direction + `watchlist_count`)
       **↪ hook:** add `stocktwits` to `health.json`'s `sources` block and to the README's
@@ -120,17 +118,31 @@ Residential ≠ CI: the original raw-Reddit path died on exactly that gap.
 | SEC `data.sec.gov` submissions | 200 | 200 (prod) | in prod |
 | FINRA Reg SHO | — | 200 (prod) | in prod |
 | CBOE chains | — | 200 (prod) | in prod |
-| **StockTwits** stream + trending | **200**, CF-fronted like ApeWisdom | ❓ **probe** | E3 gate |
-| **reddit.com `/*.rss`** | **200**, 1 req/60s per IP | ❓ **probe** | E-later |
-| reddit.com `/*.json` | — | **403 (known)** | dead, do not retry |
-| Wikimedia pageviews | 200 | ❓ probe | E2 |
-| Nasdaq short-interest | 200 | ❓ probe | E2 |
-| FINRA consolidated short interest | 200 (CSV, keyless) | ❓ probe | E2 |
-| SEC FTD zip | 200 **only with a contact UA** (403 without) | ❓ probe | context only |
+| **StockTwits** stream + trending | 200, CF-fronted like ApeWisdom | **200 ✅** (70.9 KB / 86.0 KB, real JSON) | **E3 UNBLOCKED** |
+| **reddit.com `/*.rss`** | 200, 1 req/60s per IP | **429 ❌** (`x-ratelimit-remaining: 0.0` on the *first* request; retried 65 s later, 429 again) | **dead from CI** — see below |
+| reddit.com `/*.json` | — | **403** (confirmed again) | dead, do not retry |
+| Wikimedia pageviews | 200 | **200 ✅** | E2 clear |
+| Nasdaq short-interest | 200 | **200 ✅** (`server: Kestrel`, no CF) | E2 clear |
+| FINRA consolidated short interest | 200 (CSV, keyless) | **200 ✅** | E2 clear |
+| SEC FTD zip | 200 **only with a contact UA** (403 without) | **200 ✅** (1.65 MB) | context only |
 | Polymarket Gamma / Kalshi | 200 / 200 | — | recorded, not recommended — ticker mapping unsolved |
 | Bluesky `public.api.bsky.app` | **403** (needs free auth) | — | deferred |
 | 4chan `/biz/` | 200 | — | **skip** — GME/BBBY/crypto zombies |
 | Hacker News (Algolia) | 200 | — | **skip** as a ticker source |
+
+**Probe run 2026-08-17: [`32049892277`](https://github.com/jtur671/reddit-signal-radar/actions/runs/32049892277).**
+Two things it settled that were guesses before:
+
+- **StockTwits answers a cloud IP.** Both endpoints returned real JSON payloads, not
+  Cloudflare challenge pages (`{"symbol":{"id":2925,"symbol":"NVDA",...`). The
+  ApeWisdom-posture argument held. E3 is a build decision now, not a research question.
+- **Reddit RSS is dead from CI, and for a *different* reason than the JSON path.** JSON
+  gives 403 (blocked); RSS gives **429 with `x-ratelimit-remaining: 0.0` on the very
+  first request of the run** — the GitHub Actions IP range shares one Reddit bucket that
+  is permanently exhausted by everyone else on it. Waiting 65 s did not help. This is not
+  a back-off-harder problem: **do not design anything around reddit RSS from CI.** It
+  works fine from a residential host at 1 req/min, so a self-hosted runner is the only
+  path that could revive it.
 
 ---
 
@@ -157,8 +169,13 @@ Move completed checklist blocks here with the date and commit SHA. Keep it short
 decision log in [[ROADMAP]] is where *why* lives; this is just *what*, so a future
 session can tell "not done yet" from "done and reverted".
 
+- **2026-08-17** — **E0 done.** Probe run
+  [`32049892277`](https://github.com/jtur671/reddit-signal-radar/actions/runs/32049892277)
+  settled the cloud-IP question (§3): StockTwits ✅, reddit RSS ❌, E2 sources ✅.
+  Throwaway workflow then deleted — **recover it with
+  `git show eea74f0:.github/workflows/probe-sources.yml`** if you need to re-probe.
 - **2026-08-17** — Community-mining research pass; [[2026-08-17-community-mining]],
-  Phase E added to [[ROADMAP]], this doc created. Probe workflow written (not yet run).
+  Phase E added to [[ROADMAP]], this doc created (`849134c`).
 - **2026-08-17** — Security-audit fixes (`f5fae9e`): URL scheme allowlist, CI secret
   blast radius, SHA-pinned actions.
 

@@ -310,17 +310,26 @@ without auth, SCHEDULE 13G (volume), NT 10-Q (volume).
 - The cloud-IP question gets a throwaway CI probe **before** anything depends on it —
   `.github/workflows/probe-sources.yml`, no secrets, `workflow_dispatch` only.
 
+**Answered by the probe, 2026-08-17** (run
+[`32049892277`](https://github.com/jtur671/reddit-signal-radar/actions/runs/32049892277)):
+
+- **StockTwits answers a GitHub Actions runner — 200, real JSON payloads.** The
+  ApeWisdom-posture argument in §2 held. 3c is unblocked.
+- **Reddit RSS does not.** 429 with `x-ratelimit-remaining: 0.0` on the runner's *first*
+  request, and again 65 s later. So §1's hopeful read was wrong in the way that mattered:
+  the 1-req/min budget is a *residential* budget, and the Actions IP range shares one
+  Reddit bucket that other tenants keep permanently exhausted. Note the failure mode
+  differs from the JSON path's 403 — it is throttling, not blocking — but the outcome is
+  the same and it is **not** fixable by backing off harder. A self-hosted runner is the
+  only revival path, and post titles alone don't justify one.
+- All four §4 candidates (Wikimedia, Nasdaq, FINRA, SEC FTD) answered **200** from CI.
+
 **Still open:**
-1. **Does StockTwits answer from a GitHub Actions runner?** Blocks 3c. The probe
-   answers it.
-2. **Does `www.reddit.com/*.rss` answer from a GitHub Actions runner?** Reddit's own
-   limiter (1/min) is separate from — and tells us nothing about — the cloud-IP block
-   that killed the JSON path. The probe answers it.
-3. **Signed `events` component** (§3a) — must be settled inside 3a, since 3a is what
+1. **Signed `events` component** (§3a) — must be settled inside 3a, since 3a is what
    makes it wrong.
-4. Breadth vs. floor: is ~54 names/day the right board, given the backtest needs
+2. Breadth vs. floor: is ~54 names/day the right board, given the backtest needs
    cross-sectional width and the power gate is ~74 days out? Lowering `min_mentions`
    back toward 5 would restore breadth but re-admit the micro-blips Phase B removed —
    and would create a *third* regime boundary in the backtest.
-5. Does cross-class co-occurrence (REPL: 424B5 + S-3ASR + 13D in one week) beat any
+3. Does cross-class co-occurrence (REPL: 424B5 + S-3ASR + 13D in one week) beat any
    single form class? Cheap to test once the classes exist.
