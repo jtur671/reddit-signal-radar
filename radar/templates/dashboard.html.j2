@@ -388,7 +388,7 @@ tr[data-ticker]{cursor:pointer}
   </div>
   <div class="method">
     <b>// how signals are scored.</b> Daily per-ticker Reddit mention counts (via the ApeWisdom aggregator) drive two numbers: <b>24h velocity</b> (today's mentions vs yesterday's — what the board shows) and a <b>surprise</b> z-score measured against each ticker's adaptive 90-day EMA baseline, which is what the engine actually ranks by. A noise floor on minimum mentions filters thin signals, and silent days decay a ticker's baseline so stale names fall off the board. The engagement bar is an upvotes-per-mention proxy (the aggregator provides no directional sentiment), with a DeepSeek summary on the top names. Prices via yfinance. 90 days of history retained.
-    The <b>composite</b> (0–100, per listing) blends seven components — velocity percentile, Tradestie bull share, engagement, FINRA short-volume pressure, options activity, fresh monitor alerts, and an inverse read of Mad Money calls — with heuristic weights until the weekly backtest accrues enough history to calibrate them. Empty signal-DNA cells mean a source didn't cover that name today.
+    The <b>composite</b> (0–100, per listing) blends seven components — velocity percentile, Tradestie bull share, engagement, FINRA short-volume pressure, options activity, signed catalyst direction (a fresh alert scores bearish 0 / neutral 50 / bullish 100 — dilution and delisting are bearish, activist stakes and insider buys bullish — and the component is left blank, not zero, when nothing fired), and an inverse read of Mad Money calls — with heuristic weights until the weekly backtest accrues enough history to calibrate them. Empty signal-DNA cells mean a source didn't cover that name today.
   </div>
 
   {% if sources %}
