@@ -25,8 +25,8 @@ of this document.
 | | |
 |---|---|
 | Branch | `harden/audit-fixes` (ahead of `main`; security-audit fixes + this research) |
-| Prod | daily board + email 6:17 AM ET; 5-monitor fleet on a 30-min tick |
-| Tests | **351 passed in 49.54s** (measured 2026-08-17, `.venv`). Re-run rather than quote: `source .venv/bin/activate && python -m pytest` |
+| Prod | daily board + email 6:17 AM ET; 9-monitor fleet on a 30-min tick |
+| Tests | **353 passed in 45.24s** (measured 2026-08-17, `.venv`, after the audit-fixes wave). Re-run rather than quote: `source .venv/bin/activate && python -m pytest` |
 | Data branch | `origin/data` — 654 tickers, 76 daily snapshots, 8,364 ticker-days (measured 2026-08-17) |
 | Backtest power gate | needs 150 days, has 76 → opens ≈ **2026-11-01** |
 | Current phase | **E2 — Non-social attention**, spec not yet written |
@@ -59,7 +59,7 @@ An item is not done until its hook has been run.
       without ever putting the file on `main`.
 - [x] Delete `.github/workflows/probe-sources.yml` — see §5 for the recovery SHA.
 
-### E1 — Catalyst layer · **landed 2026-08-17** (see §5); one follow-up still open
+### E1 — Catalyst layer · **landed 2026-08-17** (see §5); two follow-ups still open
 
 - [x] Sign the `events` composite component
       **↪ hook:** strike the "Open defect" block in §1 and move it to §5 with the commit SHA.
@@ -76,6 +76,12 @@ An item is not done until its hook has been run.
       component, which changes every composite, which is a backtest regime boundary.
       Second hook done (`radar/backtest.py` `REGIME_NOTES`, dated 2026-08-17); the volume
       measurement itself is still outstanding — not enough days live yet.
+- [ ] **EFTS paging (or narrowing the `bankruptcy` phrase).** `edgar8k`'s `"bankruptcy"`
+      query returns a full 100-hit page every day (measured 127/188/197 hits over three
+      consecutive 2-day windows, §4) — roughly half those 8-Ks are silently unseen.
+      Pre-existing, not caused by this branch; the new catalyst classes are all
+      comfortably under the cap. Paging itself is out of scope for this phase.
+      **↪ hook:** if implemented, record it here and in §5, and re-measure §4's row.
 - [x] Update [[ROADMAP]] decision log
       **↪ hook:** tick E1 in [[ROADMAP]], move this whole block to §5, set §1 phase to E2.
       Done.
@@ -157,7 +163,16 @@ fact. Replace with a measurement when you can.
 | Board names/day (post-floor) | ~54 | history, 2026-08-08→17 | monthly |
 | Reddit RSS budget | 1 req / ~60s / IP | `x-ratelimit-*` headers | if RSS is ever used |
 | EFTS page cap | 100 hits | `len(hits)` vs `total` | if paging is added |
-| Test suite | 351 passed / 49.54s | measured 2026-08-17 | every branch |
+| Test suite | 353 passed / 45.24s | measured 2026-08-17, after the audit-fixes wave | every branch |
+| `edgar8k` `"bankruptcy"` hits/day vs the 100-hit page cap | **127 / 188 / 197** over the monitor's real 2-day window (2026-08-11→12, 12→13, 13→14) | measured 2026-08-17 against `efts.sec.gov` | if EFTS paging is added or the phrase is narrowed |
+
+**`edgar8k`'s `"bankruptcy"` phrase already exceeds the EFTS page cap every day, and
+`parse_hits` only reads page 1.** The other two `edgar8k` phrases stay under the cap
+(`"material definitive agreement"` 81/81/85, `"departure of directors"` 71/58/75, same
+three windows). This is pre-existing — not caused by this branch — and it means roughly
+half of `bankruptcy` 8-Ks are silently unseen by the monitor on a typical day. All four
+new catalyst classes are comfortably under the cap (dilution 1, shelf 7, activist 9,
+delisting 0, same measurement). See the follow-up in §2 and [[ROADMAP]] Phase E.
 
 ---
 

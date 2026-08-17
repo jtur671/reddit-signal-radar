@@ -401,7 +401,8 @@ def alert_direction_map(alerts) -> dict[str, str]:
             t = raw.strip().lstrip("$")
             if not t:
                 continue
-            if t not in out or _DIRECTION_RANK[direction] < _DIRECTION_RANK[out[t]]:
+            if t not in out or (_DIRECTION_RANK.get(direction, 2)
+                                 < _DIRECTION_RANK.get(out[t], 2)):
                 out[t] = direction
     return out
 

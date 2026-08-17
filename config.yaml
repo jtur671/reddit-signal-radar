@@ -82,7 +82,8 @@ edgar_forms:
   - {key: shelf,     label: "📄 Shelf Filed",   direction: neutral, card_style: fed,
      forms: "S-3,S-3ASR",     phrases: ["offering"],               watch_days: 90, max_age_h: 24}
   - {key: activist,  label: "🎯 Activist 13D",  direction: bullish, card_style: insider,
-     forms: "SCHEDULE 13D",   phrases: ["common stock"],           watch_days: 90, max_age_h: 48}
+     forms: "SCHEDULE 13D",   phrases: ["common stock"],           watch_days: 90, max_age_h: 48,
+     filer_in_summary: true}
   - {key: delisting, label: "🚫 Delisting",     direction: bearish, card_style: delisting,
      forms: "25-NSE",         phrases: ["delisting"],              watch_days: 90, max_age_h: 48}
 # FINRA Reg SHO daily short-sale volume (free, keyless): ShortVolume/TotalVolume per

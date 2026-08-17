@@ -1,6 +1,6 @@
 ---
 project: Reddit Signal Radar
-status: live — daily board + email in prod, 5-monitor fleet (Trump/EDGAR/Fed/Congress/EDGAR-8K) on a 30-min tick
+status: live — daily board + email in prod, 9-monitor fleet (Trump/EDGAR/Fed/Congress/EDGAR-8K/Dilution/Shelf/Activist/Delisting) on a 30-min tick
 updated: 2026-08-17
 tags: [roadmap, reddit-signal-radar]
 ---
@@ -113,6 +113,12 @@ chosen 90-day watch gate.
       `SC 13D`. Per-class `q` is the debt/equity discriminator — measured, see spec.
 - [x] Widen the watch gate to the full 90-day history (654 tickers, vs 148 at 7 days).
 - [x] Skip `SCHEDULE 13G` (~1,300/week) and `NT 10-Q` (~96/6d) — volume, not signal.
+- [ ] **EFTS paging (or narrowing the `edgar8k` `bankruptcy` phrase).** That query alone
+      returns a full 100-hit EFTS page daily (measured 127/188/197 hits, 2026-08-17,
+      [[HANDOFF]] §4) — `parse_hits` only reads page 1, so roughly half those 8-Ks go
+      unseen. Pre-existing, not caused by E1; the four new classes stay well under the
+      cap. Paging is explicitly out of scope for this phase — this item is tracking it
+      for later, not implementing it now.
 
 ### E2 — Non-social attention
 - [ ] Wikimedia pageviews (keyless, verified) — the discriminator between a real story

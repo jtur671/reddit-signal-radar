@@ -52,5 +52,6 @@ def build_registry(cfg) -> list:
             key=row["key"], label=row["label"], card_style=row["card_style"],
             direction=row["direction"], forms=row["forms"],
             watch_days=int(row.get("watch_days", 90)),
+            filer_in_summary=bool(row.get("filer_in_summary", False)),
         ))
     return monitors

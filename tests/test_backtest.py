@@ -126,6 +126,10 @@ def test_power_and_regime_notes():
     pw = power(hist)
     assert pw["days"] == len(DAYS) and pw["sufficient"] is False and pw["target_days"] == 150
     assert any("2026-08-07" in n["date"] for n in REGIME_NOTES)
+    # House rule: a composite-changing commit gets a dated regime note. E1's four new
+    # alert classes + the signed `events` component are exactly that change (2026-08-17);
+    # nothing else guards this note against deletion.
+    assert any("2026-08-17" in n["date"] for n in REGIME_NOTES)
 
 def test_daily_scorecard_fail_soft_on_exception(monkeypatch):
     # A raising price fetch -> None + a degrade breadcrumb; the board must not care.

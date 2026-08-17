@@ -140,7 +140,9 @@ def test_comma_separated_forms_are_url_encoded(monkeypatch):
     m = EdgarEventsMonitor(phrases=["offering"], user_agent="t", watch=lambda: set(),
                            key="shelf", forms="S-3,S-3ASR")
     m.fetch_new(set())
-    assert "forms=S-3%2CS-3ASR" in seen_urls[0] or "forms=S-3,S-3ASR" in seen_urls[0]
+    # urllib.parse.quote(..., safe="") percent-encodes the comma -- verified 2026-08-17.
+    # A bare `or` against the unencoded form can't catch an encoding regression.
+    assert "forms=S-3%2CS-3ASR" in seen_urls[0]
 
 
 def test_defaults_reproduce_todays_8k_monitor(monkeypatch):
@@ -164,7 +166,7 @@ def test_identity_fields_are_configurable():
         "dilution", "💧 Dilution", "trump", "bearish")
 
 
-def test_watch_days_is_passed_to_the_default_watch(tmp_path, monkeypatch):
+def test_active_tickers_widens_at_90_days(tmp_path, monkeypatch):
     import json
     import radar.monitors.edgar_events as ee
     hist = tmp_path / "history.json"
@@ -175,6 +177,48 @@ def test_watch_days_is_passed_to_the_default_watch(tmp_path, monkeypatch):
     wide   = ee.active_tickers(str(hist), days=90, today="2026-08-17")
     assert narrow == {"RECENT"}
     assert wide == {"RECENT", "OLD"}       # the 90-day gate is what catches pre-discovery names
+
+
+def test_activist_summary_names_the_filer_not_the_subject(monkeypatch):
+    # For SCHEDULE 13D, display_names[0] is the SUBJECT company (carries the ticker)
+    # and [1] is the activist FILER. filer_in_summary=True must phrase the alert so the
+    # filer, not the subject, is named as having filed.
+    import radar.monitors.edgar_events as ee
+    fixture = {"hits": {"hits": [
+        {"_id": "acc1:doc.htm", "_source": {"ciks": ["1"],
+         "display_names": ["Clipper Realty Inc.  (CLPR)  (CIK 0001649096)",
+                            "Levinson Sam  (CIK 0001588901)"],
+         "file_date": "2026-08-12"}}]}}
+    monkeypatch.setattr(ee, "_fetch_json", lambda url, ua: fixture)
+    m = EdgarEventsMonitor(phrases=["common stock"], user_agent="t",
+                           watch=lambda: {"CLPR"}, forms="SCHEDULE 13D",
+                           filer_in_summary=True)
+    signals, _ = m.fetch_new(set())
+    assert len(signals) == 1
+    summary = signals[0].summary
+    assert "Levinson Sam" in summary
+    # The subject must not read as the one who filed.
+    assert "filed by Clipper Realty" not in summary
+
+
+def test_edgar8k_summary_unchanged_by_a_two_element_display_names(monkeypatch):
+    # Regression guard: edgar8k does NOT set filer_in_summary, so its summary must stay
+    # byte-identical to the pre-I1 text even when EDGAR returns a two-element
+    # display_names (measured: 8-K co-filer rows look exactly like this, e.g. BMW FS
+    # SECURITIES LLC / BMW Vehicle Owner Trust 2026-A). A shape-based rule would have
+    # changed this monitor's output; a config-flag rule must not.
+    import radar.monitors.edgar_events as ee
+    fixture = {"hits": {"hits": [
+        {"_id": "acc1:doc.htm", "_source": {"ciks": ["1"],
+         "display_names": ["Watched Co  (WTCH)  (CIK 1)", "Some Co-Filer LLC  (CIK 2)"],
+         "file_date": "2026-08-12"}}]}}
+    monkeypatch.setattr(ee, "_fetch_json", lambda url, ua: fixture)
+    m = EdgarEventsMonitor(phrases=["material definitive agreement"], user_agent="t",
+                           watch=lambda: {"WTCH"})
+    signals, _ = m.fetch_new(set())
+    assert len(signals) == 1
+    assert signals[0].summary == ('8-K “material definitive agreement” filed by '
+                                   'Watched Co  (WTCH)  (CIK 1)')
 
 
 def test_summary_carries_the_configured_form_code(monkeypatch):

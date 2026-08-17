@@ -38,7 +38,8 @@ def _fetch_json(url: str, ua: str):
 
 
 def parse_hits(raw) -> list[dict]:
-    """EFTS response -> [{id, ticker, display, file_date, url}]. Pure, never raises."""
+    """EFTS response -> [{id, ticker, display, filer, file_date, url}]. Pure, never
+    raises."""
     out: list[dict] = []
     try:
         hits = raw["hits"]["hits"]
@@ -48,19 +49,23 @@ def parse_hits(raw) -> list[dict]:
         if not isinstance(h, dict):
             continue
         src = h.get("_source") or {}
-        display = (src.get("display_names") or [""])[0]
+        names = src.get("display_names") or [""]
+        display = names[0]
+        filer = names[1] if len(names) > 1 else ""
         acc = str(h.get("_id") or "")
         acc_no, _, fname = acc.partition(":")
         cik = str((src.get("ciks") or [""])[0]).lstrip("0")
         url = (f"https://www.sec.gov/Archives/edgar/data/{cik}/"
                f"{acc_no.replace('-', '')}/{fname}"
                if cik and acc_no and fname
-               else "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&type=8-K")
+               else "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany")
         out.append({
             "id": acc_no,                    # accession, NOT acc_no:fname -- EFTS indexes
                                              # every file in a submission separately
             "ticker": ticker_from_display(display),
             "display": display,
+            "filer": filer,                  # names[1] when present; meaning is form-
+                                             # specific (13D activist filer, 8-K co-filer)
             "file_date": str(src.get("file_date") or ""),
             "url": url,
         })
@@ -89,7 +94,8 @@ class EdgarEventsMonitor:
                  watch=active_tickers, max_age_h: int = 24, *,
                  key: str = "edgar8k", label: str = "📢 8-K Event",
                  card_style: str = "insider", direction: str = "neutral",
-                 forms: str = "8-K", watch_days: int = 7):
+                 forms: str = "8-K", watch_days: int = 7,
+                 filer_in_summary: bool = False):
         self.key, self.label, self.card_style = key, label, card_style
         self.direction = direction
         self.max_age_h = max_age_h
@@ -98,9 +104,16 @@ class EdgarEventsMonitor:
         self.watch_days = watch_days
         self.user_agent = user_agent
         self._watch = watch
-        # Three phrases over the rolling window can exceed the base.py default seen_cap
-        # of 200 (one phrase alone returned 72 in-window ids) -> evicted ids re-evaluate
-        # every tick (cursor churn + duplicate alerts). Match EdgarMonitor's 5000.
+        # filer_in_summary: display_names[1]'s MEANING is form-specific -- 13D's
+        # activist filer, 8-K's co-filer (measured 2026-08-17) -- so this is set
+        # explicitly per config row, never inferred from list shape. Only "activist"
+        # sets it True.
+        self.filer_in_summary = filer_in_summary
+        # This class backs five monitors (edgar8k + four catalyst classes), each with
+        # 1-3 phrases over the rolling window; that can exceed the base.py default
+        # seen_cap of 200 (one phrase alone returned 72 in-window ids) -> evicted ids
+        # re-evaluate every tick (cursor churn + duplicate alerts). Match EdgarMonitor's
+        # 5000.
         self.seen_cap = 5000
 
     def fetch_new(self, seen: set[str]):
@@ -129,9 +142,14 @@ class EdgarEventsMonitor:
                     continue
                 evaluated.append(row["id"])
                 if row["ticker"] and row["ticker"] in watch:
+                    if self.filer_in_summary and row["filer"]:
+                        summary = (f"{self.forms} “{phrase}” — {row['filer']} "
+                                   f"on {row['display']}")
+                    else:
+                        summary = f"{self.forms} “{phrase}” filed by {row['display']}"
                     signals.append(Signal(
                         tickers=[row["ticker"]],
-                        summary=f"{self.forms} “{phrase}” filed by {row['display']}",
+                        summary=summary,
                         url=row["url"], published=row["file_date"] + "T00:00:00Z",
                         monitor_key=self.key, link_text="EDGAR filing ↗"))
         return signals, evaluated

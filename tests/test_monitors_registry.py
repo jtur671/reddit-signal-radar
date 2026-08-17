@@ -8,13 +8,13 @@ from radar.monitors.congress import CongressMonitor
 from radar.monitors.edgar_events import EdgarEventsMonitor
 
 
-def test_registry_has_all_five_monitors():
+def test_registry_has_all_nine_monitors():
     reg = build_registry(load_config("config.yaml"))
     keys = [m.key for m in reg]
     # Task 5 appends the four catalyst classes after edgar8k; see
     # test_registry_includes_the_four_catalyst_classes below for their own coverage.
     assert keys == ["trump", "edgar", "fed", "congress", "edgar8k",
-                     "dilution", "shelf", "activist", "delisting"]
+                    "dilution", "shelf", "activist", "delisting"]
     trump_m = next(m for m in reg if m.key == "trump")
     edgar_m = next(m for m in reg if m.key == "edgar")
     fed_m = next(m for m in reg if m.key == "fed")
@@ -97,6 +97,11 @@ def test_catalyst_classes_carry_the_measured_form_codes_and_phrases():
     # "SCHEDULE 13D", NOT "SC 13D" -- the latter returns zero hits.
     assert by_key["activist"].forms == "SCHEDULE 13D"
     assert by_key["activist"].direction == "bullish"
+    # Only activist names the filer in its summary -- display_names[1] means something
+    # different per form (13D activist filer vs. 8-K co-filer), so this is never inferred.
+    assert by_key["activist"].filer_in_summary is True
+    for key in ("dilution", "shelf", "delisting", "edgar8k"):
+        assert by_key[key].filer_in_summary is False, key
     assert by_key["delisting"].forms == "25-NSE"
     assert by_key["delisting"].direction == "bearish"
 
