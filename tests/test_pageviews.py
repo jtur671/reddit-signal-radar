@@ -724,8 +724,14 @@ def test_run_py_plumbs_the_budget_from_config(monkeypatch, tmp_path):
         cfg.pageviews.budget_seconds = None
         return cfg
     monkeypatch.setattr(run, "load_config", cfg_patched)
+    # The same public fetches tests/test_run_smoke.py::_offline replaces. conftest's
+    # autouse guard shuts the PRIVATE transports; `fetch_short_ratios` is a public one
+    # and goes straight to cdn.finra.org — caught by the no-network gate, not guessed.
     monkeypatch.setattr(run, "fetch_mentions", lambda cfg: [])
     monkeypatch.setattr(run.tradestie, "fetch_wsb", lambda cfg: [])
+    monkeypatch.setattr(run, "fetch_short_ratios", lambda cfg, run_day: ({}, ""))
+    monkeypatch.setattr(run, "fetch_cramer", lambda cfg, run_day: {})
+    monkeypatch.setattr(run, "option_stats", lambda ticker, cfg: None)
     monkeypatch.setattr(run.news, "headlines", lambda *a, **k: [])
     monkeypatch.setenv("DEEPSEEK_API_KEY", "")
     run.main(["--dry-run", "--no-email", "--out", str(tmp_path / "out")])
