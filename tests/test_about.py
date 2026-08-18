@@ -1,11 +1,21 @@
 import json
 
-from radar import about
+import pytest
+
+from radar import about, degrade
 
 # Captured at import time, BEFORE conftest's autouse hermeticity fixture stubs
 # about.fetch_summary out. The two canonical-title tests below need the real
 # function body (with requests.get stubbed) to prove it reads the response field.
 _REAL_FETCH_SUMMARY = about.fetch_summary
+
+
+@pytest.fixture(autouse=True)
+def _clear_degrade():
+    # House pattern (tests/test_tickermap.py, tests/test_health.py): degrade has no
+    # clear() -- reset() is the established reset mechanism.
+    degrade.reset()
+    yield
 
 
 def test_describe_uses_cache_without_network(monkeypatch):
@@ -282,3 +292,149 @@ def test_an_entry_written_before_the_stamp_existed_heals_without_a_cache_wipe(mo
         about.describe("DOW", "Dow", "Dow Inc.", legacy_redirect)
     assert calls == ["Dow Inc."], "exactly one healing fetch, then the stamp holds"
     assert legacy_redirect["DOW"]["mapped"] == "Dow Inc."
+
+
+# --- hostile responses: a 200 body that is not a dict, or fields that are not strings ---
+
+@pytest.mark.parametrize("body", [None, [], "Apple Inc.", 5])
+def test_a_non_dict_200_body_returns_none_instead_of_killing_the_run(monkeypatch, body):
+    """`fetch_summary` is documented "Never raises", and that has to hold against what
+    actually arrives on the wire, not against what the REST docs promise: a proxy error
+    page, an empty array, a bare literal. The type read sat OUTSIDE the try, so
+    `AttributeError: 'NoneType' object has no attribute 'get'` walked all the way up
+    through describe() -> _enrich_ticker() -> main() and killed the run BEFORE it
+    rendered — no board, no email, no publish, for a malformed body on one ticker."""
+    class Resp:
+        status_code = 200
+        def json(self):
+            return body
+    monkeypatch.setattr(about.requests, "get", lambda *a, **k: Resp())
+    assert _REAL_FETCH_SUMMARY("Apple Inc.", "ua") is None
+
+
+def test_non_string_fields_are_coerced_rather_than_crashing(monkeypatch):
+    """`(d.get("title") or "").strip()` is an AttributeError the moment the field is a
+    number. The crash is only half of it: a non-string `title` that survived into the
+    cache is what run.py:178 hands to pageviews.fetch_attention, so a bad field here
+    detonates in a different module a hundred lines later. Coerce at the boundary."""
+    class Resp:
+        status_code = 200
+        def json(self):
+            return {"type": "standard", "title": 5, "description": ["a", "b"],
+                    "extract": {"x": 1}}
+    monkeypatch.setattr(about.requests, "get", lambda *a, **k: Resp())
+    got = _REAL_FETCH_SUMMARY("Apple Inc.", "ua")
+    assert got["title"] == "5"
+    assert all(isinstance(v, str) for v in got.values()), got
+
+
+# --- hostile cache entries ------------------------------------------------------
+
+def test_a_non_dict_cached_entry_is_dropped_by_the_loader(tmp_path):
+    """`data/about.json` rides the orphan data branch and is hand-editable. load_cache
+    validated only that `entries` was a dict and passed every VALUE through untouched,
+    so `{"AAPL": 5}` reached describe() and `cached.get("title")` raised. Drop the bad
+    value, keep the rest — one poisoned entry must not cost the whole cache."""
+    p = tmp_path / "about.json"
+    p.write_text(json.dumps({"schema": about.SCHEMA, "entries": {
+        "AAPL": 5,
+        "DOW": {"name": "Dow", "desc": "American chemical company", "extract": "...",
+                "title": "Dow Chemical Company", "mapped": "Dow Inc."}}}))
+    loaded = about.load_cache(p)
+    assert list(loaded) == ["DOW"], "the non-dict entry must not survive the load"
+
+
+def test_describe_survives_a_non_dict_cached_entry(monkeypatch):
+    """And describe() guards it too, because the cache dict is a caller-supplied
+    argument — the loader is not the only way a value gets in there."""
+    monkeypatch.setattr(about, "fetch_summary",
+                        lambda title, ua="x": {"desc": "tech company", "extract": "...",
+                                               "title": "Apple Inc."})
+    cache = {"AAPL": 5}
+    got = about.describe("AAPL", "Apple", "Apple Inc.", cache)
+    assert got["desc"] == "tech company"
+    assert cache["AAPL"]["title"] == "Apple Inc.", "the junk entry is replaced, not read"
+
+
+# --- save_cache is fail-soft, and refuses to clobber a cache it could not read ---
+
+def test_save_cache_warns_instead_of_raising(tmp_path):
+    """save_cache was the only I/O in the module with no degrade.warn wrapper, and
+    run.py:113 calls it unguarded AFTER every enrichment and BEFORE the render. A full
+    disk or an unwritable path therefore threw away a completed run at the last step.
+    Both failure shapes are covered: the write itself (parent is a FILE, so the atomic
+    writer's mkdir raises OSError) and the serialize (a value json cannot encode)."""
+    blocker = tmp_path / "blocker"
+    blocker.write_text("i am a file, not a directory")
+    about.save_cache(blocker / "about.json", {"AAPL": {"name": "Apple"}})
+    about.save_cache(tmp_path / "unserializable.json", {"AAPL": object()})
+    assert [e["what"] for e in degrade.events()] == ["about cache write"] * 2
+
+
+def test_a_corrupt_cache_is_not_overwritten_by_a_board_only_subset(tmp_path):
+    """The silent data-loss path, and the reason load_cache cannot just return {}.
+
+    run.py enriches only the ~15-30 tickers on TODAY's board into whatever dict
+    load_cache handed it, then saves. So a failed read of a 3,000-entry cache does not
+    degrade the run — it REPLACES the accumulated cache with today's board and commits
+    that to the data branch. A file that exists and is non-empty but will not parse is
+    damage, not an empty cache, and the only safe response is to leave it alone."""
+    p = tmp_path / "about.json"
+    blob = '{"schema": 1, "entries": {"AAPL": {"name": "App'      # truncated by a hand-edit
+    p.write_text(blob)
+    assert about.load_cache(p) == {}
+    assert any("about cache" in e["what"] for e in degrade.events()), "and it says so"
+
+    about.save_cache(p, {"IREN": {"name": "IREN", "desc": "Bitcoin miner", "extract": "",
+                                  "title": "IREN Limited", "mapped": "IREN Limited"}})
+    assert p.read_text() == blob, "a corrupt read must veto the rewrite, not lose 3,000 entries"
+
+
+def test_a_missing_or_empty_cache_file_is_an_empty_cache_not_a_corrupt_one(tmp_path):
+    """The other half of the distinction, and the one that keeps the system bootable: a
+    first-ever run has no file at all, and a zero-length file is what an interrupted
+    pre-atomic write left behind. Neither is damage — refusing to write for those would
+    mean the cache could never be created in the first place."""
+    missing = tmp_path / "about.json"
+    assert about.load_cache(missing) == {}
+    about.save_cache(missing, {"AAPL": {"name": "Apple", "desc": "tech company",
+                                        "extract": "", "title": "Apple Inc."}})
+    assert about.load_cache(missing)["AAPL"]["title"] == "Apple Inc."
+
+    empty = tmp_path / "empty.json"
+    empty.write_text("")
+    assert about.load_cache(empty) == {}
+    about.save_cache(empty, {"AAPL": {"name": "Apple", "desc": "tech company",
+                                      "extract": "", "title": "Apple Inc."}})
+    assert about.load_cache(empty)["AAPL"]["title"] == "Apple Inc."
+
+
+def test_a_stale_schema_cache_is_still_discarded_and_still_rewritten(tmp_path):
+    """The deliberate discard must NOT be mistaken for corruption. The pre-SCHEMA-1 file
+    holds wrong-entity entries that are cache HITS, so they never re-fetch and never
+    heal; throwing the whole file away and rebuilding it from the board is the intended
+    outcome, and the corrupt-read veto must stay out of its way."""
+    p = tmp_path / "about.json"
+    p.write_text(json.dumps({"schema": 0, "entries": {"AAPL": {"name": "Apple",
+                                                               "desc": "Edible fruit"}}}))
+    assert about.load_cache(p) == {}
+    about.save_cache(p, {"IREN": {"name": "IREN", "desc": "Bitcoin miner", "extract": "",
+                                  "title": "IREN Limited", "mapped": "IREN Limited"}})
+    reloaded = about.load_cache(p)
+    assert list(reloaded) == ["IREN"], "the poisoned cache must be gone, replaced"
+    assert reloaded["IREN"]["desc"] == "Bitcoin miner"
+
+
+def test_a_bool_schema_is_not_schema_1(tmp_path):
+    """`True == 1` in Python, so `doc.get("schema") != SCHEMA` accepted `"schema": true`
+    and resurrected exactly the wrong-entity cache the schema check exists to discard.
+    Compare types, not just values — and treat it as a stale schema (discard + rewrite),
+    since a value that is not the current schema is by definition not readable by it."""
+    p = tmp_path / "about.json"
+    p.write_text(json.dumps({"schema": True, "entries": {"AAPL": {"name": "Apple",
+                                                                  "desc": "Edible fruit",
+                                                                  "title": "Apple"}}}))
+    assert about.load_cache(p) == {}
+    about.save_cache(p, {"IREN": {"name": "IREN", "desc": "Bitcoin miner", "extract": "",
+                                  "title": "IREN Limited", "mapped": "IREN Limited"}})
+    assert list(about.load_cache(p)) == ["IREN"]
