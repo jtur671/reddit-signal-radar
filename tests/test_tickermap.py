@@ -10,7 +10,13 @@ from radar import degrade
 RAW = json.loads(Path("tests/fixtures/wikidata_rows.json").read_text())
 
 
-def _cfg(tmp_path, overrides="radar/ticker_overrides.yml"):
+def _cfg(tmp_path, overrides=None):
+    # Default to a path that is guaranteed not to exist, rather than the repo's real
+    # radar/ticker_overrides.yml -- once Task 3 populates that file, every test here
+    # that asserts an exact dict (not just DOW/overrides-specific ones) would start
+    # picking up real entries via _finish's unconditional merge and break.
+    if overrides is None:
+        overrides = str(tmp_path / "no_such_overrides.yml")
     return types.SimpleNamespace(tickermap=types.SimpleNamespace(
         snapshot_path=str(tmp_path / "ticker_articles.json"),
         overrides_path=overrides, max_age_days=30))
@@ -56,6 +62,29 @@ def test_parse_rows_never_raises_on_junk():
         assert tm.parse_rows(junk) == {}
 
 
+def test_parse_rows_coerces_non_string_ticker_and_title():
+    """'Never raises' is the whole contract, and dict[str, str] is the whole return
+    type -- a non-string binding value used to break both: ticker.upper() raised
+    AttributeError, and a passed-through non-string title broke the type contract."""
+    raw = {"results": {"bindings": [
+        {"ticker": {"value": 5}, "enwiki": {"value": 7},
+         "rank": {"value": "http://wikiba.se/ontology#NormalRank"}}]}}
+    got = tm.parse_rows(raw)
+    assert got == {"5": "7"}
+    assert isinstance(next(iter(got)), str) and isinstance(got["5"], str)
+
+
+def test_query_uses_the_qualifier_path_and_shares_a_where_with_count():
+    """Nothing else pins the SPARQL text. Swapping in wdt:P249 (the 38-statement direct
+    path, vs. the 17,204-statement qualifier path this module depends on) or dropping an
+    EXCHANGES entry left every other test passing -- only this one would catch it."""
+    assert "pq:P249" in tm.QUERY and "wdt:P249" not in tm.QUERY
+    assert "p:P414" in tm.QUERY and "pq:P582" in tm.QUERY
+    assert tm._WHERE in tm.QUERY and tm._WHERE in tm.COUNT_QUERY
+    for q in tm.EXCHANGES:
+        assert q in tm.QUERY
+
+
 # --- fetch_ticker_map -------------------------------------------------------
 
 def _resp(n_rows, count=None):
@@ -94,6 +123,7 @@ def test_matching_count_vendors_the_snapshot(monkeypatch, tmp_path):
     rows, count = _resp(3)
     monkeypatch.setattr(tm, "_get_json",
                         lambda q, ua, **kw: count if "COUNT" in q else {"results": {"bindings": rows}})
+    monkeypatch.setattr(tm, "MIN_ROWS", 0)  # isolate from the floor guard -- not under test here
     got = tm.fetch_ticker_map(_cfg(tmp_path), "2026-08-17")
     assert got["T0"] == "Title 0"
     written = json.loads(snap.read_text())
@@ -137,6 +167,7 @@ def test_stale_snapshot_triggers_a_refresh(monkeypatch, tmp_path):
                "rank": {"value": "http://wikiba.se/ontology#NormalRank"}}
     monkeypatch.setattr(tm, "_get_json",
                         lambda q, ua, **kw: count if "COUNT" in q else {"results": {"bindings": rows}})
+    monkeypatch.setattr(tm, "MIN_ROWS", 0)  # isolate from the floor guard -- not under test here
     got = tm.fetch_ticker_map(_cfg(tmp_path), "2026-08-17")   # 77 days old
     assert got["AAPL"] == "Apple Inc."
 
@@ -159,5 +190,41 @@ def test_overrides_beat_the_snapshot(monkeypatch, tmp_path):
                "rank": {"value": "http://wikiba.se/ontology#NormalRank"}}
     monkeypatch.setattr(tm, "_get_json",
                         lambda q, ua, **kw: count if "COUNT" in q else {"results": {"bindings": rows}})
+    monkeypatch.setattr(tm, "MIN_ROWS", 0)  # isolate from the floor guard -- not under test here
     cfg = _cfg(tmp_path, overrides=str(ov))
     assert tm.fetch_ticker_map(cfg, "2026-08-17")["DOW"] == "Dow Inc."
+
+
+# --- MIN_ROWS floor / regression guards -------------------------------------
+
+def test_zero_rows_both_queries_agree_refuses_via_the_floor(monkeypatch, tmp_path):
+    """The whole point: COUNT(*) equality alone cannot catch this. 0 returned / COUNT=0
+    is an equality MATCH, so only an independent floor stops an empty map from being
+    vendored over a healthy one and then served for up to max_age_days."""
+    snap = tmp_path / "ticker_articles.json"
+    snap.write_text(json.dumps({"schema": 1, "fetched": "2026-06-01", "rows_fetched": 4015,
+                                "rows_expected": 4015, "map": {"AAPL": "Apple Inc."}}))
+    rows, count = _resp(0, count=0)
+    monkeypatch.setattr(tm, "_get_json",
+                        lambda q, ua, **kw: count if "COUNT" in q else {"results": {"bindings": rows}})
+    got = tm.fetch_ticker_map(_cfg(tmp_path), "2026-08-17")   # 77 days old -> refresh attempted
+    assert got == {"AAPL": "Apple Inc."}, "must keep the healthy snapshot, not vendor an empty map"
+    assert json.loads(snap.read_text())["map"] == {"AAPL": "Apple Inc."}, "snapshot unchanged"
+    assert any("floor" in str(e).lower() for e in degrade.events())
+
+
+def test_regression_against_previous_row_count_refuses(monkeypatch, tmp_path):
+    """A merged/redirected EXCHANGES Q-id (or a regressed triple pattern) can shrink
+    the live query AND the count query together, so they still agree -- guard against
+    a big drop from the last known-good fetch even when equality holds."""
+    snap = tmp_path / "ticker_articles.json"
+    snap.write_text(json.dumps({"schema": 1, "fetched": "2026-06-01", "rows_fetched": 10,
+                                "rows_expected": 10, "map": {"AAPL": "Apple Inc."}}))
+    monkeypatch.setattr(tm, "MIN_ROWS", 0)  # isolate from the floor guard -- testing regression only
+    rows, count = _resp(4, count=4)         # agrees with COUNT, but < half of the prior 10
+    monkeypatch.setattr(tm, "_get_json",
+                        lambda q, ua, **kw: count if "COUNT" in q else {"results": {"bindings": rows}})
+    got = tm.fetch_ticker_map(_cfg(tmp_path), "2026-08-17")
+    assert got == {"AAPL": "Apple Inc."}, "must keep the healthy snapshot, not vendor the shrunken one"
+    assert json.loads(snap.read_text())["rows_fetched"] == 10, "snapshot unchanged"
+    assert any("half of previous" in str(e).lower() for e in degrade.events())

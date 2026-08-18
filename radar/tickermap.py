@@ -30,6 +30,14 @@ UA = "reddit-signal-radar/0.1 (open-source ticker signal bot)"
 # Deutsche Telekom). US-scoped it is 3.6%, and every case is same-company-family.
 EXCHANGES = ("wd:Q13677", "wd:Q82059", "wd:Q1930860", "wd:Q846626")
 
+# Healthy measured count is 4,015. The COUNT(*) guard below only proves the live query
+# and the count query AGREE -- it cannot tell they agree on a DEGRADED answer. If an
+# EXCHANGES Q-id gets merged/redirected, or a triple pattern regresses, both queries
+# return an equally-wrong small number and equality alone would vendor the breakage as
+# truth. MIN_ROWS floors that: anything under a quarter of the healthy count is a
+# broken query, not a shrinking stock market.
+MIN_ROWS = 1000
+
 _WHERE = """
   VALUES ?exch { %s }
   ?item p:P414 ?st .
@@ -59,7 +67,11 @@ def parse_rows(raw) -> dict[str, str]:
     Rules, in order: drop DeprecatedRank; drop statements whose end-date (pq:P582) is
     in the past when a non-ended alternative exists for that ticker; then accept only
     tickers left with exactly one distinct title. A ticker with two live same-family
-    candidates is OMITTED, not guessed -- ticker_overrides.yml resolves those."""
+    candidates is OMITTED, not guessed -- ticker_overrides.yml resolves those.
+
+    Ticker/title values are coerced with str() so the dict[str, str] contract holds
+    even when a binding value isn't already a string -- 'never raises' is this
+    module's whole contract, and a bare .upper() on a non-string ticker used to break it."""
     try:
         bindings = raw["results"]["bindings"]
     except (TypeError, KeyError):
@@ -74,7 +86,7 @@ def parse_rows(raw) -> dict[str, str]:
             continue
         if _val(b, "rank") == _DEPRECATED:
             continue
-        by_ticker.setdefault(ticker.upper(), []).append((title, _val(b, "end") is not None))
+        by_ticker.setdefault(str(ticker).upper(), []).append((str(title), _val(b, "end") is not None))
 
     out: dict[str, str] = {}
     for ticker, rows in by_ticker.items():
@@ -145,9 +157,26 @@ def _snapshot_map(snap: Path) -> dict[str, str] | None:
         return None
 
 
+def _snapshot_rows(snap: Path) -> int | None:
+    """The previous snapshot's rows_fetched, for the regression guard against a query
+    that silently shrinks. None when missing, unparseable, or predating this field."""
+    try:
+        doc = json.loads(snap.read_text())
+        n = doc.get("rows_fetched")
+        return int(n) if isinstance(n, (int, float)) else None
+    except (OSError, ValueError, AttributeError, TypeError):
+        return None
+
+
 def fetch_ticker_map(cfg, run_day: str) -> dict[str, str]:
     """Live fetch -> COUNT(*) validate -> vendor -> parse; snapshot fallback on outage
-    or on a count mismatch; {} + warn when both are gone. Overrides always win."""
+    or on a count/floor/regression refusal; {} + warn when both are gone. Overrides
+    always win.
+
+    The COUNT(*) check alone only proves the live query and the count query AGREE --
+    it cannot tell they agree on a DEGRADED answer. MIN_ROWS and the regression check
+    against the previous snapshot's rows_fetched catch that: a healthy fetch is never
+    replaced by a much smaller one, even when the two queries are internally consistent."""
     tc = getattr(cfg, "tickermap", None)
     snap = Path(getattr(tc, "snapshot_path", "data/ticker_articles.json"))
     ov_path = getattr(tc, "overrides_path", "radar/ticker_overrides.yml")
@@ -159,11 +188,16 @@ def fetch_ticker_map(cfg, run_day: str) -> dict[str, str]:
         merged.update(overrides)      # curated wins unconditionally
         return merged
 
+    def _refuse(reason: str) -> dict[str, str]:
+        degrade.warn("tickermap", reason)
+        cached = _snapshot_map(snap)
+        return _finish(cached) if cached is not None else _finish({})
+
     # US listing churn is ~25/year against ~3,500 tickers, and the live query costs
     # ~22s. Refresh monthly, not daily. An unreadable date fails toward refreshing.
     fresh = _snapshot_map(snap)
-    if fresh is not None and _snapshot_age_days(snap, run_day) is not None \
-            and _snapshot_age_days(snap, run_day) < max_age:
+    age = _snapshot_age_days(snap, run_day)
+    if fresh is not None and age is not None and age < max_age:
         return _finish(fresh)
 
     raw = _get_json(QUERY, UA)
@@ -176,21 +210,25 @@ def fetch_ticker_map(cfg, run_day: str) -> dict[str, str]:
 
     if isinstance(bindings, list):
         expected = _expected_rows(_get_json(COUNT_QUERY, UA))
+        n = len(bindings)
         # WDQS truncates silently at ~60s: HTTP 200, no error header, and the partial
         # response is cached for 5 minutes. Without this check a truncated map gets
         # vendored as truth and nothing ever notices.
-        if expected is None or expected != len(bindings):
-            degrade.warn("tickermap",
-                         f"row count {len(bindings)} != expected {expected} — keeping snapshot")
-            cached = _snapshot_map(snap)
-            if cached is not None:
-                return _finish(cached)
-            return _finish({})
+        if expected is None or expected != n:
+            return _refuse(f"row count {n} != expected {expected} — keeping snapshot")
+        # Equality only proves the two queries agree with EACH OTHER, not that they
+        # agree on a HEALTHY answer: a merged/redirected exchange Q-id or a regressed
+        # triple pattern makes both queries agree on an equally-wrong small number.
+        if n < MIN_ROWS:
+            return _refuse(f"row count {n} under floor {MIN_ROWS} — keeping snapshot")
+        prev_rows = _snapshot_rows(snap)
+        if prev_rows is not None and n < prev_rows / 2:
+            return _refuse(f"row count {n} under half of previous {prev_rows} — keeping snapshot")
         parsed = parse_rows(raw)
         try:
             snap.parent.mkdir(parents=True, exist_ok=True)
             snap.write_text(json.dumps({"schema": 1, "fetched": run_day,
-                                        "rows_fetched": len(bindings),
+                                        "rows_fetched": n,
                                         "rows_expected": expected,
                                         "map": parsed}, sort_keys=True))
         except OSError as e:
