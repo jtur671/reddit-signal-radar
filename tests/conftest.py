@@ -77,6 +77,25 @@ class _NoNetRequests:
         raise requests.RequestException("hermeticity guard: no live Wikimedia in tests")
 
 
+class _NoSleepTime:
+    """Stand-in for `radar.pageviews`'s module-global `time`, so `_get_series`'s
+    retry-backoff sleeps (429/500/502/503 and on-exception, both `sleep_s * 2**attempt`)
+    don't burn real wall clock in the suite that gates the 6:17 AM daily publish.
+
+    Rebinds the module global rather than the house-style `monkeypatch.setattr(pv.time,
+    "sleep", ...)`, deliberately: `pv.time` IS the shared stdlib `time` module object, so
+    that form would patch `time.sleep` process-wide for the rest of the suite, not just
+    pageviews.py's tests. This scoped rebind only replaces what `radar.pageviews` sees,
+    leaving every other module's `time.sleep` real.
+
+    Only `sleep` is ever called on `time` in pageviews.py (retry backoff in
+    `_get_series`, politeness pacing in `fetch_attention`)."""
+
+    @staticmethod
+    def sleep(*a, **k):
+        pass
+
+
 @pytest.fixture(autouse=True)
 def _no_real_dotenv(monkeypatch):
     """Hermeticity guard: neutralize the .env loader in both entrypoints so a developer's
@@ -172,7 +191,9 @@ def _no_live_quotes_or_summaries(monkeypatch):
     E2's two new sources are the fourth and fifth, and both now run on every `main()`.
     pageviews is one live REST call PER BOARD TICKER (15 of them, each with a sleep
     behind it) — guarded at its `requests` global, see _NoNetRequests for why not at
-    `_get_series`. short_interest fronts FINRA with two transports: `_get_json` is the
+    `_get_series`. `_get_series`'s retry-backoff loop still runs against that raising
+    stub, though, and sleeps for real unless `time` is also rebound — see _NoSleepTime.
+    short_interest fronts FINRA with two transports: `_get_json` is the
     settlement-discovery GET (and the only network call inside `_latest_settlement`, so
     stubbing the transport shuts the socket while the discovery logic still runs), and
     `_post_json` is the paging data POST. `_post_json` returns a TUPLE — (rows,
@@ -188,5 +209,6 @@ def _no_live_quotes_or_summaries(monkeypatch):
     monkeypatch.setattr(radar.about, "fetch_summary", lambda *a, **k: None)
     monkeypatch.setattr(radar.tickermap, "_get_json", lambda *a, **k: None)
     monkeypatch.setattr(radar.pageviews, "requests", _NoNetRequests())
+    monkeypatch.setattr(radar.pageviews, "time", _NoSleepTime())
     monkeypatch.setattr(radar.short_interest, "_get_json", lambda *a, **k: None)
     monkeypatch.setattr(radar.short_interest, "_post_json", lambda *a, **k: (None, None))
