@@ -16,12 +16,19 @@ jobs:
   run:
     runs-on: ubuntu-latest
     # GitHub's default is 360 minutes — six hours of a hung transport before anyone
-    # learns the board did not ship. Measured worst case for this job is ~17 min
-    # ordinarily and ~23 min on a tickermap monthly-refresh day, but the clock also
-    # covers deploy-pages waiting on the `pages` concurrency group it shares with
-    # trump-monitor (cancel-in-progress: false), so 30 leaves no room for a queue.
-    # 45 is ~2x the measured worst case and still fails 8x sooner than the default;
-    # a false trip costs exactly the publish this backstop exists to protect.
+    # learns the board did not ship. MEASURED (40 real daily-radar runs via `gh`): this
+    # job typically takes 1-2 min (a recent one: 2m52s); the single worst in 40 runs was
+    # 13 min, on a failing run (2026-08-06). That's ground truth, not a projection.
+    # ESTIMATE, not yet measured: once E2's three new sources (pageviews, short
+    # interest, tickermap refresh) are live in production, forward-looking napkin math
+    # puts this job at ~17 min ordinarily and ~23 min on a tickermap monthly-refresh
+    # day — re-measure via `gh` once E2 has run for real and replace this line.
+    # The deploy-pages step lives in this same job and waits on the `pages`
+    # concurrency group it shares with trump-monitor (cancel-in-progress: false), so
+    # the job clock above already covers that wait — that part held up.
+    # 45 gives ~2x the ESTIMATED post-E2 worst case and ~3.5x the MEASURED worst case,
+    # while still failing 8x sooner than the default; a false trip costs exactly the
+    # publish this backstop exists to protect.
     timeout-minutes: 45
     steps:
       # Actions pinned to commit SHAs, not tags: a tag is mutable, and this runner holds
