@@ -40,14 +40,23 @@ def spike_score(series, min_baseline: int = 10, min_days: int = 21) -> float | N
     if len(prior) < min_days:
         return None
     baseline = statistics.median(prior)
-    if baseline < min_baseline or current <= 0:
+    if baseline < min_baseline:
+        return None
+    if current == 0:
+        # A real zero: attention collapsed. That is a claim, not an absence of one --
+        # None means no signal at all, which triggers the composite's renormalize-
+        # around-absence path. Guarding here also keeps log2(0) from ever running.
+        return 0.0
+    if current < 0:
         return None
     ratio = current / baseline
     return round(50.0 + 25.0 * max(-2.0, min(2.0, math.log2(ratio))), 2)
 
 
-def parse_series(raw) -> list[int]:
-    """Chronological daily views. Pure, never raises."""
+def parse_series(raw) -> list[tuple[str, int]]:
+    """Chronological (timestamp, views) pairs, sorted ascending by timestamp. Pure,
+    never raises. Keeping the timestamp (rather than discarding it for a bare views
+    list) is what lets _get_series verify the tail is actually D-1 before trusting it."""
     items = raw.get("items") if isinstance(raw, dict) else None
     if not isinstance(items, list):
         return []
@@ -56,21 +65,30 @@ def parse_series(raw) -> list[int]:
         if not isinstance(it, dict):
             continue
         try:
-            out.append(int(it["views"]))
+            out.append((str(it["timestamp"]), int(it["views"])))
         except (KeyError, TypeError, ValueError):
             continue
+    out.sort(key=lambda pair: pair[0])
     return out
 
 
 def _get_series(title: str, start: str, end: str) -> list[int] | None:
-    """One request returns the whole window (measured: 34 datapoints in 0.22s)."""
+    """One request returns the whole window (measured: 34 datapoints in 0.22s).
+
+    Fails closed if the freshest returned day is not `end`: Wikimedia sometimes omits
+    the newest day or has not yet published it, and a silently-shifted `current` would
+    still produce a well-formed score -- computed against the wrong day, with nothing
+    downstream able to tell."""
     url = REST.format(title=urllib.parse.quote(title.replace(" ", "_"), safe=""),
                       start=start, end=end)
     try:
         r = requests.get(url, headers={"User-Agent": UA}, timeout=20)
         if r.status_code != 200:
             return None
-        return parse_series(r.json())
+        pairs = parse_series(r.json())
+        if not pairs or pairs[-1][0][:8] != end:
+            return None
+        return [views for _, views in pairs]
     except (requests.RequestException, ValueError):
         return None
 
