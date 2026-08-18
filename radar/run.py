@@ -87,8 +87,11 @@ def main(argv=None) -> int:
     # on the merged map is an LED that can only ever read "ok" — which is worse than no
     # LED, because it asserts health during a total outage. A map no larger than the
     # override file means the live query and the vendored snapshot both produced nothing.
+    # `or` not just a getattr default: an `overrides_path:` key present but EMPTY yields
+    # None, which the getattr default never covers and which used to crash main() outright.
     overrides_n = len(tickermap.load_overrides(
-        getattr(getattr(cfg, "tickermap", None), "overrides_path", "radar/ticker_overrides.yml")))
+        getattr(getattr(cfg, "tickermap", None), "overrides_path", None)
+        or "radar/ticker_overrides.yml"))
     for s in board:
         _enrich_ticker(s, by_ticker, about_cache, about_ua, themes, ticker_titles)
     for s in still:

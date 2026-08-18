@@ -126,7 +126,7 @@ def load_overrides(path) -> dict[str, str]:
             if title:
                 out[str(ticker).upper()] = str(title)
         return out
-    except (OSError, ValueError, AttributeError, yaml.YAMLError):
+    except (OSError, TypeError, ValueError, AttributeError, yaml.YAMLError):
         return {}
 
 

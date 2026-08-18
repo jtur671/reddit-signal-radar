@@ -56,7 +56,13 @@ jobs:
             git worktree add --detach /tmp/state "$(git commit-tree "$(git mktree </dev/null)" -m 'state: seed')"
           fi
           mkdir -p /tmp/state/data
-          cp -f data/history.json data/about.json data/plays_log.json data/cramer_snapshot.json /tmp/state/data/ 2>/dev/null || true
+          # This list is a WHITELIST: a vendored snapshot missing from it is regenerated
+          # from scratch every single run. ticker_articles.json is gitignored on main and
+          # lives here like cramer_snapshot.json — without this it never persists, and
+          # config.yaml's "refreshed only when older than max_age_days" is false in prod:
+          # every run pays the ~22s SPARQL query, and any WDQS hiccup drops the ticker map
+          # to overrides-only for the day.
+          cp -f data/history.json data/about.json data/plays_log.json data/cramer_snapshot.json data/ticker_articles.json /tmp/state/data/ 2>/dev/null || true
           git -C /tmp/state add -A data
           git -C /tmp/state diff --cached --quiet || git -C /tmp/state commit -m "state: daily $(date -u +%F)"
           git -C /tmp/state push origin HEAD:refs/heads/data

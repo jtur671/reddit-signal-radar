@@ -76,9 +76,17 @@ def describe(ticker: str, name: str, title: str | None, cache: dict,
     article title from the ticker map, or None when the ticker is unmapped — in which
     case NO request is made. The cached `title` is the CANONICAL one off the response,
     not the one we asked for, so a redirect title in the map doesn't propagate. Mutates
-    `cache` so the caller can persist new entries."""
+    `cache` so the caller can persist new entries.
+
+    A cached entry is a permanent hit ONLY once it carries a title. A blank one is
+    retried the moment a title becomes available, because the ticker map GROWS: an
+    unmapped ticker caches as blank, and treating that as a hit forever would render
+    every curated entry in radar/ticker_overrides.yml inert for any ticker that reached
+    the board before its override existed — along with the monthly Wikidata refresh and
+    the canonical title the pageviews ingest reads. A blank entry with still no title
+    makes no request, so this is not a daily retry of nothing."""
     cached = cache.get(ticker)
-    if cached is not None:
+    if cached is not None and (cached.get("title") or not title):
         return cached
     summary = (fetch_summary(title, ua) or {}) if title else {}
     entry = {"name": name or ticker, "desc": summary.get("desc", ""),

@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 import requests
 
@@ -35,6 +37,30 @@ def _no_real_dotenv(monkeypatch):
     import radar.monitor
     monkeypatch.setattr(radar.run, "load_env", lambda *a, **k: None)
     monkeypatch.setattr(radar.monitor, "load_env", lambda *a, **k: None)
+
+
+@pytest.fixture(autouse=True)
+def _no_production_state(monkeypatch):
+    """Isolation guard: tests never read the repo's `data/` directory, which in CI holds
+    PRODUCTION state.
+
+    `run.py` loads the relative path `data/about.json`, and `.github/workflows/daily.yml`
+    restores `data/` from the orphan data branch (`:26`) BEFORE the pytest gate (`:35`),
+    then pushes an updated cache back afterwards. So a test that calls `run.main()` is
+    reading whatever yesterday's run wrote. That is not a stale-fixture annoyance, it is
+    a live tripwire on the publish: a run-smoke test asserting a ticker gets fetched goes
+    red the first day that ticker lands in the cache, and a red gate means no board, no
+    email and no data-branch commit until someone hand-edits the data branch.
+
+    Scoped to the `data/` directory rather than stubbed wholesale, deliberately: three
+    tests in tests/test_about.py assert on load_cache's real schema-migration behaviour
+    against tmp_path files, and a blanket `lambda p: {}` would leave all three green
+    while asserting nothing. tmp_path loads keep running the real function."""
+    import radar.about
+    real_load_cache = radar.about.load_cache
+    monkeypatch.setattr(radar.about, "load_cache",
+                        lambda path: {} if Path(path).parent.name == "data"
+                        else real_load_cache(path))
 
 
 @pytest.fixture(autouse=True)

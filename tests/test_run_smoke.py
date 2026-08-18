@@ -168,6 +168,11 @@ def test_tickermap_led_is_ok_when_wikidata_adds_anything(monkeypatch, tmp_path):
     monkeypatch.setattr(run.news, "headlines", lambda *a, **k: [])
 
     merged = dict(run.tickermap.load_overrides("radar/ticker_overrides.yml"))
+    # Without this the test passes vacuously: an empty override file would make the floor
+    # 0, and 1 > 0 reads "ok" for entirely the wrong reason — a green test asserting that
+    # the floor works when in fact there is no floor.
+    assert len(merged) > 1, "the curated override file must be readable and non-trivial"
+    assert "IREN" not in merged, "IREN must be a Wikidata resolution, not an override"
     merged["IREN"] = "IREN Limited"        # one thing Wikidata resolved
     monkeypatch.setattr(run.tickermap, "fetch_ticker_map", lambda cfg, run_day: merged)
 
