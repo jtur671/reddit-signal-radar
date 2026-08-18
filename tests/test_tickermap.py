@@ -3,6 +3,7 @@ import types
 from pathlib import Path
 
 import pytest
+import yaml
 
 import radar.tickermap as tm
 from radar import degrade
@@ -236,3 +237,24 @@ def test_regression_against_previous_row_count_refuses(monkeypatch, tmp_path):
     assert got == {"AAPL": "Apple Inc."}, "must keep the healthy snapshot, not vendor the shrunken one"
     assert json.loads(snap.read_text())["rows_fetched"] == 10, "snapshot unchanged"
     assert any("half of previous" in str(e).lower() for e in degrade.events())
+
+
+# --- curated override file --------------------------------------------------
+
+def test_every_override_title_is_verified():
+    """A typo'd override is a wrong-entity bug of exactly the kind this subsystem
+    exists to eliminate, so pin every title against the verified fixture rather than
+    trusting the YAML. Regenerate the fixture only alongside a fresh API check."""
+    verified = json.loads(Path("tests/fixtures/override_titles.json").read_text())
+    got = tm.load_overrides("radar/ticker_overrides.yml")
+    assert got, "override file must not be empty"
+    for ticker, title in got.items():
+        assert ticker in verified, f"{ticker} is not in the verified fixture"
+        assert title == verified[ticker], f"{ticker}: {title!r} != verified {verified[ticker]!r}"
+
+
+def test_every_override_has_a_reason():
+    """`why` is what makes the file reviewable a year from now."""
+    doc = yaml.safe_load(Path("radar/ticker_overrides.yml").read_text())
+    for ticker, entry in doc["overrides"].items():
+        assert entry.get("why"), f"{ticker} has no `why`"

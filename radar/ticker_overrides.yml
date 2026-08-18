@@ -1,0 +1,57 @@
+# Curated ticker -> exact English Wikipedia article title.
+# Every title verified against the Wikipedia REST + pageviews APIs on 2026-08-17:
+#   summary type == "standard" (not a redirect, not a disambiguation page) and
+#   pageviews HTTP 200 with 16/16 daily points over 2026-08-01..2026-08-16.
+# `views` is the measured mean daily views over that window.
+# Overrides win over the Wikidata snapshot unconditionally.
+overrides:
+  # --- same-family disambiguation picks (spec 2.3 residual nine) ---
+  # Rule applied: the article covering the entity that actually issues the listed
+  # security, confirmed from each article's `traded_as` infobox field.
+  COHR: {title: "Coherent Corp.",        why: "current issuer vs acquired Coherent, Inc.", views: 137}
+  CPA:  {title: "Copa Holdings",         why: "NYSE:CPA issuer vs Copa Airlines subsidiary", views: 23}
+  DELL: {title: "Dell Technologies",     why: "NYSE:DELL issuer vs legacy Dell article", views: 397}
+  DOW:  {title: "Dow Chemical Company",  why: "canonical article; Wikidata's 'Dow Inc.' sitelink is now a redirect", views: 468}
+  HTZ:  {title: "Hertz Global Holdings", why: "same-family ambiguity vs Hertz Car Sales", views: 247}
+  QQQ:  {title: "Invesco QQQ",           why: "the ETF that bears the ticker, not the Nasdaq-100 index", views: 196}
+  SNOW: {title: "Snowflake Inc.",        why: "current issuer vs former SNOW listing Intrawest", views: 575}
+  WB:   {title: "Weibo Corporation",     why: "NASDAQ:WB issuer vs Sina Corporation", views: 18}
+  WEN:  {title: "The Wendy's Company",   why: "NASDAQ:WEN issuer vs Wendy's restaurant chain", views: 195}
+
+  # --- ticker absent from the US-scoped Wikidata snapshot ---
+  # (a) P249-bearing item exists on a US exchange but carries no enwiki sitelink
+  FIG:  {title: "Figma",                 why: "P249 item has no enwiki sitelink", views: 636}
+  LITE: {title: "Lumentum",              why: "P249 item has no enwiki sitelink", views: 154}
+  ONON: {title: "On (company)",          why: "P249 item has no enwiki sitelink", views: 1275}
+  PYPL: {title: "PayPal",                why: "P249 item has no enwiki sitelink", views: 1942}
+  QBTS: {title: "D-Wave Systems",        why: "P249 item has no enwiki sitelink", views: 141}
+  RDDT: {title: "Reddit",                why: "P249 item has no enwiki sitelink", views: 5351}
+  RKLB: {title: "Rocket Lab",            why: "P249 item has no enwiki sitelink", views: 733}
+
+  # (b) no US P249 statement in Wikidata at all
+  APP:  {title: "AppLovin",              why: "no US P249 statement in Wikidata", views: 485}
+  CELH: {title: "Celsius Holdings",      why: "no US P249 statement in Wikidata", views: 432}
+  CRCL: {title: "Circle Internet Group", why: "no US P249 statement in Wikidata", views: 142}
+  CRSR: {title: "Corsair Gaming",        why: "no US P249 statement in Wikidata", views: 144}
+  CRWV: {title: "CoreWeave",             why: "no US P249 statement in Wikidata", views: 725}
+  DC:   {title: "Dakota Gold Corp",      why: "no US P249 statement in Wikidata", views: 2}
+  GNS:  {title: "Genius Group Limited",  why: "no US P249 statement in Wikidata", views: 7}
+  KLAR: {title: "Klarna",                why: "no US P249 statement in Wikidata", views: 499}
+  MRAM: {title: "Everspin Technologies", why: "no US P249 statement in Wikidata", views: 20}
+  RGTI: {title: "Rigetti Computing",     why: "no US P249 statement in Wikidata", views: 97}
+  SA:   {title: "Seabridge Gold",        why: "no US P249 statement in Wikidata", views: 10}
+  TH:   {title: "Target Hospitality",    why: "no US P249 statement in Wikidata", views: 15}
+  WULF: {title: "TeraWulf",              why: "no US P249 statement in Wikidata", views: 64}
+
+  # (c) ticker statement exists but is out of US scope
+  MDA:  {title: "MDA Space",             why: "Wikidata lists MDA on TSX only, outside the US scope", views: 55}
+
+# Deliberately absent (a missing entry beats a wrong one, spec 1.1):
+#   API  - the NASDAQ:API issuer (Wikidata Q106309492 'Agora, Inc.', agora.io) has zero
+#          sitelinks in any language. The enwiki article literally titled "Agora, Inc."
+#          is an unrelated Baltimore publishing network; "Agora (company)" is a Polish
+#          media group. Both are wrong-entity traps.
+#   UUUU - "Energy Fuels Inc." is the correct company article but the pageviews API
+#          returns 404 for it over every window tested, so it yields no series.
+#          Note "Energy Fuels" (no "Inc.") redirects to "Energy & Fuels", the academic
+#          journal - the exact bug in spec 1.
