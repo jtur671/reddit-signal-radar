@@ -86,17 +86,26 @@ An item is not done until its hook has been run.
       **↪ hook:** tick E1 in [[ROADMAP]], move this whole block to §5, set §1 phase to E2.
       Done.
 
-### E2 — Non-social attention · specs approved 2026-08-17, implementation next
+### E2 — Non-social attention · **BUILT 2026-08-17**, not yet run live
 
 - [x] Decide: new weighted components, or published-but-unweighted until the power gate
       **↪ hook:** record the decision and its reason in §5 — this one will be re-litigated.
       Done — **published-but-unweighted**, full reasoning in §5.
 - [x] Specs written and approved: [[2026-08-17-ticker-article-mapping-design]] (E2a,
       the prerequisite) and [[2026-08-17-non-social-attention-design]] (E2).
-- [ ] **E2a first** — ticker→article mapping. E2 consumes its map, so this is a hard
-      ordering, not a preference.
-- [ ] Wikimedia pageviews ingest
-- [ ] Short interest + days-to-cover ingest
+- [x] **E2a — ticker→article mapping.** `radar/tickermap.py` + `radar/ticker_overrides.yml`
+      (30 curated entries), `radar/about.py` rewritten to consume exact titles.
+- [x] Wikimedia pageviews ingest — `radar/pageviews.py`, published as an unweighted
+      `attention` component.
+- [x] Short interest + days-to-cover ingest — `radar/short_interest.py`, FINRA consolidated,
+      an `as_of`-stamped context field that is **not** a composite component.
+- [ ] **Verify the first live run.** Nothing here has ever contacted Wikimedia or FINRA
+      from the daily job — the whole suite is hermetic by design, so the first real
+      exercise is the next 6:17 AM run.
+      **↪ hook:** check `health.json`'s `sources` for `tickermap` / `wikimedia` / `finra_si`,
+      confirm `data/ticker_articles.json` and `data/short_interest.json` landed on the
+      `data` branch, and put the measured ticker-map coverage in §4 next to the 80.3%
+      estimate. If the map resolves materially fewer than ~265 of 330 equities, say so.
       ~~**↪ hook:** if these become composite components, add a `regime_notes` entry~~ —
       **not triggered.** `attention` ships with no weight, so the composite value is
       bit-for-bit unchanged and the backtest series stays comparable. Short interest is
@@ -170,7 +179,9 @@ fact. Replace with a measurement when you can.
 | Board names/day (post-floor) | ~54 | history, 2026-08-08→17 | monthly |
 | Reddit RSS budget | 1 req / ~60s / IP | `x-ratelimit-*` headers | if RSS is ever used |
 | EFTS page cap | 100 hits | `len(hits)` vs `total` | if paging is added |
-| Test suite | 353 passed / **0.95s** | measured 2026-08-17 on `fix/test-hermeticity` (`b6b90ad`); was 43.95s while the suite still made live calls | every branch |
+| Test suite | **446 passed / 2.36s** | measured 2026-08-17 on `fix/test-hermeticity` after E2a+E2; was 353/43.95s before the suite went hermetic (`b6b90ad`) | every branch |
+| Ticker-map coverage | 80.3% of the 330-equity universe (est.) | Wikidata US-scoped + 30 overrides; **never run live** | first live run |
+| Catalyst/attention sources contacted live | **none yet** | the suite is hermetic by design, so no code path here has met the real APIs | first live run |
 | Wikimedia D-1 availability at board time | ~02:30 UTC on D+1 (7.5 h before publish) | **inferred** from `dumps.wikimedia.org` rollup timestamps, 13/13 days 02:14–02:49 — *not* observed on the AQS API at 10:17 UTC | one fetch of D-1 at board time closes it |
 | Short-interest staleness | 11–24 days, sawtooth | measured 2026-08-17: latest settlement 2026-07-31, next (08-14) publishes 08-25 | every FINRA schedule change |
 | `about.py` ticker→article wrong-entity rate | **13.7%** (34 of 249 resolved) | measured 2026-08-17 against `origin/data` `about.json`, 420 tickers | after E2a lands — target 0.4% |
@@ -193,6 +204,37 @@ Move completed checklist blocks here with the date and commit SHA. Keep it short
 decision log in [[ROADMAP]] is where *why* lives; this is just *what*, so a future
 session can tell "not done yet" from "done and reverted".
 
+- **2026-08-17** — **E2a + E2 built.** Twelve fleet-facing commits on
+  `fix/test-hermeticity`; **446 tests passing, 0 DNS lookups** under a socket blocker.
+  New modules: `radar/tickermap.py`, `radar/pageviews.py`, `radar/short_interest.py`,
+  `radar/ticker_overrides.yml`. `radar/about.py` no longer guesses titles from company
+  names. `attention` joins `components` **with no weight**, so the composite value is
+  unchanged and **this is not a regime boundary**.
+  **What review caught that would otherwise have shipped** — recorded because each was a
+  defect in the spec or plan, not in the implementation, and the same mistake is easy to
+  repeat:
+  - `radar/short_interest.py` would have shipped **inert**. Its discovery call returns
+    HTTP 400 (FINRA rejects sorting without partition keys in an EQUAL filter), and its
+    paging call omitted the settlement filter entirely, walking a >3M-row multi-year
+    archive instead of the 22,341-row settlement.
+  - The tickermap truncation guard could be bypassed: WDQS returning 200 with **zero**
+    rows while `COUNT(*)` agreed at zero passed an equality-only check, overwriting the
+    healthy snapshot with an empty map and serving it for 30 days with no warning.
+  - Adding `attention: 0.10` to `config.yaml` while cutting `velocity` to 0.20 kept the
+    weight sum at 1.0 and passed **all 392 tests**, silently re-pricing every composite.
+    The guard had been aimed at `DEFAULT_WEIGHTS`, which production only reads as a
+    fallback.
+  - A test read **production cache state**: `daily.yml` restores `data/` before the pytest
+    gate, so the first day a real ticker landed in `about.json` the gate would fail and
+    **halt the daily publish** — no board, no email — until someone hand-edited the data
+    branch.
+  - An empty cache entry was a permanent hit, which made the entire 30-entry override
+    file **inert** for any ticker cached before its override existed.
+  - Two health LEDs could not tell the truth: `tickermap` could never read `down` (the
+    overrides kept the map non-empty), and `wikimedia` read `down` when nothing had been
+    *asked*, not when Wikimedia had failed.
+  - Two tests were **tautological** — one compared a value against a string built from
+    that same value, and one asserted nothing at all.
 - **2026-08-17** — **E2 weighting decided: published-but-unweighted.** Recording the
   reasoning because the checklist warned this one gets re-litigated.
   **Short interest is excluded permanently** — measured 11–24 days stale, twice monthly

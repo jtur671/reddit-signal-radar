@@ -120,7 +120,7 @@ chosen 90-day watch gate.
       cap. Paging is explicitly out of scope for this phase — this item is tracking it
       for later, not implementing it now.
 
-### E2 — Non-social attention  *(specs approved 2026-08-17)*
+### E2 — Non-social attention  ✅ **built 2026-08-17** (not yet run live)
 Measurement split this sub-phase in two. **These two sources are not peers** — pageviews
 are 7.5 h fresh, short interest is 11–24 days stale and twice-monthly — so they get
 different tiers, not one slot. A prerequisite the plan did not see also surfaced: the
@@ -131,18 +131,22 @@ ticker→article mapping is 13.7% wrong-entity and must be fixed first.
       `attention` until the power gate. Decisive reason: `backtest.py` computes **no
       per-component ICs**, so the "recalibrate from measured ICs" plan below has no
       measurement behind it. Full reasoning in [[HANDOFF]] §5.
-- [ ] **E2a — ticker→article mapping first.** Wikidata `p:P414/pq:P249`, US-scoped;
+- [x] **E2a — ticker→article mapping first.** Wikidata `p:P414/pq:P249`, US-scoped;
       precision 13.7% → 0.4% wrong, and it fails closed. Spec:
-      [[2026-08-17-ticker-article-mapping-design]].
-- [ ] Wikimedia pageviews (keyless, verified) — the discriminator between a real story
+      [[2026-08-17-ticker-article-mapping-design]]. Built: `radar/tickermap.py`,
+      `radar/ticker_overrides.yml` (30 verified entries), `radar/about.py` rewritten.
+- [x] Wikimedia pageviews (keyless, verified) — the discriminator between a real story
       and a Reddit brigade, and the Google Trends replacement Phase D wanted. Scored as a
       **self-relative spike** (today vs the ticker's own 28d median), not a board-relative
       percentile — a cross-sectional rank would mostly measure market cap.
-- [ ] Short **interest** + days-to-cover — **FINRA, not Nasdaq** (identical data, keyless,
+      Built: `radar/pageviews.py`.
+- [x] Short **interest** + days-to-cover — **FINRA, not Nasdaq** (identical data, keyless,
       batchable; Nasdaq returned HTTP 000 on a default curl UA and is a cloud-IP-block
       risk). Distinct from the FINRA daily short *volume* already ingested: that is flow,
       this is open position. Ships as an `as_of`-stamped context field, never a component.
-      Spec: [[2026-08-17-non-social-attention-design]].
+      Spec: [[2026-08-17-non-social-attention-design]]. Built: `radar/short_interest.py`.
+- [ ] **Verify the first live run** — none of this has contacted Wikimedia or FINRA yet.
+      The suite is hermetic by design, so the 6:17 AM job is the first real exercise.
 - [ ] **Follow-up, blocks any future weighting:** build the per-component IC estimator in
       `backtest.py`, and correct the "a config change, not a code change" claim in
       `radar/composite.py:5`, `config.yaml:111` and `README.md:66` — it is false as
@@ -171,6 +175,24 @@ ticker→article mapping is 13.7% wrong-entity and must be fixed first.
 
 ## Decision log
 
+- **2026-08-17 (E2a + E2 built)** — Both sub-phases implemented behind the specs below.
+  446 tests, 0 network calls. Three architectural notes worth carrying forward.
+  **(1) Unweighted turned out to cost nothing and buy a lot.** `attention` ships in
+  `components` with no entry in `composite.weights`, so `blend()`'s `weights.get(k,0) > 0`
+  filter drops it: no rebalance of the existing seven, composite values bit-identical, and
+  therefore **no regime boundary** — the backtest series stays comparable straight through
+  this phase. Adding a weight later is a deliberate act that now trips a test.
+  **(2) Every guard in this phase had to be watched failing before it counted.** Review
+  found two tautological tests — one comparing a value against a string built from that
+  same value, one asserting nothing — plus a guard aimed at `DEFAULT_WEIGHTS` when
+  production reads `config.yaml`. The habit that caught them was mutation: break the thing
+  on purpose, confirm exactly one test dies. Several defects were invisible to inspection
+  and only fell out of that.
+  **(3) The most dangerous failures here are all silent-success shapes**, not exceptions:
+  an API returning HTTP 200 with a truncated result and a `COUNT` that agrees; a redirect
+  title returning 200 with the wrong article's traffic; a health LED that cannot report
+  failure; a test that reads production state and arms itself weeks later. Guards that only
+  check "did it raise" would have caught none of them.
 - **2026-08-17 (E2 specs + hermetic suite)** — Four measurements changed this phase from
   what the plan assumed. **(1) Pageviews and short interest are not peers.** Pageviews'
   D-1 data lands ~02:30 UTC against a 10:17 UTC publish (+7.5 h); short interest is
