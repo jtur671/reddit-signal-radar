@@ -84,3 +84,122 @@ def parse_rows(raw) -> dict[str, str]:
         if len(distinct) == 1:
             out[ticker] = distinct[0]
     return out
+
+
+def _get_json(query: str, ua: str, retries: int = 2, sleep_s: float = 1.0):
+    """WDQS transport. Same retry shape as cramer._get_json. Never raises."""
+    for attempt in range(retries):
+        try:
+            r = requests.get(ENDPOINT, params={"query": query, "format": "json"},
+                             headers={"User-Agent": ua, "Accept": "application/sparql-results+json"},
+                             timeout=90)
+            if r.status_code == 200:
+                return r.json()
+            if r.status_code in (429, 500, 502, 503, 504):
+                time.sleep(sleep_s * (2 ** attempt)); continue
+            return None
+        except (requests.RequestException, ValueError):
+            time.sleep(sleep_s * (2 ** attempt))
+    return None
+
+
+def load_overrides(path) -> dict[str, str]:
+    """{TICKER: title} from the curated YAML. Pure, never raises."""
+    try:
+        doc = yaml.safe_load(Path(path).read_text()) or {}
+        entries = doc.get("overrides") or {}
+        out = {}
+        for ticker, e in entries.items():
+            title = e.get("title") if isinstance(e, dict) else e
+            if title:
+                out[str(ticker).upper()] = str(title)
+        return out
+    except (OSError, ValueError, AttributeError, yaml.YAMLError):
+        return {}
+
+
+def _expected_rows(raw) -> int | None:
+    try:
+        return int(raw["results"]["bindings"][0]["n"]["value"])
+    except (TypeError, KeyError, IndexError, ValueError):
+        return None
+
+
+def _snapshot_age_days(snap: Path, run_day: str) -> int | None:
+    """Days between the snapshot's `fetched` stamp and run_day. None when either date
+    is missing or unparseable — callers treat None as 'not fresh' and refresh."""
+    try:
+        doc = json.loads(snap.read_text())
+        return (date.fromisoformat(run_day)
+                - date.fromisoformat(str(doc["fetched"]))).days
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+
+
+def _snapshot_map(snap: Path) -> dict[str, str] | None:
+    try:
+        doc = json.loads(snap.read_text())
+        m = doc.get("map")
+        return m if isinstance(m, dict) else None
+    except (OSError, ValueError, AttributeError):
+        return None
+
+
+def fetch_ticker_map(cfg, run_day: str) -> dict[str, str]:
+    """Live fetch -> COUNT(*) validate -> vendor -> parse; snapshot fallback on outage
+    or on a count mismatch; {} + warn when both are gone. Overrides always win."""
+    tc = getattr(cfg, "tickermap", None)
+    snap = Path(getattr(tc, "snapshot_path", "data/ticker_articles.json"))
+    ov_path = getattr(tc, "overrides_path", "radar/ticker_overrides.yml")
+    max_age = int(getattr(tc, "max_age_days", 30))
+    overrides = load_overrides(ov_path)
+
+    def _finish(base: dict[str, str]) -> dict[str, str]:
+        merged = dict(base)
+        merged.update(overrides)      # curated wins unconditionally
+        return merged
+
+    # US listing churn is ~25/year against ~3,500 tickers, and the live query costs
+    # ~22s. Refresh monthly, not daily. An unreadable date fails toward refreshing.
+    fresh = _snapshot_map(snap)
+    if fresh is not None and _snapshot_age_days(snap, run_day) is not None \
+            and _snapshot_age_days(snap, run_day) < max_age:
+        return _finish(fresh)
+
+    raw = _get_json(QUERY, UA)
+    bindings = None
+    if isinstance(raw, dict):
+        try:
+            bindings = raw["results"]["bindings"]
+        except (TypeError, KeyError):
+            bindings = None
+
+    if isinstance(bindings, list):
+        expected = _expected_rows(_get_json(COUNT_QUERY, UA))
+        # WDQS truncates silently at ~60s: HTTP 200, no error header, and the partial
+        # response is cached for 5 minutes. Without this check a truncated map gets
+        # vendored as truth and nothing ever notices.
+        if expected is None or expected != len(bindings):
+            degrade.warn("tickermap",
+                         f"row count {len(bindings)} != expected {expected} — keeping snapshot")
+            cached = _snapshot_map(snap)
+            if cached is not None:
+                return _finish(cached)
+            return _finish({})
+        parsed = parse_rows(raw)
+        try:
+            snap.parent.mkdir(parents=True, exist_ok=True)
+            snap.write_text(json.dumps({"schema": 1, "fetched": run_day,
+                                        "rows_fetched": len(bindings),
+                                        "rows_expected": expected,
+                                        "map": parsed}, sort_keys=True))
+        except OSError as e:
+            degrade.warn("tickermap snapshot write", e)
+        return _finish(parsed)
+
+    cached = _snapshot_map(snap)
+    if cached is not None:
+        degrade.warn("tickermap", "upstream unavailable — using vendored snapshot")
+        return _finish(cached)
+    degrade.warn("tickermap", "upstream and snapshot both unavailable")
+    return _finish({})
