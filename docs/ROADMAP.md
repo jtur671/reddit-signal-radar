@@ -272,9 +272,12 @@ ticker→article mapping is 13.7% wrong-entity and must be fixed first.
   Landed a transparent composite score (`radar/composite.py`): `data.json` now carries a
   `signals` array (composite 0–100 + a `components` breakdown, each 0–100 or `null`) and
   the `weights` actually used, blended from `config.yaml`'s heuristic
-  `composite.weights` with null-component renormalization — recalibrated from measured
-  ICs once `backtest.json`'s `power.sufficient` turns true (a config change, not a code
-  change). Two sanctioned deviations from the original spec: the `events` component
+  `composite.weights` with null-component renormalization — *intended* to be recalibrated
+  from measured ICs once `backtest.json`'s `power.sufficient` turns true, described at the
+  time as "a config change, not a code change". That description is **false as written**
+  and is recorded here as it was written: nothing computes per-component ICs, so the
+  measurement the recalibration depends on is unbuilt work — see the E2 follow-up above.
+  Two sanctioned deviations from the original spec: the `events` component
   generalizes "8-K hits in 24h" to fresh-alert involvement across *all* fleet monitors
   (cheaper, reuses existing plumbing, strictly more information), and Finnhub is
   primary-with-fallback rather than an additional feed (avoids doubling network time per
