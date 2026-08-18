@@ -115,7 +115,11 @@ def test_pagination_advances_offset_and_walks_until_short_page(monkeypatch, tmp_
         return page, 5001
 
     monkeypatch.setattr(si, "_post_json", fake_post)
-    monkeypatch.setattr(si, "_latest_settlement", lambda ua: "2026-08-14")
+    # Must match the fixture rows' own settlementDate: the fetcher now refuses to vendor
+    # a walk whose rows are dated anything other than the settlement it asked for (see
+    # test_rows_dated_off_the_requested_settlement_are_not_vendored). The date here was
+    # arbitrary before and disagreed with the rows it was serving.
+    monkeypatch.setattr(si, "_latest_settlement", lambda ua: "2026-07-31")
     rows, _ = si.fetch_short_interest(_cfg(tmp_path), "2026-08-17")
     assert "LAST" in rows, "must keep paging past a full 5000-row page"
     assert seen_offsets == [0, 5000]
@@ -378,3 +382,178 @@ def test_a_snapshot_that_has_its_settlement_is_still_served(monkeypatch, tmp_pat
     monkeypatch.setattr(si, "_latest_settlement", lambda ua: None)
     rows, settlement = si.fetch_short_interest(_cfg(tmp_path), "2026-08-17")
     assert rows["NVDA"]["days_to_cover"] == 2.47 and settlement == "2026-07-31"
+
+
+def _strict(obj):
+    """Round-trip `obj` through STRICT JSON — the dialect every consumer outside Python
+    speaks. `json.dumps` emits bare `NaN`/`Infinity` happily and `json.loads` reads them
+    back, so a Python round-trip proves nothing about what the trading bot or the
+    browser will accept."""
+    def boom(token):
+        raise ValueError(f"not strict JSON: {token}")
+    return json.loads(json.dumps(obj), parse_constant=boom)
+
+
+# --- non-finite numbers: json.loads accepts Infinity/NaN/1e309 ---------------
+
+def test_parse_rows_survives_a_non_finite_share_count():
+    """`json.loads` accepts `Infinity`, `NaN` and `1e309` by DEFAULT (simplejson is not
+    installed, so `requests.json()` is the stdlib parser), and `int(inf)` raises
+    OverflowError — an ArithmeticError that `(TypeError, ValueError)` does not catch.
+    Out of a function documented "Pure, never raises", it escaped to `main()`."""
+    raw = json.loads('[{"symbolCode": "X", "daysToCoverQuantity": 2.0,'
+                     ' "currentShortPositionQuantity": 1e309,'
+                     ' "settlementDate": "2026-07-31"}]')
+    assert raw[0]["currentShortPositionQuantity"] == float("inf"), "the stdlib parses this"
+    assert si.parse_rows(raw) == ({}, "")
+
+
+def test_non_finite_days_to_cover_is_rejected_at_the_parse_boundary():
+    """A single NaN days-to-cover is a board-wide outage with every LED green.
+
+    `json.dumps` writes it as a bare `NaN`, so: the vendored snapshot stops being valid
+    strict JSON, `out/data.json` becomes unparseable for the consuming trading bot, and
+    the dashboard's `|tojson` emits `NaN` inside a `<script type="application/json">`
+    whose reader is `try{JSON.parse(...)}catch{return}` — killing the ENTIRE click-modal
+    system, on every row, silently.
+
+    The string forms matter as much as the float ones: `float("NaN")` and
+    `float("Infinity")` both succeed, and a Java/Jackson producer serialises them exactly
+    that way."""
+    for bad in (float("nan"), float("inf"), float("-inf"), "NaN", "Infinity", "-Infinity"):
+        rows, _ = si.parse_rows([{"symbolCode": "N", "daysToCoverQuantity": bad,
+                                  "currentShortPositionQuantity": 5,
+                                  "settlementDate": "2026-07-31"}])
+        assert rows == {}, f"{bad!r} shipped a non-finite days-to-cover"
+
+    mixed, settlement = si.parse_rows([{"symbolCode": "N", "daysToCoverQuantity": float("nan"),
+                                        "currentShortPositionQuantity": 5,
+                                        "settlementDate": "2026-07-31"}, dict(RAW[0])])
+    assert set(mixed) == {"NVDA"}, "one poisoned row must not cost the good ones"
+    assert settlement == "2026-07-31"
+    assert _strict(mixed), "and what survives has to be JSON every consumer can read"
+
+
+def test_snapshot_sentinel_refilter_coerces_before_comparing(tmp_path):
+    """The snapshot re-filter compared with `!=` against a float, so a STRING
+    `"999.99"` — the same clamp, serialised differently by a hand-edit or an older
+    writer — slipped straight past and rendered as a real 999-day cover, topping every
+    ranking. The file rides the data branch; re-validating it is the whole point of
+    this read."""
+    snap = tmp_path / "short_interest.json"
+    snap.write_text(json.dumps({"schema": 1, "settlement": "2026-07-31",
+                                "rows": {"NVDA": {"days_to_cover": 2.47, "shares": 1},
+                                         "STR": {"days_to_cover": "999.99", "shares": 1},
+                                         "NAN": {"days_to_cover": float("nan"), "shares": 1}}}))
+    rows, settlement = si._read_snapshot(snap)
+    assert set(rows) == {"NVDA"} and settlement == "2026-07-31"
+    assert _strict(rows), "a snapshot NaN is the same board-wide modal outage"
+
+
+# --- present-but-empty config keys -------------------------------------------
+
+def test_present_but_empty_config_keys_do_not_crash_the_fetch(tmp_path):
+    """A key present but EMPTY in config.yaml yields None through the real loader, and
+    None is a value a `getattr(sc, k, <default>)` default never covers — getattr only
+    fires when the ATTRIBUTE is absent. `Path(None)` and `int(None)` both raise
+    TypeError, out of a fetcher that gates the daily publish."""
+    from radar.config import load_config
+    p = tmp_path / "config.yaml"
+    p.write_text("short_interest:\n  snapshot_path:\n  page_size:\n")
+    cfg = load_config(p)
+    assert cfg.short_interest.snapshot_path is None, "the shape this pins must be real"
+    assert cfg.short_interest.page_size is None
+
+    # Both transports are stubbed dead by conftest and the defaulted snapshot path is
+    # production state (walled off there too), so this is the documented both-gone path.
+    assert si.fetch_short_interest(cfg, "2026-08-17", dry_run=True) == ({}, "")
+    assert any("both unavailable" in e["reason"] for e in degrade.events()), \
+        "an empty config key must degrade to the default, not take the publish down"
+
+
+# --- the write path, which no --dry-run test can reach -----------------------
+
+def test_a_non_utf8_snapshot_does_not_crash_the_write(monkeypatch, tmp_path):
+    """Game day D1, and the one finding the pytest gate can NEVER catch: no test runs
+    `main()` without `--dry-run`, so the snapshot WRITE is never exercised.
+
+    The write was wrapped in `except OSError`, but the read-modify-write inside it
+    (`snap.read_text() != text`) raises UnicodeDecodeError on a non-UTF-8 file — a
+    ValueError, not an OSError. The file rides the data branch and is restored before
+    every run, so this is not a one-off: it crashes the publish every single morning,
+    indefinitely, with no board and no email. `_read_snapshot` twenty lines above
+    catches `(OSError, ValueError)` on the SAME file and the SAME call.
+
+    Writing unconditionally through the atomic writer removes the read entirely, which
+    is the better half of the fix — the broadened except is the backstop."""
+    snap = tmp_path / "short_interest.json"
+    snap.write_bytes(b"\xff\xfe\x00 not utf-8 at all")
+    monkeypatch.setattr(si, "_latest_settlement", lambda ua: "2026-07-31")
+    monkeypatch.setattr(si, "_post_json", lambda url, payload, ua, **k: ([dict(RAW[0])], None))
+
+    rows, settlement = si.fetch_short_interest(_cfg(tmp_path), "2026-08-17")
+    assert rows["NVDA"]["days_to_cover"] == 2.47 and settlement == "2026-07-31"
+    assert json.loads(snap.read_text())["settlement"] == "2026-07-31", \
+        "and the unreadable file is replaced with a good one"
+
+
+# --- the settlement date the live rows actually carry ------------------------
+
+def test_undated_live_rows_are_not_vendored(monkeypatch, tmp_path):
+    """The "green LED, no data" state, created on the LIVE PARSE path where
+    `_read_snapshot` already refuses it on the READ path.
+
+    `parse_rows` returns `(rows, "")` for rows with no settlementDate, and the fetcher
+    vendored `{"settlement": "", ...}` and returned it: run.py gates its board loop on
+    `if si_as_of`, so ZERO days-to-cover render while `si_rows` is non-empty and the
+    finra_si LED reads green. Worse, `_read_snapshot` correctly rejects an undated
+    snapshot — so the file just written is dead on arrival and the fallback stays
+    unavailable until a good fetch lands. The guard has to live where the bad state is
+    created."""
+    snap = tmp_path / "short_interest.json"
+    snap.write_text(json.dumps({"schema": 1, "settlement": "2026-07-15",
+                                "rows": {"NVDA": {"days_to_cover": 3.0, "shares": 1}}}))
+    undated = {k: v for k, v in RAW[0].items() if k != "settlementDate"}
+    monkeypatch.setattr(si, "_latest_settlement", lambda ua: "2026-07-31")
+    monkeypatch.setattr(si, "_post_json", lambda url, payload, ua, **k: ([undated], None))
+
+    rows, settlement = si.fetch_short_interest(_cfg(tmp_path), "2026-08-17")
+    assert (rows, settlement) == ({"NVDA": {"days_to_cover": 3.0, "shares": 1}}, "2026-07-15"), \
+        "must keep the dated snapshot, not vendor rows that carry no date"
+    assert json.loads(snap.read_text())["settlement"] == "2026-07-15", "snapshot unchanged"
+    assert any("settlementDate" in e["reason"] for e in degrade.events())
+
+
+def test_rows_dated_off_the_requested_settlement_are_not_vendored(monkeypatch, tmp_path):
+    """FINRA's archive is unordered by date and >3M rows deep — measured offset 0 ->
+    settlement 2020-04-15. If the EQUAL compareFilter is ever dropped, mishandled or
+    ignored during an incident, the walk returns real, well-formed rows from six years
+    ago, and they were vendored under their OWN date: a stale position published as
+    current, then served by the settlement short-circuit until FINRA moves on.
+
+    The discovered `latest` is what this run asked for. What comes back has to be it."""
+    snap = tmp_path / "short_interest.json"
+    snap.write_text(json.dumps({"schema": 1, "settlement": "2026-07-15",
+                                "rows": {"NVDA": {"days_to_cover": 3.0, "shares": 1}}}))
+    stale = dict(RAW[0], settlementDate="2020-04-15")
+    monkeypatch.setattr(si, "_latest_settlement", lambda ua: "2026-07-31")
+    monkeypatch.setattr(si, "_post_json", lambda url, payload, ua, **k: ([stale], None))
+
+    rows, settlement = si.fetch_short_interest(_cfg(tmp_path), "2026-08-17")
+    assert (rows, settlement) == ({"NVDA": {"days_to_cover": 3.0, "shares": 1}}, "2026-07-15")
+    assert json.loads(snap.read_text())["settlement"] == "2026-07-15", "snapshot unchanged"
+    assert any("2020-04-15" in e["reason"] and "2026-07-31" in e["reason"]
+               for e in degrade.events()), "the breadcrumb must name both dates"
+
+
+def test_fetch_short_interest_never_raises(monkeypatch, tmp_path):
+    """The contractual backstop. This fetcher gates the daily publish and is documented
+    as fail-soft throughout; no config typo, upstream novelty or unforeseen value should
+    ever be able to take the board down again. The specific handlers above still do the
+    real work — this only catches what none of them anticipated."""
+    def boom(*a, **k):
+        raise RuntimeError("upstream novelty")
+
+    monkeypatch.setattr(si, "_latest_settlement", boom)
+    assert si.fetch_short_interest(_cfg(tmp_path), "2026-08-17") == ({}, "")
+    assert any("upstream novelty" in e["reason"] for e in degrade.events())

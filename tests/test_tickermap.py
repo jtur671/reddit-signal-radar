@@ -392,3 +392,120 @@ def test_tests_never_read_the_production_ticker_snapshot(tmp_path):
     assert tm._snapshot_map(ordinary) == {"IREN": "Iris Energy"}
     assert tm._snapshot_age_days(ordinary, "2026-08-17") == 1
     assert tm._snapshot_rows(ordinary) == 4015
+
+
+# --- non-finite numbers: json.loads accepts Infinity/NaN/1e309 ---------------
+
+def test_a_non_finite_count_does_not_escape_the_fetcher(monkeypatch, tmp_path):
+    """`json.loads` accepts `Infinity`, `NaN` and `1e309` by DEFAULT (simplejson is not
+    installed, so `requests.json()` is the stdlib parser), and `int(inf)` raises
+    OverflowError — an ArithmeticError, which none of this module's
+    `(TypeError, KeyError, IndexError, ValueError)` tuples catch. Measured escaping all
+    the way out of `main()`: a WDQS COUNT of `1e309` killed the publish outright, where
+    every other malformed count is a documented refusal."""
+    assert json.loads('{"n": 1e309}')["n"] == float("inf"), "the stdlib really parses this"
+    for bad in (1e309, float("inf"), float("-inf"), float("nan")):
+        assert tm._expected_rows({"results": {"bindings": [{"n": {"value": bad}}]}}) is None
+
+    snap = tmp_path / "ticker_articles.json"
+    snap.write_text(json.dumps({"schema": 1, "fetched": "2026-06-01",
+                                "map": {"OLD": "Old Title"}}))
+    rows, _count = _resp(3)
+    monkeypatch.setattr(tm, "_get_json",
+                        lambda q, ua, **kw: ({"results": {"bindings": [{"n": {"value": 1e309}}]}}
+                                             if "COUNT" in q else {"results": {"bindings": rows}}))
+    got = tm.fetch_ticker_map(_cfg(tmp_path), "2026-08-17")
+    assert got == {"OLD": "Old Title"}, "an unusable count is a refusal, not a crash"
+    assert any("row count" in str(e).lower() for e in degrade.events())
+
+
+def test_a_non_finite_rows_fetched_in_the_snapshot_does_not_escape(tmp_path):
+    """Same OverflowError, reached through the VENDORED file rather than upstream — and
+    that file rides the data branch, which is the one input this module reads
+    unvalidated. `int(inf)` inside `_snapshot_rows` took the regression guard, and with
+    it the whole run, down."""
+    snap = tmp_path / "ticker_articles.json"
+    snap.write_text('{"schema": 1, "fetched": "2026-06-01", "rows_fetched": 1e309, "map": {}}')
+    assert tm._snapshot_rows(snap) is None
+
+
+def test_snapshot_rows_rejects_a_boolean(tmp_path):
+    """`isinstance(True, int)` is True in Python, so `rows_fetched: true` used to read
+    as 1 — which makes the 50%-regression guard satisfiable by ANY fetch of one row or
+    more. A guard that can be switched off by a malformed field is not a guard."""
+    snap = tmp_path / "ticker_articles.json"
+    snap.write_text(json.dumps({"schema": 1, "fetched": "2026-06-01",
+                                "rows_fetched": True, "map": {}}))
+    assert tm._snapshot_rows(snap) is None
+
+
+# --- present-but-empty config keys -------------------------------------------
+
+def test_present_but_empty_config_keys_do_not_crash_the_fetch(monkeypatch, tmp_path):
+    """The bug this module's own comments explain at length, applied to only ONE of its
+    three keys. A key present but EMPTY in config.yaml yields None through the real
+    loader, and None is a value a `getattr(tc, k, <default>)` default never covers —
+    getattr only fires when the ATTRIBUTE is absent. `Path(None)` and `int(None)` both
+    raise TypeError, out of a function whose contract is that it never raises."""
+    from radar.config import load_config
+    p = tmp_path / "config.yaml"
+    p.write_text("tickermap:\n  snapshot_path:\n  overrides_path:\n  max_age_days:\n")
+    cfg = load_config(p)
+    assert cfg.tickermap.snapshot_path is None, "the shape this pins must be the real one"
+    assert cfg.tickermap.max_age_days is None
+
+    monkeypatch.setattr(tm, "_get_json", lambda *a, **k: None)
+    got = tm.fetch_ticker_map(cfg, "2026-08-17", dry_run=True)
+    # Every key falls back to its documented default, so this is the ordinary
+    # outage path: no snapshot (conftest walls off production state), overrides only.
+    assert got == tm.load_overrides("radar/ticker_overrides.yml"), \
+        "an empty config key must degrade to the default, not take the publish down"
+
+
+def test_load_overrides_rejects_a_non_string_title(tmp_path):
+    """`str()` on a non-scalar fabricates an article title that cannot exist
+    (`AAPL: [1, 2]` -> `"[1, 2]"`), and overrides win UNCONDITIONALLY over the live map —
+    so one YAML typo replaces a correct, verified title with a guaranteed pageviews miss.
+    Fail closed, exactly like parse_rows: no title beats a wrong one."""
+    ov = tmp_path / "ov.yml"
+    ov.write_text("overrides:\n"
+                  "  AAPL: [1, 2]\n"
+                  "  MSFT: {title: [3, 4], why: 'fat-fingered list'}\n"
+                  "  NVDA: {title: 5, why: 'fat-fingered number'}\n"
+                  "  DOW: {title: 'Dow Inc.', why: same-family}\n")
+    assert tm.load_overrides(ov) == {"DOW": "Dow Inc."}
+
+
+# --- freshness: a future-dated snapshot --------------------------------------
+
+def test_a_future_dated_snapshot_is_not_fresh_forever(monkeypatch, tmp_path):
+    """`age < max_age` is satisfied by every NEGATIVE age, so a `fetched` stamp in the
+    future (clock skew on the runner, or a hand-edit of the data branch) pins the
+    snapshot as "fresh" for as long as the stamp says — measured -26,435 days for a
+    2099 stamp, i.e. 72 years of serving an unrefreshed ticker map with no warn at all.
+    A negative age is not freshness, it is a broken clock, and it must say so."""
+    snap = tmp_path / "ticker_articles.json"
+    snap.write_text(json.dumps({"schema": 1, "fetched": "2099-01-01",
+                                "map": {"A": "B"}}))
+    assert tm._snapshot_age_days(snap, "2026-08-17") < 0, "the shape this pins is real"
+
+    calls = []
+    monkeypatch.setattr(tm, "_get_json", lambda *a, **k: calls.append(1) or None)
+    got = tm.fetch_ticker_map(_cfg(tmp_path), "2026-08-17")
+    assert calls, "a future-dated stamp must force a refresh, not read as fresh"
+    assert got == {"A": "B"}, "and the snapshot is still the fallback when upstream is down"
+    assert any("future" in e["reason"].lower() for e in degrade.events()), \
+        "a clock or a data branch that disagrees with reality must leave a breadcrumb"
+
+
+def test_fetch_ticker_map_never_raises(monkeypatch, tmp_path):
+    """The contractual backstop. This function gates the daily publish and is documented
+    as fail-soft throughout; no config typo, upstream novelty or unforeseen value should
+    ever be able to take the board down again. The specific handlers above still do the
+    real work — this only catches what none of them anticipated."""
+    def boom(*a, **k):
+        raise RuntimeError("upstream novelty")
+
+    monkeypatch.setattr(tm, "_get_json", boom)
+    assert tm.fetch_ticker_map(_cfg(tmp_path), "2026-08-17") == {}
+    assert any("upstream novelty" in e["reason"] for e in degrade.events())

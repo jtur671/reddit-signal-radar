@@ -19,7 +19,7 @@ from pathlib import Path
 import requests
 import yaml
 
-from radar import degrade
+from radar import atomic, degrade
 
 ENDPOINT = "https://query.wikidata.org/sparql"
 UA = "reddit-signal-radar/0.1 (open-source ticker signal bot)"
@@ -160,17 +160,30 @@ def load_overrides(path) -> dict[str, str]:
         out = {}
         for ticker, e in entries.items():
             title = e.get("title") if isinstance(e, dict) else e
-            if title:
-                out[str(ticker).upper()] = str(title)
+            # Strings only, never str(). An override wins UNCONDITIONALLY over the live
+            # map, so `str()`-ing a non-scalar fabricates a title that cannot exist
+            # (`AAPL: [1, 2]` -> `"[1, 2]"`) and replaces a correct, verified one with a
+            # guaranteed pageviews miss. Same premise as parse_rows: no title beats a
+            # wrong one, so a typo'd entry is dropped rather than coerced.
+            if not isinstance(title, str) or not title:
+                continue
+            out[str(ticker).upper()] = title
         return out
     except (OSError, TypeError, ValueError, AttributeError, yaml.YAMLError):
         return {}
 
 
 def _expected_rows(raw) -> int | None:
+    """The COUNT(*) answer, or None when it cannot be read as a whole number.
+
+    OverflowError is in the tuple because `json.loads` accepts `Infinity`, `NaN` and
+    `1e309` BY DEFAULT — simplejson is not installed, so `requests.json()` is the stdlib
+    parser — and `int(float("inf"))` raises OverflowError, an ArithmeticError that
+    ValueError does not cover. Measured escaping to main(): a WDQS count of `1e309`
+    killed the whole publish, where every other unreadable count is a documented refusal."""
     try:
         return int(raw["results"]["bindings"][0]["n"]["value"])
-    except (TypeError, KeyError, IndexError, ValueError):
+    except (TypeError, KeyError, IndexError, ValueError, OverflowError):
         return None
 
 
@@ -200,8 +213,15 @@ def _snapshot_rows(snap: Path) -> int | None:
     try:
         doc = json.loads(snap.read_text())
         n = doc.get("rows_fetched")
-        return int(n) if isinstance(n, (int, float)) else None
-    except (OSError, ValueError, AttributeError, TypeError):
+        # `isinstance(True, int)` is True in Python, so a `rows_fetched: true` in the
+        # vendored file used to read as 1 — which makes the 50% regression guard below
+        # satisfiable by ANY fetch of one row or more. A guard a malformed field can
+        # switch off is not a guard. OverflowError for the same reason as
+        # _expected_rows: this file rides the data branch and `1e309` parses to inf.
+        if isinstance(n, bool) or not isinstance(n, (int, float)):
+            return None
+        return int(n)
+    except (OSError, ValueError, AttributeError, TypeError, OverflowError):
         return None
 
 
@@ -217,16 +237,36 @@ def fetch_ticker_map(cfg, run_day: str, dry_run: bool = False) -> dict[str, str]
 
     `dry_run` suppresses the snapshot WRITE only -- the fetch, the COUNT(*) check and
     every refusal path still run, so a dry run exercises the full code path without
-    rewriting a file the scheduled job owns."""
+    rewriting a file the scheduled job owns.
+
+    The top-level `except Exception` is a BACKSTOP, not a policy: every branch below has
+    its own specific handler and its own documented refusal, and those are what should
+    fire. But this function gates the 6:17 AM publish, and the two bugs that actually
+    took the board down -- `Path(None)` from an empty config key, and `int(inf)` from a
+    JSON `1e309` -- were both exceptions nobody had thought to name. No config typo or
+    upstream novelty gets to do that again."""
+    try:
+        return _fetch_ticker_map(cfg, run_day, dry_run)
+    except Exception as e:                       # noqa: BLE001 -- deliberate backstop
+        degrade.warn("tickermap", e)
+        return {}
+
+
+def _fetch_ticker_map(cfg, run_day: str, dry_run: bool) -> dict[str, str]:
+    """The real body of fetch_ticker_map; see that function for the contract."""
     tc = getattr(cfg, "tickermap", None)
-    snap = Path(getattr(tc, "snapshot_path", "data/ticker_articles.json"))
+    # `or`, not a bare getattr default, on EVERY key -- see the overrides_path note
+    # below. A key present but EMPTY in config.yaml yields None through the real loader,
+    # and getattr's default only fires when the ATTRIBUTE is absent: `Path(None)` and
+    # `int(None)` both raise TypeError out of a fetcher documented as fail-soft.
+    snap = Path(getattr(tc, "snapshot_path", None) or "data/ticker_articles.json")
     # `or`, not just a getattr default: an `overrides_path:` key present but EMPTY
     # yields None, which the default never covers — and load_overrides(None) returns {}
     # rather than raising, so EVERY curated override (DOW, HTZ, SNOW, QQQ) would stop
     # applying silently while run.py's health floor, which already resolves it this way,
     # still counted 30 of them and lit the LED green. The two sites must agree.
     ov_path = getattr(tc, "overrides_path", None) or "radar/ticker_overrides.yml"
-    max_age = int(getattr(tc, "max_age_days", 30))
+    max_age = int(getattr(tc, "max_age_days", None) or 30)
     overrides = load_overrides(ov_path)
 
     def _finish(base: dict[str, str]) -> dict[str, str]:
@@ -243,7 +283,16 @@ def fetch_ticker_map(cfg, run_day: str, dry_run: bool = False) -> dict[str, str]
     # ~22s. Refresh monthly, not daily. An unreadable date fails toward refreshing.
     fresh = _snapshot_map(snap)
     age = _snapshot_age_days(snap, run_day)
-    if fresh is not None and age is not None and age < max_age:
+    # `0 <=`, not just `< max_age`: a NEGATIVE age means the snapshot claims to have been
+    # fetched in the FUTURE, and every negative number satisfies `age < max_age`. Measured
+    # -26,435 for a 2099 stamp -- 72 years of serving an unrefreshed map, silently. Clock
+    # skew on the runner or a hand-edit of the data branch produces it, so it is not
+    # freshness, it is a broken clock, and it refreshes AND says so.
+    if age is not None and age < 0:
+        degrade.warn("tickermap",
+                     f"snapshot is dated {-age} days in the FUTURE — the clock or the "
+                     f"data branch is wrong; refreshing rather than trusting it")
+    elif fresh is not None and age is not None and 0 <= age < max_age:
         return _finish(fresh)
 
     raw = _get_json(QUERY, UA)
@@ -273,12 +322,16 @@ def fetch_ticker_map(cfg, run_day: str, dry_run: bool = False) -> dict[str, str]
         parsed = parse_rows(raw, run_day)
         if not dry_run:
             try:
-                snap.parent.mkdir(parents=True, exist_ok=True)
-                snap.write_text(json.dumps({"schema": 1, "fetched": run_day,
-                                            "rows_fetched": n,
-                                            "rows_expected": expected,
-                                            "map": parsed}, sort_keys=True))
-            except OSError as e:
+                # atomic.write_text, not Path.write_text: a bare write is
+                # truncate-then-write, and a reader arriving mid-write sees a half-file
+                # (measured 87% torn reads for _snapshot_map). ValueError is in the tuple
+                # beside OSError because encode/decode errors are ValueErrors, not OSErrors
+                # -- the exact gap that made short_interest's write path crash the publish.
+                atomic.write_text(snap, json.dumps({"schema": 1, "fetched": run_day,
+                                                    "rows_fetched": n,
+                                                    "rows_expected": expected,
+                                                    "map": parsed}, sort_keys=True))
+            except (OSError, ValueError) as e:
                 degrade.warn("tickermap snapshot write", e)
         return _finish(parsed)
 
