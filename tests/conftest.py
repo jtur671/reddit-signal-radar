@@ -60,9 +60,10 @@ class _NoNetRequests:
     tests/test_pageviews.py::test_get_series_uses_all_access_user_and_a_real_user_agent
     calls the real transport (it is the only test that inspects the URL and UA, and it
     is what catches an all-access/user -> all-agents swap), and
-    test_get_series_rejects_a_stale_tail asserts `_get_series(...) is None` — which a
-    None-returning stub would satisfy for entirely the wrong reason: a green test
-    asserting nothing. Rebinding the module global keeps both running their real logic
+    test_get_series_rejects_a_stale_tail asserts `_get_series(...) == MISS` — which is
+    precisely the outcome a None-returning stub could never produce, and the
+    distinction (Wikimedia answered vs. the transport died) is what the breaker and
+    the wikimedia LED both key on. Rebinding the module global keeps both running their real logic
     while the socket stays shut, and a test that sets `pv.requests.get` itself just
     mutates this object and wins.
 

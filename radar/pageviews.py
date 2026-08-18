@@ -31,6 +31,14 @@ BASELINE_DAYS = 28
 FETCH_DAYS = 35          # slack, so missing datapoints still leave a full baseline
 MAX_CONSECUTIVE_FAILURES = 3   # circuit breaker; see fetch_attention
 
+# Sentinel for "Wikimedia answered, and the answer is that there is no usable series
+# here" -- a 404 (no such article) or a tail Wikimedia has not published yet. Distinct
+# from None, which means the TRANSPORT failed and Wikimedia said nothing at all. The
+# distinction is the breaker's whole input: a miss is an ordinary fact about one name,
+# an outage is a fact about the source. Same shape as radar/options.py's "missing"
+# sentinel, which the cboe loop this breaker was modelled on already reads.
+MISS = "miss"
+
 
 def spike_score(series, min_baseline: int = 10, min_days: int = 21) -> float | None:
     """0-100 from today's views against this ticker's own median. None when the signal
@@ -74,8 +82,19 @@ def parse_series(raw) -> list[tuple[str, int]]:
 
 
 def _get_series(title: str, start: str, end: str,
-                retries: int = 2, sleep_s: float = 1.0) -> list[int] | None:
+                retries: int = 2, sleep_s: float = 1.0) -> list[int] | str | None:
     """One request returns the whole window (measured: 34 datapoints in 0.22s).
+
+    Three outcomes, and the caller must be able to tell them apart:
+      list[int] -- the daily views, tail verified to be `end`
+      MISS      -- Wikimedia ANSWERED and there is nothing to score: a 404 (no such
+                   article) or a stale tail. Ordinary; not the breaker's business.
+      None      -- the TRANSPORT failed: retries exhausted on a timeout/5xx/429, or a
+                   non-retryable status that is not a 404 (a 403 from a bad UA is a
+                   real outage, not a missing article). This is what the breaker counts.
+    Collapsing the last two into a bare None is what let a board-wide stale tail -- the
+    documented D-1 publication risk, see docs/HANDOFF.md -- read as a Wikimedia outage
+    and trip the breaker on the third ticker.
 
     Retries 429/500/502/503 with exponential backoff, same shape as cramer._get_json
     and the two FINRA transports. Not decoration: this walk is SERIAL across every
@@ -97,49 +116,77 @@ def _get_series(title: str, start: str, end: str,
             if r.status_code == 200:
                 pairs = parse_series(r.json())
                 if not pairs or pairs[-1][0][:8] != end:
-                    return None
+                    return MISS
                 return [views for _, views in pairs]
             if r.status_code in (429, 500, 502, 503):
                 time.sleep(sleep_s * (2 ** attempt)); continue
-            return None          # 404 is an ordinary miss: the article does not exist
+            if r.status_code == 404:   # ordinary miss: the article does not exist
+                return MISS
+            return None          # anything else non-retryable IS the transport failing
         except (requests.RequestException, ValueError):
             time.sleep(sleep_s * (2 ** attempt))
     return None
 
 
 def fetch_attention(titles: dict, tickers: list, run_day: str, sleep_s: float = 0.2):
-    """({ticker: 0-100}, {ticker: latest views}) for mapped tickers. Fail-soft: a
-    ticker that errors or scores None is simply absent from the scores dict.
+    """({ticker: 0-100}, {ticker: latest views}, transport_failures) for mapped tickers.
+    Fail-soft: a ticker that errors or scores None is simply absent from the scores dict.
+
+    The third element is the count of tickers where the TRANSPORT failed -- Wikimedia
+    said nothing at all. It is what radar/run.py's wikimedia LED keys on, because that
+    is the only outcome that means "the source is down": a board where every mapped
+    title 404s produced no scores and no raw views, and is still a perfectly healthy
+    Wikimedia answering every request.
 
     Breaks after MAX_CONSECUTIVE_FAILURES. This walk is serial and each request carries a
     20s timeout, so a hung Wikimedia costs 15 tickers x 20s ~= 5 minutes of stall inside
     the job that gates the daily publish -- and every one of those requests buys the same
     answer. Same breaker as radar/run.py's cboe loop, for the same measured reason. The
     counter is CONSECUTIVE, not total: a name with no article or a stale redirect is
-    ordinary and must not stop a healthy walk."""
+    ordinary and must not stop a healthy walk. Only `_get_series` returning None counts;
+    a MISS resets the run, because a 404 or a short window is Wikimedia ANSWERING and
+    therefore positive evidence the source is up. That distinction is load-bearing:
+    Wikimedia's D-1 availability at board time is inferred, never observed (see
+    docs/HANDOFF.md), so a board-wide stale tail is a live scenario -- and counting
+    refusals would trip the breaker on ticker three and drop attention for everyone."""
     end = date.fromisoformat(run_day) - timedelta(days=1)
     start = end - timedelta(days=FETCH_DAYS)
     s, e = start.strftime("%Y%m%d"), end.strftime("%Y%m%d")
-    scores, raw_views, failures = {}, {}, 0
-    consecutive_failures = 0
+    scores, raw_views = {}, {}
+    transport_failures = misses = consecutive_failures = 0
     asked = [t for t in tickers if titles.get(t)]
     for i, ticker in enumerate(asked):
         series = _get_series(titles[ticker], s, e)
-        if not series:
-            failures += 1
+        if series is None:                      # the transport failed — breaker business
+            transport_failures += 1
             consecutive_failures += 1
             if consecutive_failures >= MAX_CONSECUTIVE_FAILURES:
                 degrade.warn("wikimedia",
                              f"skipping remaining {len(asked) - i - 1} after "
-                             f"{MAX_CONSECUTIVE_FAILURES} consecutive failures")
+                             f"{MAX_CONSECUTIVE_FAILURES} consecutive transport failures")
                 break
             continue
-        consecutive_failures = 0
+        consecutive_failures = 0                # Wikimedia answered — the source is up
+        if series == MISS or not series:        # no article, or a day not published yet
+            misses += 1
+            # Paced like any other answered request. It matters more than it used to:
+            # a miss no longer risks tripping the breaker, so a board of unmapped names
+            # now walks all 15 instead of stopping at 3, and the spec's courtesy sleep
+            # is specified between REQUESTS, not between successes.
+            time.sleep(sleep_s)
+            continue
         raw_views[ticker] = series[-1]
         score = spike_score(series)
         if score is not None:
             scores[ticker] = score
         time.sleep(sleep_s)
-    if failures:
-        degrade.warn("wikimedia", f"{failures} ticker(s) returned no series")
-    return scores, raw_views
+    # Two warns, not one: both are breadcrumbs in health.json, but they are different
+    # claims. "transport failed" is an accusation against Wikimedia; "no usable series"
+    # is a statement about our own ticker->article coverage, and conflating them is what
+    # made an unmapped board look like an outage.
+    if transport_failures:
+        degrade.warn("wikimedia", f"{transport_failures} ticker(s) failed transport")
+    if misses:
+        degrade.warn("wikimedia", f"{misses} ticker(s) returned no usable series "
+                                  f"(no article, or {e} not published yet)")
+    return scores, raw_views, transport_failures

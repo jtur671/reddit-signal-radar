@@ -71,9 +71,11 @@ def _get_json(url: str, ua: str, retries: int = 2, sleep_s: float = 1.0):
 
 def _post_json(url: str, payload: dict, ua: str, retries: int = 2, sleep_s: float = 1.0):
     """POST transport for the data pull. Returns (rows, record_total) on a 200 —
-    record_total is FINRA's `record-total` response header, the free guard against a
-    page that fails mid-walk vendoring a truncated slice of the universe. Returns
-    (None, None) on any failure."""
+    record_total is FINRA's `record-total` response header, a free CROSS-CHECK on the
+    assembled row count. It is a courtesy, not a contract: FINRA can omit it, and a
+    guard conditioned on its presence is a guard that can switch itself off, so
+    _fetch_all_pages reports completeness independently. Returns (None, None) on any
+    failure."""
     for attempt in range(retries):
         try:
             r = requests.post(url, json=payload, headers={"User-Agent": ua,
@@ -140,19 +142,30 @@ def parse_rows(raw) -> tuple[dict[str, dict], str]:
     return out, settlement
 
 
-def _fetch_all_pages(ua: str, page_size: int, settlement: str) -> tuple[list | None, int | None]:
+def _fetch_all_pages(ua: str, page_size: int,
+                     settlement: str) -> tuple[list | None, int | None, bool]:
     """Page until a short page (< page_size rows) confirms there is no more to fetch,
     scoped to `settlement` via an EQUAL compareFilter (see module docstring — without
     it FINRA walks its full unordered multi-million-row archive instead of the
-    current settlement's ~22K rows). Returns (rows, record_total); rows is None only
-    when the very first page fails outright, so the caller can fall back to the
-    snapshot rather than vendor a partial or empty universe.
+    current settlement's ~22K rows).
+
+    Returns (rows, record_total, complete). `rows` is None only when the very first
+    page fails outright, so the caller can fall back to the snapshot rather than vendor
+    a partial or empty universe.
+
+    `complete` is the walk's own verdict, and it is stated rather than left to be
+    inferred. It is True for exactly ONE exit — the short page, which is the endpoint
+    saying there is nothing more — and False for a page that failed mid-walk, a page
+    that came back as something other than a list, and the MAX_PAGES cap. The caller
+    used to infer this from `record_total is not None`, and that inference is what let a
+    missing `record-total` header silently disable the truncation guard: the header is a
+    courtesy, the short page is a statement about THIS walk, and only one of them is
+    always there.
 
     Bounded by MAX_PAGES rather than trusting the short page to arrive: the short-page
     exit is a promise the endpoint makes, and this runs unattended on a schedule. A
-    capped walk is by definition partial, and whenever FINRA also sends `record-total`
-    the caller's row-count guard turns it into a "keep the snapshot" decision rather
-    than a truncated universe; the warn below is the breadcrumb either way."""
+    capped walk is by definition partial; the warn below is the breadcrumb, and the
+    False is what actually stops it being vendored."""
     rows: list = []
     total: int | None = None
     offset = 0
@@ -164,17 +177,17 @@ def _fetch_all_pages(ua: str, page_size: int, settlement: str) -> tuple[list | N
         if page_total is not None:
             total = page_total
         if page is None:
-            return (None, None) if offset == 0 else (rows, total)
+            return (None, None, False) if offset == 0 else (rows, total, False)
         if not isinstance(page, list):
-            return (rows if rows else None), total
+            return (rows if rows else None), total, False
         rows.extend(page)
         if len(page) < page_size:
-            return rows, total
+            return rows, total, True
         offset += page_size
     degrade.warn("short interest feed",
                  f"page cap {MAX_PAGES} hit at offset {offset} — endpoint never sent a "
                  f"short page; treating the walk as incomplete")
-    return rows, total
+    return rows, total, False
 
 
 def _read_snapshot(snap: Path) -> tuple[dict[str, dict], str] | None:
@@ -195,13 +208,14 @@ def _read_snapshot(snap: Path) -> tuple[dict[str, dict], str] | None:
 
 
 def fetch_short_interest(cfg, run_day: str, dry_run: bool = False) -> tuple[dict[str, dict], str]:
-    """Settlement-gated fetch -> vendor snapshot -> parse; snapshot fallback on
-    outage or on a row-count mismatch; ({}, "") + warn when both are gone. The
+    """Settlement-gated fetch -> vendor snapshot -> parse; snapshot fallback on outage
+    or on a walk that cannot be VERIFIED complete (an incomplete page walk, or a
+    row-count mismatch against `record-total`); ({}, "") + warn when both are gone. The
     snapshot rides the data branch and is refreshed only when the settlement date
     advances.
 
     `dry_run` suppresses the snapshot WRITE only -- discovery, the full page walk and
-    the row-count guard all still run, so a dry run exercises the whole path without
+    the completeness guards all still run, so a dry run exercises the whole path without
     rewriting a file the scheduled job owns."""
     sc = getattr(cfg, "short_interest", None)
     snap = Path(getattr(sc, "snapshot_path", "data/short_interest.json"))
@@ -216,16 +230,26 @@ def fetch_short_interest(cfg, run_day: str, dry_run: bool = False) -> tuple[dict
         return cached
 
     if latest is not None:
-        raw, total = _fetch_all_pages(ua, page_size, latest)
+        raw, total, complete = _fetch_all_pages(ua, page_size, latest)
         if raw:
             rows, settlement = parse_rows(raw)
-            if rows and total is not None and len(raw) != total:
-                # FINRA hands us the truncation guard for free: a page that fails or
-                # comes back short mid-walk must not vendor a partial universe that
-                # then short-circuits every run for up to two weeks. Same guard as
-                # the sibling tickermap task's COUNT(*) check.
-                degrade.warn("short interest feed",
-                             f"row count {len(raw)} != expected {total} — keeping snapshot")
+            # A partial universe must not be vendored: it carries the CORRECT settlement
+            # date, so it then matches the refresh gate above and is served for up to two
+            # weeks. Same guard as the sibling tickermap task's COUNT(*) check.
+            #
+            # Two checks, and the walk's own verdict comes FIRST because it is the one
+            # that always exists. `record-total` is a courtesy header; when FINRA omits
+            # it, `total is not None` is False and the count check switches ITSELF off —
+            # which is exactly how a mid-walk page failure used to vendor a truncated
+            # universe. Refuse whenever the walk cannot be VERIFIED complete.
+            refusal = None
+            if rows and not complete:
+                refusal = (f"page walk did not complete — {len(raw)} rows assembled, "
+                           f"keeping snapshot")
+            elif rows and total is not None and len(raw) != total:
+                refusal = f"row count {len(raw)} != expected {total} — keeping snapshot"
+            if refusal:
+                degrade.warn("short interest feed", refusal)
                 return cached if cached is not None else ({}, "")
             if rows:
                 if not dry_run:

@@ -61,13 +61,44 @@ def _val(binding, key):
     return node.get("value") if isinstance(node, dict) else None
 
 
-def parse_rows(raw) -> dict[str, str]:
-    """{TICKER: exact article title}. Pure, never raises.
+def _is_past(end_value, today) -> bool:
+    """True only when this statement's pq:P582 end-date is strictly BEFORE the run day.
+
+    Presence of an end-date is not enough, and that shortcut was a live bug: a planned
+    delisting is recorded on Wikidata as a FUTURE P582 sitting on the statement that is
+    still the CURRENT listing. Presence-testing drops it, and where the ticker also has
+    a stale undated statement, that stale one is left as the sole survivor and resolves
+    cleanly -- to the wrong article.
+
+    A date ending TODAY is not past: a listing that ends today is still listed today.
+
+    An unparseable end-date, or an unparseable run day, returns False -- the statement
+    stays in play. That direction is deliberate. Keeping a statement can only ADD a
+    candidate, and a ticker with two candidates is OMITTED (see below); dropping one
+    instead hands the win to whatever survives. This module's whole premise is that a
+    missing title is a non-event while a wrong one is silent permanent corruption, so
+    the unjudgeable case must fail toward omission."""
+    if end_value is None or today is None:
+        return False
+    try:
+        # WDQS serves xsd:dateTime as "2016-01-01T00:00:00Z", sometimes with a leading
+        # "+" on the year. Take the date half; fromisoformat rejects anything else.
+        return date.fromisoformat(str(end_value).lstrip("+")[:10]) < today
+    except (TypeError, ValueError):
+        return False
+
+
+def parse_rows(raw, run_day: str) -> dict[str, str]:
+    """{TICKER: exact article title}, resolved as of `run_day`. Pure, never raises.
 
     Rules, in order: drop DeprecatedRank; drop statements whose end-date (pq:P582) is
     in the past when a non-ended alternative exists for that ticker; then accept only
     tickers left with exactly one distinct title. A ticker with two live same-family
     candidates is OMITTED, not guessed -- ticker_overrides.yml resolves those.
+
+    `run_day` is what "in the past" is measured against -- see _is_past. Passing it in
+    rather than reading a clock keeps this function pure and the rule testable at any
+    date, which is the only way the future-end-date case can be pinned.
 
     Ticker/title values are coerced with str() so the dict[str, str] contract holds
     even when a binding value isn't already a string -- 'never raises' is this
@@ -79,6 +110,11 @@ def parse_rows(raw) -> dict[str, str]:
     if not isinstance(bindings, list):
         return {}
 
+    try:
+        today = date.fromisoformat(str(run_day))
+    except (TypeError, ValueError):
+        today = None          # no judgeable run day -> nothing is ended; see _is_past
+
     by_ticker: dict[str, list[tuple[str, bool]]] = {}
     for b in bindings:
         ticker, title = _val(b, "ticker"), _val(b, "enwiki")
@@ -86,7 +122,8 @@ def parse_rows(raw) -> dict[str, str]:
             continue
         if _val(b, "rank") == _DEPRECATED:
             continue
-        by_ticker.setdefault(str(ticker).upper(), []).append((str(title), _val(b, "end") is not None))
+        by_ticker.setdefault(str(ticker).upper(), []).append(
+            (str(title), _is_past(_val(b, "end"), today)))
 
     out: dict[str, str] = {}
     for ticker, rows in by_ticker.items():
@@ -233,7 +270,7 @@ def fetch_ticker_map(cfg, run_day: str, dry_run: bool = False) -> dict[str, str]
         prev_rows = _snapshot_rows(snap)
         if prev_rows is not None and n < prev_rows / 2:
             return _refuse(f"row count {n} under half of previous {prev_rows} — keeping snapshot")
-        parsed = parse_rows(raw)
+        parsed = parse_rows(raw, run_day)
         if not dry_run:
             try:
                 snap.parent.mkdir(parents=True, exist_ok=True)

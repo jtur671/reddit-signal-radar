@@ -184,6 +184,73 @@ def test_row_count_mismatch_with_no_snapshot_returns_empty(monkeypatch, tmp_path
     assert si.fetch_short_interest(_cfg(tmp_path), "2026-08-17") == ({}, "")
 
 
+def test_fetch_all_pages_reports_whether_the_walk_completed(monkeypatch):
+    """The walk knows more than it used to report. The caller previously INFERRED
+    completeness from `total is not None`, and that inference is exactly what produced
+    the bug below: when FINRA omits the `record-total` header there is nothing to infer
+    from, and the guard silently switched itself off."""
+    monkeypatch.setattr(si, "_post_json", lambda *a, **k: ([{}, {}], None))
+    assert si._fetch_all_pages("ua", 5000, "2026-07-31")[2] is True, \
+        "a short page is the endpoint's promise that there is no more — that is complete"
+
+    calls = []
+
+    def flaky(url, payload, ua, **k):
+        calls.append(1)
+        return ([{} for _ in range(3)], None) if len(calls) == 1 else (None, None)
+
+    monkeypatch.setattr(si, "_post_json", flaky)
+    rows, _total, complete = si._fetch_all_pages("ua", 3, "2026-07-31")
+    assert rows is not None and complete is False, "a page that failed mid-walk is partial"
+
+    monkeypatch.setattr(si, "_post_json", lambda *a, **k: (None, None))
+    assert si._fetch_all_pages("ua", 3, "2026-07-31") == (None, None, False)
+
+
+def test_a_missing_record_total_on_a_partial_walk_refuses_to_vendor(monkeypatch, tmp_path):
+    """`total is not None and len(raw) != total` skipped the guard ENTIRELY whenever
+    FINRA omitted the `record-total` header — so a page that failed mid-walk vendored a
+    partial universe stamped with the CORRECT settlement date, which then matches the
+    refresh gate and is served for up to two weeks. Same failure class this branch has
+    already fixed twice; the header is a courtesy, not a contract, so completeness has
+    to be established by the walk itself."""
+    snap = tmp_path / "short_interest.json"
+    snap.write_text(json.dumps({"schema": 1, "settlement": "2026-07-15",
+                                "rows": {"NVDA": {"days_to_cover": 3.0, "shares": 1}}}))
+    pages = [[dict(RAW[0], symbolCode=f"T{i}") for i in range(5000)]]
+
+    def fake_post(url, payload, ua, **kw):
+        if pages:
+            return pages.pop(0), None       # a full page, and NO record-total header
+        return None, None                   # page 2 dies: the walk is partial
+
+    monkeypatch.setattr(si, "_post_json", fake_post)
+    monkeypatch.setattr(si, "_latest_settlement", lambda ua: "2026-07-31")
+    rows, settlement = si.fetch_short_interest(_cfg(tmp_path), "2026-08-17")
+
+    assert rows == {"NVDA": {"days_to_cover": 3.0, "shares": 1}}, \
+        "must serve the old snapshot, not vendor 5,000 rows of a 22,341-row universe"
+    assert settlement == "2026-07-15"
+    assert json.loads(snap.read_text())["settlement"] == "2026-07-15", "snapshot unchanged"
+    assert any("did not complete" in e["reason"] for e in degrade.events()), \
+        "refusing to vendor is a decision — it must leave a breadcrumb like every other"
+
+
+def test_a_missing_record_total_on_a_clean_walk_still_vendors(monkeypatch, tmp_path):
+    """The other half, and the over-correction to avoid: FINRA omitting the header is
+    not itself a failure. A walk that reached a SHORT page has the endpoint's own word
+    that there is nothing more to fetch, and must vendor exactly as before."""
+    snap = tmp_path / "short_interest.json"
+    monkeypatch.setattr(si, "_post_json",
+                        lambda url, payload, ua, **k: ([dict(RAW[0])], None))
+    monkeypatch.setattr(si, "_latest_settlement", lambda ua: "2026-07-31")
+    rows, settlement = si.fetch_short_interest(_cfg(tmp_path), "2026-08-17")
+
+    assert rows["NVDA"]["days_to_cover"] == 2.47 and settlement == "2026-07-31"
+    assert json.loads(snap.read_text())["settlement"] == "2026-07-31", "and it vendors"
+    assert not any("did not complete" in e["reason"] for e in degrade.events())
+
+
 def test_snapshot_read_refilters_the_sentinel(monkeypatch, tmp_path):
     """The snapshot rides the data branch and is the one input this module trusts
     unvalidated -- a sentinel that slipped in through an older write path must still
@@ -217,8 +284,9 @@ def test_the_page_walk_has_a_hard_cap(monkeypatch):
         return ([dict(RAW[0]) for _ in range(3)], 999999)      # always a FULL page
 
     monkeypatch.setattr(si, "_post_json", fake_post)
-    rows, total = si._fetch_all_pages("ua", 3, "2026-07-31")
+    rows, total, complete = si._fetch_all_pages("ua", 3, "2026-07-31")
 
+    assert complete is False, "a capped walk is by definition partial and must say so"
     assert len(calls) == si.MAX_PAGES, f"walked {len(calls)} pages, cap is {si.MAX_PAGES}"
     assert calls == [i * 3 for i in range(si.MAX_PAGES)], "offset must still advance"
     assert rows is not None and len(rows) == si.MAX_PAGES * 3, "the capped rows are returned"

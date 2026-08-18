@@ -166,20 +166,29 @@ def main(argv=None) -> int:
     # titles). The pageviews API does NOT follow redirects — it answers HTTP 200 with
     # the redirect page's own traffic, measured at 12 views/day for `Dow Inc.` against
     # canonical `Dow Chemical Company`'s 468. A 39x understatement, no error raised.
+    # Board PLUS Still Running, which is exactly what the E2 spec costs ("~15-20
+    # requests per run (board plus Still Running)", non-social-attention-design 2.4).
+    # Still Running names are off the top-N board precisely because Reddit has moved on,
+    # which makes "is the wider world still looking this up?" the most informative
+    # question we can ask about them. `still` is disjoint from `board` by construction
+    # (still_running.py skips anything already on it), so this asks nothing twice.
+    attention_names = board + still
     pv_titles = {}
-    for s in board:
+    for s in attention_names:
         title = ((about_cache.get(s.ticker) or {}).get("title")
                  or ticker_titles.get(s.ticker))
         if title:                                   # unmapped + undescribed -> no request
             pv_titles[s.ticker] = title
-    attention, raw_views = pageviews.fetch_attention(
-        pv_titles, [s.ticker for s in board], run_day,
+    attention, raw_views, pv_failures = pageviews.fetch_attention(
+        pv_titles, [s.ticker for s in attention_names], run_day,
         sleep_s=float(getattr(getattr(cfg, "pageviews", None), "sleep_seconds", 0.2)))
     si_rows, si_as_of = short_interest.fetch_short_interest(cfg, run_day,
                                                             dry_run=args.dry_run)
-    for s in board:
+    for s in attention_names:
         s.attention = attention.get(s.ticker)
         s.pageviews = raw_views.get(s.ticker)
+        history.annotate(run_day, s.ticker, attention=s.attention, pageviews=s.pageviews)
+    for s in board:
         row = si_rows.get(s.ticker) or {}
         if si_as_of and row.get("days_to_cover") is not None:
             # The number and its date travel together or not at all, in BOTH directions.
@@ -191,7 +200,6 @@ def main(argv=None) -> int:
             s.days_to_cover = row["days_to_cover"]
             s.short_interest_shares = row.get("shares")
             s.short_interest_as_of = si_as_of
-        history.annotate(run_day, s.ticker, attention=s.attention, pageviews=s.pageviews)
     history.prune(keep_through=run_day, days=cfg.history_days)
     if not args.dry_run:
         history.save()
@@ -220,15 +228,22 @@ def main(argv=None) -> int:
         "cboe": "ok" if cboe_hits else ("down" if board else "unused"),
         "cramer": "ok" if cramer_by else "down",
         "tickermap": "ok" if len(ticker_titles) > overrides_n else "down",
-        # Three states, like cboe above, because raw_views is empty in TWO different
-        # worlds: Wikimedia failed, or nothing was ever asked of it. With no titles
-        # (tickermap down and a cold about cache — a real Tuesday) fetch_attention makes
-        # zero requests, and "down" there asserts an outage that never happened.
-        # Keyed on RAW VIEWS, not scores: raw_views is populated whenever Wikimedia
-        # actually answered, while scores additionally clears spike_score's 21-day /
-        # 10-view baseline floor. A healthy Wikimedia serving only thin-baseline names
-        # is up, and lighting that red would be a false alarm about a working source.
-        "wikimedia": "ok" if raw_views else ("down" if pv_titles else "unused"),
+        # Three states, like cboe above, because raw_views is empty in THREE different
+        # worlds and only one of them is an outage: Wikimedia failed; nothing was ever
+        # asked of it (tickermap down and a cold about cache — a real Tuesday, and
+        # "down" there asserts an outage that never happened); or every mapped title
+        # answered 404 / served a window that does not reach D-1. That last one is a
+        # HEALTHY Wikimedia — a 404 is an answer — and it is not hypothetical: D-1
+        # availability at board time is inferred from dump timestamps, never observed
+        # (docs/HANDOFF.md), so a whole board can legitimately come back empty.
+        # So the red state keys on TRANSPORT failures, the one thing only Wikimedia can
+        # cause; raw_views alone still lights it green, because anything answering with
+        # a series proves the source is up even when nothing clears spike_score's
+        # 21-day / 10-view baseline floor.
+        "wikimedia": ("ok" if raw_views              # something came back with a series
+                      else "unused" if not pv_titles  # nothing was ever asked of it
+                      else "down" if pv_failures      # asked, and the transport died
+                      else "ok"),                     # asked, and every answer was a miss
         # Two states here, checked rather than assumed: unlike wikimedia, this source
         # takes no per-ticker input, so there is no "nothing was asked" world to confuse
         # with failure — fetch_short_interest always queries the settlement endpoint and

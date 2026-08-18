@@ -179,10 +179,10 @@ fact. Replace with a measurement when you can.
 | Board names/day (post-floor) | ~54 | history, 2026-08-08→17 | monthly |
 | Reddit RSS budget | 1 req / ~60s / IP | `x-ratelimit-*` headers | if RSS is ever used |
 | EFTS page cap | 100 hits | `len(hits)` vs `total` | if paging is added |
-| Test suite | **446 passed / 2.36s** | measured 2026-08-17 on `fix/test-hermeticity` after E2a+E2; was 353/43.95s before the suite went hermetic (`b6b90ad`) | every branch |
+| Test suite | **465 passed / 3.7s** | measured 2026-08-17 on `fix/test-hermeticity` after the outsourced-review fix wave (was 446/2.36s after E2a+E2, 353/43.95s before the suite went hermetic, `b6b90ad`); 0 network violations under a socket blocker | every branch |
 | Ticker-map coverage | 80.3% of the 330-equity universe (est.) | Wikidata US-scoped + 30 overrides; **never run live** | first live run |
 | Catalyst/attention sources contacted live | **none yet** | the suite is hermetic by design, so no code path here has met the real APIs | first live run |
-| Wikimedia D-1 availability at board time | ~02:30 UTC on D+1 (7.5 h before publish) | **inferred** from `dumps.wikimedia.org` rollup timestamps, 13/13 days 02:14–02:49 — *not* observed on the AQS API at 10:17 UTC | one fetch of D-1 at board time closes it |
+| Wikimedia D-1 availability at board time | ~02:30 UTC on D+1 (7.5 h before publish) | **inferred** from `dumps.wikimedia.org` rollup timestamps, 13/13 days 02:14–02:49 — *not* observed on the AQS API at 10:17 UTC | one fetch of D-1 at board time closes it. **Blast radius now bounded**: a board-wide stale tail costs the attention signal for that day but no longer trips the breaker or reds the `wikimedia` LED (see §5, 2026-08-17 fix wave) |
 | Short-interest staleness | 11–24 days, sawtooth | measured 2026-08-17: latest settlement 2026-07-31, next (08-14) publishes 08-25 | every FINRA schedule change |
 | `about.py` ticker→article wrong-entity rate | **13.7%** (34 of 249 resolved) | measured 2026-08-17 against `origin/data` `about.json`, 420 tickers | after E2a lands — target 0.4% |
 | Ticker→article coverage | 59.3% of 420 → **80.3%** of the 330-equity universe | measured 2026-08-17; the other 90 are ETFs/crypto that cannot carry an exchange ticker statement | after E2a lands |
@@ -203,6 +203,31 @@ delisting 0, same measurement). See the follow-up in §2 and [[ROADMAP]] Phase E
 Move completed checklist blocks here with the date and commit SHA. Keep it short — the
 decision log in [[ROADMAP]] is where *why* lives; this is just *what*, so a future
 session can tell "not done yet" from "done and reverted".
+
+- **2026-08-17** — **Outsourced-review fix wave** on `fix/test-hermeticity`; **465 tests
+  passing, 0 network violations**. Five findings, all verified against the code first:
+  - `radar/pageviews.py` collapsed three outcomes into `None` — transport failure, a
+    404, and the fail-closed stale-tail refusal — so all three fed one 3-strike breaker.
+    Because D-1 availability at board time is *inferred* (see §4), an unpublished D-1
+    would have refused on EVERY ticker, tripped the breaker on the third, dropped
+    attention for the whole board, and lit `wikimedia` red for an outage that never
+    happened. `_get_series` now returns a `MISS` sentinel (same shape as
+    `options.py`'s `"missing"`); only transport failures count, and the LED keys on
+    those rather than on `raw_views` being empty.
+  - `radar/tickermap.py` tested an end-date for PRESENCE where the spec and its own
+    docstring say *in the past*. A planned future delisting therefore read as ended, and
+    where that statement was the correct current listing the ticker resolved cleanly to
+    the WRONG article. `parse_rows` now takes `run_day`; an unparseable date fails
+    toward omission, never toward a guess.
+  - `radar/short_interest.py` skipped its truncation guard entirely when FINRA omitted
+    the `record-total` header, vendoring a partial universe under the correct settlement
+    date — which then matches the refresh gate and is served for up to two weeks.
+    `_fetch_all_pages` now reports completeness explicitly instead of leaving the caller
+    to infer it from `total is not None`; that inference *was* the bug.
+  - Still Running names never got attention, though the E2 spec costs the ingest as
+    "board plus Still Running" and the detail modal already renders `wiki views` for
+    them. They are exactly the names where "is the wider world still looking?" carries
+    information.
 
 - **2026-08-17** — **E2a + E2 built.** Twelve fleet-facing commits on
   `fix/test-hermeticity`; **446 tests passing, 0 DNS lookups** under a socket blocker.

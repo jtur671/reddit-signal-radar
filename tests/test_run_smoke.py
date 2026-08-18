@@ -240,7 +240,7 @@ def test_attention_ships_in_components_and_weights_stay_seven(monkeypatch, tmp_p
     _offline(monkeypatch, run, _board(run))
     monkeypatch.setattr(run.pageviews, "fetch_attention",
                         lambda titles, tickers, run_day, **k: ({"IREN": 88.0},
-                                                                {"IREN": 5000}))
+                                                                {"IREN": 5000}, 0))
 
     out = tmp_path / "out"
     assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
@@ -262,7 +262,7 @@ def test_attention_does_not_move_the_composite(monkeypatch, tmp_path):
     def composites(attention):
         _offline(monkeypatch, run, _board(run))
         monkeypatch.setattr(run.pageviews, "fetch_attention",
-                            lambda titles, tickers, run_day, **k: (attention, {}))
+                            lambda titles, tickers, run_day, **k: (attention, {}, 0))
         out = tmp_path / ("out" + str(len(attention)))
         assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
         data = json.loads((out / "data.json").read_text())
@@ -294,7 +294,7 @@ def test_pageviews_uses_the_canonical_title_not_the_mapped_one(monkeypatch, tmp_
                                                 "title": canonical.get(title, title)})
     seen = {}
     monkeypatch.setattr(run.pageviews, "fetch_attention",
-                        lambda titles, tickers, run_day, **k: (seen.update(titles), ({}, {}))[1])
+                        lambda titles, tickers, run_day, **k: (seen.update(titles), ({}, {}, 0))[1])
 
     out = tmp_path / "out"
     assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
@@ -314,7 +314,7 @@ def test_pageviews_falls_back_to_the_mapped_title_when_about_has_none(monkeypatc
     monkeypatch.setattr(run.about, "fetch_summary", lambda *a, **k: None)   # empty title
     seen = {}
     monkeypatch.setattr(run.pageviews, "fetch_attention",
-                        lambda titles, tickers, run_day, **k: (seen.update(titles), ({}, {}))[1])
+                        lambda titles, tickers, run_day, **k: (seen.update(titles), ({}, {}, 0))[1])
 
     out = tmp_path / "out"
     assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
@@ -423,7 +423,7 @@ def test_new_sources_report_ok_when_they_answer(monkeypatch, tmp_path):
     import radar.run as run
     _offline(monkeypatch, run, _board(run))
     monkeypatch.setattr(run.pageviews, "fetch_attention",
-                        lambda titles, tickers, run_day, **k: ({}, {"IREN": 5000}))
+                        lambda titles, tickers, run_day, **k: ({}, {"IREN": 5000}, 0))
     monkeypatch.setattr(run.short_interest, "fetch_short_interest",
                         lambda cfg, run_day, **k: ({"IREN": {"days_to_cover": 6.7,
                                                          "shares": 12_000_000}},
@@ -524,6 +524,93 @@ def test_wikimedia_led_is_down_when_a_title_was_asked_and_the_transport_failed(m
     assert all(c[0] == "IREN Limited" for c in calls)
     health = json.loads((out / "health.json").read_text())
     assert health["sources"]["wikimedia"] == "down", "asked and got nothing back IS an outage"
+
+
+def test_still_running_names_get_attention_too(monkeypatch, tmp_path):
+    """The E2 spec costs this ingest as "~15-20 requests per run (board plus Still
+    Running)" (non-social-attention-design 2.4); run.py only ever asked about the board.
+
+    Still Running names are off the top-N board precisely because Reddit attention has
+    moved on, which makes "is the wider world still looking this name up?" the single
+    most informative thing left to ask about them. The detail modal already renders
+    `wiki views` for every row it is given — and `_detail_blob` is fed `board + still` —
+    so before this the lane rendered a permanent blank.
+
+    Both lanes are forced here rather than grown: the real Still Running lane needs
+    breakout history a smoke test does not have, and the two lanes must be DISJOINT
+    (still_running.py skips anything already on the board) or the walk asks twice."""
+    import json
+    import re
+    import radar.run as run
+    _offline(monkeypatch, run, _board(run))
+    monkeypatch.setattr(run, "top_signals",
+                        lambda signals, n: [s for s in signals if s.ticker == "IREN"])
+    monkeypatch.setattr(run, "still_running",
+                        lambda signals, history, run_day, board, cfg: [
+                            s for s in signals if s.ticker == "KEEL"])
+    mapped = dict(run.tickermap.load_overrides("radar/ticker_overrides.yml"))
+    mapped.update({"IREN": "IREN Limited", "KEEL": "Keel Infrastructure"})
+    monkeypatch.setattr(run.tickermap, "fetch_ticker_map", lambda cfg, run_day, **k: mapped)
+
+    seen = {}
+
+    def fake_fetch(titles, tickers, run_day, **k):
+        seen["titles"] = dict(titles)
+        seen["tickers"] = list(tickers)
+        return ({t: 70.0 for t in tickers}, {t: 4321 for t in tickers}, 0)
+
+    monkeypatch.setattr(run.pageviews, "fetch_attention", fake_fetch)
+
+    out = tmp_path / "out"
+    assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
+    assert seen["tickers"] == ["IREN", "KEEL"], "the Still Running lane was never asked"
+    assert seen["titles"]["KEEL"] == "Keel Infrastructure"
+
+    html = (out / "index.html").read_text()
+    blob = json.loads(re.search(r'id="radar-data">(.*?)</script>', html, re.S).group(1))
+    assert blob["KEEL"]["pageviews"] == 4321, \
+        "the fields are populated for a Still Running row exactly as for a board row"
+    assert blob["IREN"]["pageviews"] == 4321
+
+
+def test_wikimedia_led_is_not_down_when_every_mapped_title_404s(monkeypatch, tmp_path):
+    """The third world the LED used to collapse into "down": every mapped title answers,
+    and every answer is "no such article". That is a HEALTHY Wikimedia — a 404 is an
+    answer — and the same shape covers the more dangerous case, a board-wide stale tail
+    when Wikimedia has not published D-1 by the 10:17 UTC board time (availability there
+    is INFERRED from dump timestamps, never observed — docs/HANDOFF.md). Under the old
+    `"ok" if raw_views` rule the whole board reported an outage that never happened.
+
+    Driven through the real transport so the chain runs end to end: titles ->
+    fetch_attention -> transport failure count -> LED."""
+    import json
+    import radar.run as run
+    _offline(monkeypatch, run, _board(run))
+    mapped = dict(run.tickermap.load_overrides("radar/ticker_overrides.yml"))
+    mapped.update({"IREN": "IREN Limited", "KEEL": "Keel Infrastructure"})
+    monkeypatch.setattr(run.tickermap, "fetch_ticker_map", lambda cfg, run_day, **k: mapped)
+
+    calls = []
+
+    class Resp:
+        status_code = 404
+
+        def json(self):
+            return {}
+
+    def fake_get(url, headers=None, timeout=None):
+        calls.append(url)
+        return Resp()
+
+    monkeypatch.setattr(run.pageviews.requests, "get", fake_get)
+
+    out = tmp_path / "out"
+    assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
+    assert calls, "mapped titles must actually be requested"
+    health = json.loads((out / "health.json").read_text())
+    assert health["sources"]["wikimedia"] != "down", \
+        "every article 404ing is our mapping's problem, not a Wikimedia outage"
+    assert health["sources"]["wikimedia"] == "ok"
 
 
 def test_the_dna_strip_and_the_modal_bars_stay_in_sync():

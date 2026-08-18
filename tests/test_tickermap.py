@@ -9,6 +9,20 @@ import radar.tickermap as tm
 from radar import degrade
 
 RAW = json.loads(Path("tests/fixtures/wikidata_rows.json").read_text())
+# The day the end-date rule is evaluated against. GOOG's 2016 end-date and BBBY's
+# 2023 one are both in the past relative to it; FUTURE_END below is not.
+RUN_DAY = "2026-08-17"
+FUTURE_END = "2027-06-30T00:00:00Z"
+_NORMAL = "http://wikiba.se/ontology#NormalRank"
+
+
+def _rows(*rows):
+    """SPARQL-shaped bindings from (ticker, title, end) triples; end may be None."""
+    return {"results": {"bindings": [
+        {"ticker": {"value": tk}, "enwiki": {"value": title},
+         "rank": {"value": _NORMAL},
+         **({"end": {"value": end}} if end is not None else {})}
+        for tk, title, end in rows]}}
 
 
 def _cfg(tmp_path, overrides=None):
@@ -32,35 +46,84 @@ def _clear_degrade():
 
 
 def test_plain_row_maps_ticker_to_title():
-    assert tm.parse_rows(RAW)["AAPL"] == "Apple Inc."
+    assert tm.parse_rows(RAW, RUN_DAY)["AAPL"] == "Apple Inc."
 
 
 def test_deprecated_rank_is_dropped():
     """AAL has a DeprecatedRank row for Anglo American; the live row must win."""
-    assert tm.parse_rows(RAW)["AAL"] == "American Airlines Group"
+    assert tm.parse_rows(RAW, RUN_DAY)["AAL"] == "American Airlines Group"
 
 
 def test_past_end_date_dropped_when_a_live_alternative_exists():
     """Google's listing ended 2016-01-01 and Alphabet's has no end date."""
-    assert tm.parse_rows(RAW)["GOOG"] == "Alphabet Inc."
+    assert tm.parse_rows(RAW, RUN_DAY)["GOOG"] == "Alphabet Inc."
 
 
 def test_sole_statement_is_kept_even_when_ended():
     """The proviso: an ended statement survives when it is the ONLY one for that
     ticker. Without this, every historical-only listing silently vanishes."""
-    assert tm.parse_rows(RAW)["BBBY"] == "Bed Bath & Beyond"
+    assert tm.parse_rows(RAW, RUN_DAY)["BBBY"] == "Bed Bath & Beyond"
+
+
+def test_a_future_end_date_is_not_treated_as_ended():
+    """The spec (2.3) and this function's own docstring both say to drop statements whose
+    end-date is IN THE PAST; the code tested only that an end-date was PRESENT.
+
+    A planned delisting is recorded on Wikidata as a FUTURE pq:P582 — on the statement
+    that is still the current listing. Presence-testing drops it, so this ticker had two
+    "ended" statements, no live alternative, and was omitted as ambiguous."""
+    raw = _rows(("FUTR", "Futura (delisted 2016)", "2016-01-01T00:00:00Z"),
+                ("FUTR", "Futura Inc.", FUTURE_END))
+    assert tm.parse_rows(raw, RUN_DAY)["FUTR"] == "Futura Inc."
+
+
+def test_a_future_end_date_beats_a_stale_undated_statement():
+    """The corruption case, and the reason this is not cosmetic. Here the future-dated
+    statement is the CORRECT current listing and the undated one is stale. Presence-
+    testing drops the correct one and leaves exactly one survivor — so the ticker
+    resolves cleanly, confidently, to the WRONG article, which for a pageviews ingest is
+    a plausible, well-formed, entirely fictitious signal (see the module docstring)."""
+    raw = _rows(("PLAN", "Stale Holdings", None),
+                ("PLAN", "Planned Delisting Corp", FUTURE_END))
+    got = tm.parse_rows(raw, RUN_DAY)
+    assert got.get("PLAN") != "Stale Holdings", "a future end-date is not an ended listing"
+    assert "PLAN" not in got, "two live candidates are OMITTED, never guessed between"
+
+
+def test_an_end_date_of_today_is_not_yet_past():
+    """A listing that ends today is still listed today. `<`, not `<=`."""
+    raw = _rows(("EOD", "Ends Today Inc.", RUN_DAY + "T00:00:00Z"),
+                ("EOD", "Some Other Article", None))
+    assert "EOD" not in tm.parse_rows(raw, RUN_DAY), "still live, so still ambiguous"
+
+
+def test_a_malformed_end_date_does_not_raise_and_keeps_the_statement_in_play():
+    """'Pure, never raises' is this module's contract and a date string is the one field
+    that invites a parse. An unparseable date (and an unparseable run day) is treated as
+    NOT ended, deliberately: keeping a statement in play can only ADD a candidate, and an
+    ambiguous ticker is omitted. Treating it as ended would DROP it and let the survivor
+    win — which is how you get a silently wrong title. A missing title is a non-event."""
+    raw = _rows(("JUNK", "Malformed Corp", "not-a-date"),
+                ("JUNK", "Other Corp", None))
+    assert "JUNK" not in tm.parse_rows(raw, RUN_DAY), "unjudgeable, so it still competes"
+
+    for bad in (None, "", "nope", 5, {"value": "x"}):
+        raw = _rows(("SOLO", "Sole Statement Inc.", bad))
+        assert tm.parse_rows(raw, RUN_DAY)["SOLO"] == "Sole Statement Inc."
+        assert tm.parse_rows(raw, bad) == {"SOLO": "Sole Statement Inc."}, \
+            "a malformed run day must not raise either"
 
 
 def test_unresolved_same_family_ambiguity_is_omitted_not_guessed():
     """DOW has two live, same-rank candidates. parse_rows must NOT pick one at
     random -- the override file is what resolves these."""
-    assert "DOW" not in tm.parse_rows(RAW)
+    assert "DOW" not in tm.parse_rows(RAW, RUN_DAY)
 
 
 def test_parse_rows_never_raises_on_junk():
     for junk in (None, {}, {"results": {}}, {"results": {"bindings": "nope"}},
                  {"results": {"bindings": [{"ticker": {}}]}}):
-        assert tm.parse_rows(junk) == {}
+        assert tm.parse_rows(junk, RUN_DAY) == {}
 
 
 def test_parse_rows_coerces_non_string_ticker_and_title():
@@ -70,7 +133,7 @@ def test_parse_rows_coerces_non_string_ticker_and_title():
     raw = {"results": {"bindings": [
         {"ticker": {"value": 5}, "enwiki": {"value": 7},
          "rank": {"value": "http://wikiba.se/ontology#NormalRank"}}]}}
-    got = tm.parse_rows(raw)
+    got = tm.parse_rows(raw, RUN_DAY)
     assert got == {"5": "7"}
     assert isinstance(next(iter(got)), str) and isinstance(got["5"], str)
 
