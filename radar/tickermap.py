@@ -183,7 +183,12 @@ def fetch_ticker_map(cfg, run_day: str, dry_run: bool = False) -> dict[str, str]
     rewriting a file the scheduled job owns."""
     tc = getattr(cfg, "tickermap", None)
     snap = Path(getattr(tc, "snapshot_path", "data/ticker_articles.json"))
-    ov_path = getattr(tc, "overrides_path", "radar/ticker_overrides.yml")
+    # `or`, not just a getattr default: an `overrides_path:` key present but EMPTY
+    # yields None, which the default never covers — and load_overrides(None) returns {}
+    # rather than raising, so EVERY curated override (DOW, HTZ, SNOW, QQQ) would stop
+    # applying silently while run.py's health floor, which already resolves it this way,
+    # still counted 30 of them and lit the LED green. The two sites must agree.
+    ov_path = getattr(tc, "overrides_path", None) or "radar/ticker_overrides.yml"
     max_age = int(getattr(tc, "max_age_days", 30))
     overrides = load_overrides(ov_path)
 

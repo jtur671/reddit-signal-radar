@@ -73,25 +73,38 @@ def parse_series(raw) -> list[tuple[str, int]]:
     return out
 
 
-def _get_series(title: str, start: str, end: str) -> list[int] | None:
+def _get_series(title: str, start: str, end: str,
+                retries: int = 2, sleep_s: float = 1.0) -> list[int] | None:
     """One request returns the whole window (measured: 34 datapoints in 0.22s).
+
+    Retries 429/500/502/503 with exponential backoff, same shape as cramer._get_json
+    and the two FINRA transports. Not decoration: this walk is SERIAL across every
+    board ticker and shares one 3-strike breaker, so without a retry three transient
+    429s -- which is what a rate limiter hands you, consecutively, by construction --
+    trip the breaker and drop attention for the whole rest of the board. The breaker
+    stays: it exists for a HUNG Wikimedia, where retrying buys the same answer twice.
 
     Fails closed if the freshest returned day is not `end`: Wikimedia sometimes omits
     the newest day or has not yet published it, and a silently-shifted `current` would
     still produce a well-formed score -- computed against the wrong day, with nothing
-    downstream able to tell."""
+    downstream able to tell. That is a REFUSAL, not an outage, so it returns immediately
+    rather than retrying -- the next attempt would return the same short window."""
     url = REST.format(title=urllib.parse.quote(title.replace(" ", "_"), safe=""),
                       start=start, end=end)
-    try:
-        r = requests.get(url, headers={"User-Agent": UA}, timeout=20)
-        if r.status_code != 200:
-            return None
-        pairs = parse_series(r.json())
-        if not pairs or pairs[-1][0][:8] != end:
-            return None
-        return [views for _, views in pairs]
-    except (requests.RequestException, ValueError):
-        return None
+    for attempt in range(retries):
+        try:
+            r = requests.get(url, headers={"User-Agent": UA}, timeout=20)
+            if r.status_code == 200:
+                pairs = parse_series(r.json())
+                if not pairs or pairs[-1][0][:8] != end:
+                    return None
+                return [views for _, views in pairs]
+            if r.status_code in (429, 500, 502, 503):
+                time.sleep(sleep_s * (2 ** attempt)); continue
+            return None          # 404 is an ordinary miss: the article does not exist
+        except (requests.RequestException, ValueError):
+            time.sleep(sleep_s * (2 ** attempt))
+    return None
 
 
 def fetch_attention(titles: dict, tickers: list, run_day: str, sleep_s: float = 0.2):

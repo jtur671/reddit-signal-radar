@@ -258,3 +258,74 @@ def test_every_override_has_a_reason():
     doc = yaml.safe_load(Path("radar/ticker_overrides.yml").read_text())
     for ticker, entry in doc["overrides"].items():
         assert entry.get("why"), f"{ticker} has no `why`"
+
+
+def test_a_null_overrides_path_still_applies_the_curated_overrides(tmp_path):
+    """A present-but-EMPTY `overrides_path:` in config.yaml yields None, and None is a
+    value a `getattr(tc, "overrides_path", <default>)` default never covers — getattr
+    only fires when the ATTRIBUTE is absent. load_overrides(None) then returns {} rather
+    than raising (Path(None) TypeError, caught), so the failure is silent: every curated
+    fix — DOW, HTZ, SNOW, QQQ, the entire reason this file exists — stops applying while
+    run.py's health floor, which resolves the same key with `or`, still counts 30 of them
+    and lights the tickermap LED green. Measured before the fix: 30 resolved for the
+    floor, 0 applied by fetch_ticker_map. The two sites must resolve identically.
+
+    Both shapes are pinned: the key present-but-null, and the key absent entirely."""
+    curated = tm.load_overrides("radar/ticker_overrides.yml")
+    assert curated, "the curated file must not be empty or this test asserts nothing"
+
+    null_key = types.SimpleNamespace(
+        snapshot_path=str(tmp_path / "ticker_articles.json"),
+        overrides_path=None, max_age_days=30)
+    no_key = types.SimpleNamespace(
+        snapshot_path=str(tmp_path / "ticker_articles.json"), max_age_days=30)
+    for tc in (null_key, no_key):
+        # Transports are stubbed dead by conftest and the snapshot does not exist, so
+        # the map is overrides-only — which is exactly the surface under test.
+        got = tm.fetch_ticker_map(types.SimpleNamespace(tickermap=tc), "2026-08-17")
+        assert got == curated, f"{tc!r} dropped the curated overrides"
+
+
+def test_load_overrides_of_a_null_path_is_empty_rather_than_a_crash():
+    """The property the call sites rely on, pinned directly: it is BECAUSE this returns
+    {} instead of raising that a null path fails silently, and silence is what made the
+    bug above survive review."""
+    assert tm.load_overrides(None) == {}
+    assert tm.load_overrides("") == {}
+
+
+def test_tests_never_read_the_production_ticker_snapshot(tmp_path):
+    """conftest's isolation guard, asserted directly — the tickermap half.
+
+    `fetch_ticker_map` resolves its snapshot from the REAL config.yaml on every
+    `run.main()`, `.github/workflows/daily.yml:39` restores `data/` from the orphan data
+    branch before the pytest gate at `:44`, and ticker_articles.json is on the copy
+    whitelist at `:80` — so the first successful production run vendors it and the NEXT
+    day's gate reads it. Measured with a realistic snapshot in place:
+
+        tests/test_run_smoke.py:409  assert calls == []
+        E   assert [('IREN Limited', '20260712', '20260816')] == []
+
+    A red gate means no board, no email, no Pages deploy and no data commit, every day
+    thereafter. The guard must NOT touch tmp_path snapshots — every fetch_ticker_map
+    test above drives the real snapshot/freshness/regression logic through one, and a
+    blanket stub would leave them green while asserting nothing."""
+    from radar.config import load_config
+    declared = load_config("config.yaml").tickermap.snapshot_path
+    prod_dir = Path(declared).parent.name
+    assert prod_dir == "data", "config moved its state dir; conftest tracks it, this test says so"
+
+    doc = {"schema": 1, "fetched": "2026-08-16", "rows_fetched": 4015,
+           "rows_expected": 4015, "map": {"IREN": "Iris Energy"}}
+    d = tmp_path / prod_dir; d.mkdir()
+    prod = d / Path(declared).name
+    prod.write_text(json.dumps(doc))
+    assert tm._snapshot_map(prod) is None, "anything under a declared state dir is production"
+    assert tm._snapshot_age_days(prod, "2026-08-17") is None
+    assert tm._snapshot_rows(prod) is None
+
+    ordinary = tmp_path / Path(declared).name
+    ordinary.write_text(json.dumps(doc))
+    assert tm._snapshot_map(ordinary) == {"IREN": "Iris Energy"}
+    assert tm._snapshot_age_days(ordinary, "2026-08-17") == 1
+    assert tm._snapshot_rows(ordinary) == 4015

@@ -215,3 +215,79 @@ def test_the_breaker_counts_CONSECUTIVE_failures_not_total(monkeypatch):
 
     assert len(calls) == 15, "scattered failures must not trip the breaker"
     assert len(scores) == 7 and len(raw) == 7
+
+
+def test_a_transient_429_is_retried_rather_than_charged_to_the_breaker(monkeypatch):
+    """This was the only new transport with no retry, and the omission is not cosmetic:
+    the walk is SERIAL across every board ticker and shares one 3-strike breaker, so a
+    rate limiter — which by construction hands out 429s CONSECUTIVELY — trips it in
+    three tickers and drops attention for the whole rest of the board. Its three
+    siblings (cramer._get_json, tickermap._get_json, short_interest._get_json /
+    _post_json) all retry 429/500/502/503 with exponential backoff; this one now
+    matches, and the breaker above it is untouched."""
+    fixture = json.loads(Path("tests/fixtures/pageviews_tsla.json").read_text())
+    codes = [429, 200]
+    calls = []
+
+    class Resp:
+        def __init__(self, code):
+            self.status_code = code
+
+        def json(self):
+            return fixture
+
+    def fake_get(url, headers=None, timeout=None):
+        calls.append(url)
+        return Resp(codes[len(calls) - 1])
+
+    monkeypatch.setattr(pv.requests, "get", fake_get)
+    monkeypatch.setattr(pv.time, "sleep", lambda *_a, **_k: None)   # no real backoff in tests
+    series = pv._get_series("Tesla, Inc.", "20260712", "20260816")
+
+    assert len(calls) == 2, "a 429 must be retried, not treated as a dead source"
+    assert series is not None and len(series) == 29
+
+
+def test_a_404_is_an_ordinary_miss_and_is_not_retried(monkeypatch):
+    """The other half of the retry contract, and the reason it is a status-code
+    WHITELIST rather than `!= 200`: an unmapped or renamed article answers 404 forever,
+    and retrying it doubles the cost of every miss on a healthy walk."""
+    calls = []
+
+    class Resp:
+        status_code = 404
+
+        def json(self):
+            return {}
+
+    def fake_get(url, headers=None, timeout=None):
+        calls.append(url)
+        return Resp()
+
+    monkeypatch.setattr(pv.requests, "get", fake_get)
+    monkeypatch.setattr(pv.time, "sleep", lambda *_a, **_k: pytest.fail("404 must not back off"))
+    assert pv._get_series("Tesla, Inc.", "20260712", "20260816") is None
+    assert len(calls) == 1, "a 404 is a miss, not an outage"
+
+
+def test_a_stale_tail_is_a_refusal_and_is_not_retried(monkeypatch):
+    """The fail-closed tail check sits INSIDE the retry loop, so it must return rather
+    than continue: Wikimedia not having published D-1 yet is a fact about the data, and
+    a second identical request buys the same short window at twice the price."""
+    fixture = json.loads(Path("tests/fixtures/pageviews_tsla.json").read_text())
+    fixture["items"][-1]["timestamp"] = "2026081500"
+    calls = []
+
+    class Resp:
+        status_code = 200
+
+        def json(self):
+            return fixture
+
+    def fake_get(url, headers=None, timeout=None):
+        calls.append(url)
+        return Resp()
+
+    monkeypatch.setattr(pv.requests, "get", fake_get)
+    assert pv._get_series("Tesla, Inc.", "20260712", "20260816") is None
+    assert len(calls) == 1, "a stale tail is a refusal, not a transient failure"

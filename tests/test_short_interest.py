@@ -230,3 +230,39 @@ def test_the_page_cap_is_generous_enough_never_to_fire_on_healthy_data(monkeypat
     """The other half: a cap that trips on a normal settlement would silently truncate
     the universe every day. Measured 22,341 rows at page_size 5000 = 5 pages."""
     assert si.MAX_PAGES * si.PAGE >= 50000
+
+
+def test_tests_never_read_the_production_short_interest_snapshot(tmp_path):
+    """conftest's isolation guard, asserted directly — the FINRA half, and the more
+    dangerous one because it fires UNCONDITIONALLY.
+
+    `fetch_short_interest` resolves its snapshot from the REAL config.yaml on every
+    `run.main()`, `.github/workflows/daily.yml:39` restores `data/` from the orphan data
+    branch before the pytest gate at `:44`, and short_interest.json is on the copy
+    whitelist at `:80`. Once it exists, `_read_snapshot` succeeds, `_latest_settlement`
+    returns None (transports stubbed dead), and the fetch takes its documented
+    snapshot-fallback path — so `si_rows` is non-empty and the LED reads healthy where
+    the test requires an outage. Measured with the file in place:
+
+        tests/test_run_smoke.py:411  assert health["sources"]["finra_si"] == "down"
+        E   assert 'ok' == 'down'
+
+    No board ticker has to appear in the snapshot for this to fire; ANY parseable
+    snapshot does it. The guard must NOT touch tmp_path snapshots — the fallback,
+    settlement-short-circuit and clamp-refilter tests above all run through one."""
+    from radar.config import load_config
+    declared = load_config("config.yaml").short_interest.snapshot_path
+    prod_dir = Path(declared).parent.name
+    assert prod_dir == "data", "config moved its state dir; conftest tracks it, this test says so"
+
+    doc = {"schema": 1, "settlement": "2026-07-31",
+           "rows": {"IREN": {"days_to_cover": 6.7, "shares": 12_000_000}}}
+    d = tmp_path / prod_dir; d.mkdir()
+    prod = d / Path(declared).name
+    prod.write_text(json.dumps(doc))
+    assert si._read_snapshot(prod) is None, "anything under a declared state dir is production"
+
+    ordinary = tmp_path / Path(declared).name
+    ordinary.write_text(json.dumps(doc))
+    rows, settlement = si._read_snapshot(ordinary)
+    assert settlement == "2026-07-31" and rows["IREN"]["days_to_cover"] == 6.7

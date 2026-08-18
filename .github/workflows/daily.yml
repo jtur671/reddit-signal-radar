@@ -15,6 +15,14 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
+    # GitHub's default is 360 minutes — six hours of a hung transport before anyone
+    # learns the board did not ship. Measured worst case for this job is ~17 min
+    # ordinarily and ~23 min on a tickermap monthly-refresh day, but the clock also
+    # covers deploy-pages waiting on the `pages` concurrency group it shares with
+    # trump-monitor (cancel-in-progress: false), so 30 leaves no room for a queue.
+    # 45 is ~2x the measured worst case and still fails 8x sooner than the default;
+    # a false trip costs exactly the publish this backstop exists to protect.
+    timeout-minutes: 45
     steps:
       # Actions pinned to commit SHAs, not tags: a tag is mutable, and this runner holds
       # every repo secret. Bump deliberately (`gh api repos/<a>/git/ref/tags/<v>`).

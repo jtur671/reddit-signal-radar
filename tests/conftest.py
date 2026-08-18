@@ -2,6 +2,54 @@ from pathlib import Path
 
 import pytest
 import requests
+import yaml
+
+_REPO = Path(__file__).resolve().parent.parent
+
+
+def _production_state_dirs() -> frozenset[str]:
+    """Directory names that hold PRODUCTION state, derived from config.yaml's own
+    `snapshot_path` declarations rather than from a hardcoded "data".
+
+    Every vendoring source declares where its snapshot lives, and
+    `.github/workflows/daily.yml` restores exactly those files from the orphan data
+    branch before the pytest gate. Reading the declaration means the guard tracks
+    config instead of convention: move `short_interest.snapshot_path` to `state/` and
+    the guard follows it, where a literal "data" would silently stop covering it and
+    the failure would surface as a red publish gate two days after the merge.
+
+    A NAME rather than a resolved absolute path, deliberately, and this is the one
+    concession to convention: tests must be able to construct a production-shaped path
+    under tmp_path to assert the guard actually fires (tests/test_about.py's
+    test_tests_never_read_the_production_about_cache is the pattern), and an
+    absolute-path match could only be tested by writing into the repo's real data/ —
+    which in CI holds restored production state this suite must never clobber.
+    `data/about.json` is seeded literally because run.py hardcodes it; config never
+    declares it."""
+    names = {"data"}
+    try:
+        doc = yaml.safe_load((_REPO / "config.yaml").read_text())
+    except (OSError, ValueError, yaml.YAMLError):
+        return frozenset(names)       # cold checkout: fall back to the convention
+    stack = [doc]
+    while stack:
+        node = stack.pop()
+        if isinstance(node, dict):
+            declared = node.get("snapshot_path")
+            if isinstance(declared, str) and Path(declared).parent.name:
+                names.add(Path(declared).parent.name)
+            stack.extend(node.values())
+        elif isinstance(node, list):
+            stack.extend(node)
+    return frozenset(names)
+
+
+PRODUCTION_STATE_DIRS = _production_state_dirs()
+
+
+def _is_production_state(path) -> bool:
+    """True when `path` points into a directory config declares as vendored state."""
+    return Path(path).parent.name in PRODUCTION_STATE_DIRS
 
 
 class _NoNetRequests:
@@ -45,22 +93,61 @@ def _no_production_state(monkeypatch):
     PRODUCTION state.
 
     `run.py` loads the relative path `data/about.json`, and `.github/workflows/daily.yml`
-    restores `data/` from the orphan data branch (`:26`) BEFORE the pytest gate (`:35`),
+    restores `data/` from the orphan data branch (`:39`) BEFORE the pytest gate (`:44`),
     then pushes an updated cache back afterwards. So a test that calls `run.main()` is
     reading whatever yesterday's run wrote. That is not a stale-fixture annoyance, it is
     a live tripwire on the publish: a run-smoke test asserting a ticker gets fetched goes
     red the first day that ticker lands in the cache, and a red gate means no board, no
     email and no data-branch commit until someone hand-edits the data branch.
 
-    Scoped to the `data/` directory rather than stubbed wholesale, deliberately: three
+    Scoped to the state directories rather than stubbed wholesale, deliberately: three
     tests in tests/test_about.py assert on load_cache's real schema-migration behaviour
     against tmp_path files, and a blanket `lambda p: {}` would leave all three green
-    while asserting nothing. tmp_path loads keep running the real function."""
+    while asserting nothing. tmp_path loads keep running the real function.
+
+    about.json was the only reader covered until E2 shipped two more that `main()`
+    exercises on EVERY smoke test, both resolving their path from the real config.yaml
+    and both on daily.yml's copy whitelist — so the first successful production run
+    vendors them to the data branch and the NEXT day's restore feeds them back to the
+    gate. Measured with realistic snapshots in place: test_run_smoke.py's
+    `assert calls == []` sees `[('IREN Limited', ...)]` once ticker_articles.json exists,
+    and finra_si's LED reads "ok" where the test requires "down" once
+    short_interest.json does — the FINRA half unconditionally, because `_read_snapshot`
+    succeeding sends fetch_short_interest down its documented snapshot-fallback path
+    with the transports stubbed. Three readers each, at the file-reading helper rather
+    than at the public function, so every fallback/refusal path above them still runs
+    for real:
+
+      short_interest._read_snapshot   — the snapshot-fallback source
+      tickermap._snapshot_map         — the fallback map
+      tickermap._snapshot_age_days    — the monthly-refresh freshness gate
+      tickermap._snapshot_rows        — the shrink-regression baseline; unreachable in
+                                        today's suite (`_get_json` is stubbed to None
+                                        below, so the live branch never runs) but the
+                                        same class of read, and one line to close."""
     import radar.about
+    import radar.short_interest
+    import radar.tickermap
     real_load_cache = radar.about.load_cache
+    real_read_snapshot = radar.short_interest._read_snapshot
+    real_snapshot_map = radar.tickermap._snapshot_map
+    real_snapshot_age = radar.tickermap._snapshot_age_days
+    real_snapshot_rows = radar.tickermap._snapshot_rows
     monkeypatch.setattr(radar.about, "load_cache",
-                        lambda path: {} if Path(path).parent.name == "data"
+                        lambda path: {} if _is_production_state(path)
                         else real_load_cache(path))
+    monkeypatch.setattr(radar.short_interest, "_read_snapshot",
+                        lambda snap: None if _is_production_state(snap)
+                        else real_read_snapshot(snap))
+    monkeypatch.setattr(radar.tickermap, "_snapshot_map",
+                        lambda snap: None if _is_production_state(snap)
+                        else real_snapshot_map(snap))
+    monkeypatch.setattr(radar.tickermap, "_snapshot_age_days",
+                        lambda snap, run_day: None if _is_production_state(snap)
+                        else real_snapshot_age(snap, run_day))
+    monkeypatch.setattr(radar.tickermap, "_snapshot_rows",
+                        lambda snap: None if _is_production_state(snap)
+                        else real_snapshot_rows(snap))
 
 
 @pytest.fixture(autouse=True)

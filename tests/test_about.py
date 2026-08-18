@@ -140,8 +140,8 @@ def test_tests_never_read_the_production_about_cache(tmp_path):
     """conftest's isolation guard, asserted directly.
 
     `run.py` loads the RELATIVE production path `data/about.json`, and
-    `.github/workflows/daily.yml:26` restores `data/` from the orphan data branch BEFORE
-    the pytest gate at `:35`. So without this guard the suite reads production cache
+    `.github/workflows/daily.yml:39` restores `data/` from the orphan data branch BEFORE
+    the pytest gate at `:44`. So without this guard the suite reads production cache
     state: one negative-cached board ticker (IREN is one today) turns the gate red, and
     a red gate means no board, no email and no data-branch commit until someone
     hand-edits the data branch. The guard must NOT touch ordinary tmp_path loads — the
