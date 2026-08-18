@@ -135,3 +135,25 @@ def test_load_reads_the_file_exactly_once(tmp_path, monkeypatch):
     monkeypatch.setattr(_P, "read_text", lambda self, *a, **k: reads.append(self) or real(self, *a, **k))
     assert History.load(p).data == {"IREN": {}}
     assert len(reads) == 1, f"read the history {len(reads)} times"
+
+
+def test_a_non_utf8_history_does_not_kill_the_run(tmp_path):
+    """The half `except OSError` could never catch. `read_text()` on a file carrying a
+    non-UTF-8 byte raises UnicodeDecodeError — a **ValueError**, not an OSError — so it
+    escaped this reader's `except FileNotFoundError` / `except OSError` pair, escaped
+    `main()`, and killed the run before the board, the email or the state commit.
+
+    Identical in kind to the crash `test_a_truncated_history_does_not_kill_the_run`
+    covers, and identical in blast radius: `data/history.json` rides the orphan data
+    branch and `daily.yml` restores it before EVERY run, so the same byte crashes every
+    subsequent morning until a human hand-edits the data branch. Already fixed on the
+    same file/same call in `short_interest._read_snapshot` (`9d5f3c6`)."""
+    p = tmp_path / "h.json"
+    p.write_bytes(b'{"IR\xe9N": {"2026-08-17": {"weighted": 5}}}')
+    h = History.load(p)
+
+    assert h.data == {}
+    assert h.baseline("IREN", before="2026-08-17", days=90, alpha=0.3) == (0.0, 0.0)
+    assert h.days_for("IREN") == {}
+    assert any("history" in e["what"] for e in degrade.events()), \
+        "an unreadable history must warn, not vanish"

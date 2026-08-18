@@ -438,3 +438,31 @@ def test_a_bool_schema_is_not_schema_1(tmp_path):
     about.save_cache(p, {"IREN": {"name": "IREN", "desc": "Bitcoin miner", "extract": "",
                                   "title": "IREN Limited", "mapped": "IREN Limited"}})
     assert list(about.load_cache(p)) == ["IREN"]
+
+
+def test_a_non_utf8_cache_degrades_and_vetoes_the_rewrite(tmp_path):
+    """The same defect already fixed in `short_interest._read_snapshot` (`9d5f3c6`),
+    still live here: `read_text()` on a file holding a non-UTF-8 byte raises
+    UnicodeDecodeError, which is a **ValueError, not an OSError**, so it escaped both
+    `except` clauses, escaped `main()`, and killed the run before anything was written.
+
+    Not a one-off. `data/about.json` rides the orphan data branch and `daily.yml`
+    restores it before EVERY run, so one bad byte crashes the publish identically every
+    morning — no board, no email, no state commit — until a human hand-edits the data
+    branch.
+
+    And it must land on the CORRUPT side of load_cache's own distinction, not the empty
+    one: the file exists and holds bytes we could not read, which is exactly the damage
+    the veto exists for. A `{}` that then let save_cache overwrite would replace an
+    accumulated 3,000-entry cache with today's board."""
+    p = tmp_path / "about.json"
+    p.write_bytes(b'{"schema": 1, "entries": {"CAF\xe9": {"name": "Caf\xe9"}}}')
+
+    assert about.load_cache(p) == {}
+    assert any("about cache read" in e["what"] for e in degrade.events()), \
+        "an unreadable cache must be visible, not silent"
+
+    about.save_cache(p, {"IREN": {"name": "IREN", "desc": "Bitcoin miner", "extract": "",
+                                  "title": "IREN Limited", "mapped": "IREN Limited"}})
+    assert p.read_bytes().startswith(b'{"schema": 1, "entries": {"CAF\xe9"'), \
+        "a non-UTF-8 read is a corrupt read, so it must engage the veto, not bypass it"

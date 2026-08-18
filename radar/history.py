@@ -15,12 +15,22 @@ class History:
         """Never raises. An unreadable history warns and starts empty.
 
         This was the only production-state reader in the package that failed HARD --
-        a bare `json.loads(p.read_text())` -- while every snapshot reader beside it
-        (about.load_cache, tickermap._snapshot_map, short_interest._read_snapshot)
-        warns and returns nothing. That asymmetry is a live tripwire, not a style nit:
-        `save()` is a bare truncate-then-write, so ONE interrupted daily job leaves a
-        torn file, and a torn file then killed every subsequent run -- no board, no
-        email, no data-branch commit -- until a human hand-edited the data branch.
+        a bare `json.loads(p.read_text())` -- while the snapshot readers beside it
+        (tickermap._snapshot_map, short_interest._read_snapshot) warned and returned
+        nothing. That asymmetry is a live tripwire, not a style nit: `save()` is a bare
+        truncate-then-write, so ONE interrupted daily job leaves a torn file, and a torn
+        file then killed every subsequent run -- no board, no email, no data-branch
+        commit -- until a human hand-edited the data branch.
+
+        The `except` catches ValueError as well as OSError, and BOTH halves are load
+        bearing. `read_text()` on a file carrying a non-UTF-8 byte raises
+        UnicodeDecodeError, which is a ValueError and not an OSError -- so it escaped
+        this clause exactly the way the bare `json.loads` escaped everything, with the
+        same permanence: data/history.json rides the orphan data branch and daily.yml
+        restores it before EVERY run. Same defect, same call, already fixed in
+        short_interest._read_snapshot (9d5f3c6). about.load_cache carried it too and was
+        fixed alongside this one; an earlier version of this docstring claimed that
+        reader already warned, which was false when it was written.
 
         Empty is safer than crashing at all three consumers, traced rather than assumed:
           * score._finalize -> baseline() returns (0.0, 0.0) -> the documented
@@ -46,8 +56,8 @@ class History:
             text = p.read_text()
         except FileNotFoundError:
             return cls(p, {})                       # cold start; not a degradation
-        except OSError as e:                        # permissions, I/O, a directory
-            degrade.warn("history unreadable", e)
+        except (OSError, ValueError) as e:          # permissions, I/O, a directory,
+            degrade.warn("history unreadable", e)   # or a byte that is not UTF-8
             return cls(p, {})
         if not text.strip():
             return cls(p, {})                       # a fresh data branch; not a degradation

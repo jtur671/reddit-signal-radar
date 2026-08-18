@@ -98,10 +98,11 @@ def load_cache(path) -> dict:
                 every first run starts in; refusing to write here would mean the cache
                 could never be created at all.
       CORRUPT — the file exists and holds bytes, but they will not parse into a cache.
-                That is damage (a hand-edit on the data branch, a bad blob, a partial
-                write from before atomic.write_text landed), and the entries are still
-                sitting in the file. The read degrades to {} so the run continues, but
-                the path is recorded and save_cache then REFUSES to overwrite it.
+                That is damage (a hand-edit on the data branch, a bad blob, a non-UTF-8
+                byte, a partial write from before atomic.write_text landed), and the
+                entries are still sitting in the file. The read degrades to {} so the
+                run continues, but the path is recorded and save_cache then REFUSES to
+                overwrite it.
 
     A stale/absent SCHEMA is neither: discarding it is the deliberate, tested migration,
     so that path returns {} AND clears the veto so the rewrite lands."""
@@ -110,9 +111,17 @@ def load_cache(path) -> dict:
     except FileNotFoundError:
         _CORRUPT_READS.discard(_key(path))
         return {}
-    except OSError as e:
+    except (OSError, ValueError) as e:
         # Exists (or is a directory, or is unreadable) — cannot prove it is empty, and
         # os.replace only needs the PARENT to be writable, so a write could still clobber it.
+        # ValueError is NOT decoration: `read_text()` on a file carrying a non-UTF-8 byte
+        # raises UnicodeDecodeError, which is a ValueError and not an OSError, so it
+        # escaped this clause, escaped main(), and killed the run before anything was
+        # written. This file rides the orphan data branch and daily.yml restores it before
+        # EVERY run, so one bad byte crashed the publish every morning until a human
+        # hand-edited the branch. Same defect, same call, already fixed in
+        # short_interest._read_snapshot (9d5f3c6). It belongs on THIS side of the
+        # empty/corrupt split: the file exists and holds bytes we could not read.
         return _corrupt(path, e)
     if not raw.strip():
         _CORRUPT_READS.discard(_key(path))
