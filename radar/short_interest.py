@@ -194,7 +194,8 @@ def _read_snapshot(snap: Path) -> tuple[dict[str, dict], str] | None:
     """Load the vendored snapshot and re-validate it -- re-filters the 999.99 clamp
     sentinel, since the snapshot rides the data branch and is the one input this
     module trusts unvalidated. None when the file is missing, unparseable, or
-    malformed."""
+    malformed -- and a snapshot with rows but no settlement date IS malformed, see
+    below."""
     try:
         doc = json.loads(snap.read_text())
     except (OSError, ValueError):
@@ -202,9 +203,19 @@ def _read_snapshot(snap: Path) -> tuple[dict[str, dict], str] | None:
     rows = doc.get("rows") if isinstance(doc, dict) else None
     if not isinstance(rows, dict):
         return None
+    # Rows without a settlement date are not undated data, they are NO data, so a
+    # snapshot missing one is MALFORMED rather than merely thin. run.py gates its whole
+    # board-assignment loop on `if si_as_of` — the number and its date travel together
+    # or not at all — so serving (rows, "") renders zero days-to-cover anywhere while
+    # `si_rows` stays non-empty and lights the finra_si LED green. Green LED, no data.
+    # A partial write or a hand-edit of the vendored file is the realistic path, and it
+    # rides the data branch, which is why this read re-validates at all.
+    settlement = doc.get("settlement")
+    if not isinstance(settlement, str) or not settlement.strip():
+        return None
     clean = {t: r for t, r in rows.items()
              if isinstance(r, dict) and r.get("days_to_cover") != SENTINEL_DTC}
-    return clean, str(doc.get("settlement", ""))
+    return clean, settlement
 
 
 def fetch_short_interest(cfg, run_day: str, dry_run: bool = False) -> tuple[dict[str, dict], str]:

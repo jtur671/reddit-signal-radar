@@ -50,7 +50,10 @@ def test_unmapped_ticker_makes_no_request(monkeypatch):
     cache = {}
     entry = about.describe("MVIS", "MicroVision", None, cache)
     assert calls == [], "no title must mean no request"
-    assert entry == {"name": "MicroVision", "desc": "", "extract": "", "title": ""}
+    # Exact shape on purpose: it pins that an unmapped ticker invents NOTHING. `mapped`
+    # is "" for the same reason every other field is — there was no title to ask for.
+    assert entry == {"name": "MicroVision", "desc": "", "extract": "", "title": "",
+                     "mapped": ""}
 
 
 def test_exact_title_is_what_gets_fetched(monkeypatch):
@@ -197,3 +200,85 @@ def test_fetch_summary_returns_none_without_a_title(monkeypatch):
     assert _REAL_FETCH_SUMMARY(None, "ua") is None
     assert _REAL_FETCH_SUMMARY("", "ua") is None
     assert calls == []
+
+
+def test_a_changed_mapped_title_re_fetches_and_updates(monkeypatch):
+    """The third variant of the never-heals bug: a CHANGED mapping.
+
+    A cached entry that is a permanent hit for ANY truthy title makes two live inputs
+    inert. radar/ticker_overrides.yml is a CURATED file whose whole purpose is being
+    corrected over time, and the Wikidata snapshot refreshes monthly — so a fix landing
+    in either one is silently ignored for every ticker already in the cache. Worse than
+    a stale blurb: run.py:178 PREFERS the cached title when it builds pv_titles, and a
+    stale title can itself be a redirect, which reintroduces the 39x pageviews
+    understatement this subsystem exists to eliminate."""
+    calls = []
+
+    def fake(title, ua="x"):
+        calls.append(title)
+        return {"desc": "Bitcoin miner", "extract": "IREN Limited is...",
+                "title": "IREN Limited"}
+    monkeypatch.setattr(about, "fetch_summary", fake)
+    cache = {"IREN": {"name": "Iris Energy", "desc": "Australian data-centre operator",
+                      "extract": "...", "title": "Iris Energy", "mapped": "Iris Energy"}}
+
+    got = about.describe("IREN", "Iris Energy", "IREN Limited", cache)
+    assert calls == ["IREN Limited"], "a corrected mapping must re-fetch"
+    assert got["desc"] == "Bitcoin miner" and got["title"] == "IREN Limited"
+    assert cache["IREN"]["title"] == "IREN Limited", "and the cache must be updated"
+    assert cache["IREN"]["mapped"] == "IREN Limited", "stamped with what produced it"
+
+
+def test_an_unchanged_mapped_title_never_re_fetches_even_for_a_redirect(monkeypatch):
+    """The regression guard on the fix above, and the reason it cannot be a naive
+    `cached["title"] != title`.
+
+    The two titles are DIFFERENT KINDS. The cached one is CANONICAL (post-redirect, off
+    the REST summary response); the incoming one is MAPPED (from tickermap, whose
+    Wikidata sitelinks include redirect titles). For any redirect-mapped ticker they
+    legitimately differ on every single run — `Dow Inc.` in, `Dow Chemical Company`
+    cached — so comparing them would re-fetch that ticker forever: a daily live request
+    per redirect ticker, in the job that gates the 6:17 AM publish.
+
+    Building the entry through describe() rather than hand-writing it is the point: it
+    proves the stamp survives the same round trip production takes."""
+    calls = []
+    monkeypatch.setattr(about, "fetch_summary",
+                        lambda title, ua="x": calls.append(title) or
+                        {"desc": "American chemical company", "extract": "Dow Inc. is...",
+                         "title": "Dow Chemical Company"})
+    cache = {}
+
+    about.describe("DOW", "Dow", "Dow Inc.", cache)                  # day 1: a real miss
+    assert calls == ["Dow Inc."]
+    assert cache["DOW"]["title"] == "Dow Chemical Company", "canonical, not what we asked"
+
+    for _ in range(3):                                               # days 2-4: unchanged map
+        got = about.describe("DOW", "Dow", "Dow Inc.", cache)
+    assert calls == ["Dow Inc."], "an unchanged mapping must never re-fetch"
+    assert got["title"] == "Dow Chemical Company"
+
+
+def test_an_entry_written_before_the_stamp_existed_heals_without_a_cache_wipe(monkeypatch):
+    """The migration, chosen over a SCHEMA bump precisely so the live cache survives.
+
+    Entries already on the data branch carry no `mapped` key. Falling back to the
+    canonical title for those is exact for the common case (map title == canonical
+    title, so nothing re-fetches) and costs at most ONE re-fetch for a redirect-mapped
+    ticker, after which the entry carries its stamp and is stable forever."""
+    calls = []
+    monkeypatch.setattr(about, "fetch_summary",
+                        lambda title, ua="x": calls.append(title) or
+                        {"desc": "American chemical company", "extract": "...",
+                         "title": "Dow Chemical Company"})
+    legacy_plain = {"AAPL": {"name": "Apple", "desc": "tech company", "extract": "...",
+                             "title": "Apple Inc."}}
+    about.describe("AAPL", "Apple", "Apple Inc.", legacy_plain)
+    assert calls == [], "an unstamped entry whose map title still matches stays a hit"
+
+    legacy_redirect = {"DOW": {"name": "Dow", "desc": "American chemical company",
+                               "extract": "...", "title": "Dow Chemical Company"}}
+    for _ in range(3):
+        about.describe("DOW", "Dow", "Dow Inc.", legacy_redirect)
+    assert calls == ["Dow Inc."], "exactly one healing fetch, then the stamp holds"
+    assert legacy_redirect["DOW"]["mapped"] == "Dow Inc."

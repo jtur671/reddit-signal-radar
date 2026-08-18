@@ -680,3 +680,35 @@ def test_dry_run_writes_no_vendored_snapshot(monkeypatch, tmp_path):
     assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
     assert not snaps["si"].exists(), "--dry-run wrote the short-interest snapshot"
     assert not snaps["tm"].exists(), "--dry-run wrote the ticker-map snapshot"
+
+
+def test_a_dateless_snapshot_cannot_light_the_finra_led_green(monkeypatch, tmp_path):
+    """The LED trap once more, through the vendored snapshot instead of the live pull.
+
+    A snapshot with rows but no `settlement` (partial write, hand-edit — it rides the
+    data branch) used to be served as if it were data. `si_rows` came back non-empty, so
+    `"ok" if si_rows else "down"` read green, while run.py's board loop is gated on
+    `if si_as_of` and therefore shipped not one days-to-cover. Both halves are asserted
+    here, because only the pair makes the point: the LED claimed a healthy source on a
+    run that published nothing from it."""
+    import json
+    import radar.run as run
+    _offline(monkeypatch, run, _board(run))
+    snap = tmp_path / "si.json"     # NOT under a state dir, so conftest's guard lets it be read
+    snap.write_text(json.dumps({"schema": 1, "rows": {"IREN": {"days_to_cover": 6.7,
+                                                               "shares": 12_000_000}}}))
+    cfg_real = run.load_config
+
+    def cfg_patched(path):
+        cfg = cfg_real(path)
+        cfg.short_interest.snapshot_path = str(snap)
+        return cfg
+    monkeypatch.setattr(run, "load_config", cfg_patched)
+
+    out = tmp_path / "out"
+    assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
+    rows = {s["ticker"]: s for s in json.loads((out / "data.json").read_text())["signals"]}
+    health = json.loads((out / "health.json").read_text())
+    assert rows["IREN"]["days_to_cover"] is None, "no settlement date, so no number ships"
+    assert health["sources"]["finra_si"] == "down", "and the LED must report that, not ok"
+    assert "finra_si · down" in (out / "index.html").read_text()

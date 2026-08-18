@@ -334,3 +334,47 @@ def test_tests_never_read_the_production_short_interest_snapshot(tmp_path):
     ordinary.write_text(json.dumps(doc))
     rows, settlement = si._read_snapshot(ordinary)
     assert settlement == "2026-07-31" and rows["IREN"]["days_to_cover"] == 6.7
+
+
+def test_a_snapshot_with_rows_but_no_settlement_is_unusable(monkeypatch, tmp_path):
+    """Rows without their settlement date are not "undated data", they are NO data.
+
+    run.py gates the entire board-assignment loop on `if si_as_of`, so a snapshot
+    carrying rows and an empty settlement ships zero days-to-cover anywhere — while
+    `si_rows` stays non-empty and lights `finra_si` green. That is the same "LED cannot
+    tell the truth" failure as the tickermap LED that could never go down. A partial
+    write or a hand-edit of the vendored file is the realistic path, and the file rides
+    the data branch, which is exactly why this module re-validates it on every read.
+
+    Refusing it here makes the fallback honest: no usable snapshot, so the source warns
+    and reports the outage it is actually having."""
+    snap = tmp_path / "short_interest.json"
+    rows = {"rows": {"NVDA": {"days_to_cover": 2.47, "shares": 1}}}
+    monkeypatch.setattr(si, "_latest_settlement", lambda ua: None)
+
+    for doc in ({"schema": 1, **rows},                       # key absent entirely
+                {"schema": 1, "settlement": "", **rows},     # present and empty
+                {"schema": 1, "settlement": "   ", **rows},  # present and blank
+                {"schema": 1, "settlement": None, **rows}):  # present and null
+        snap.write_text(json.dumps(doc))
+        assert si._read_snapshot(snap) is None, f"accepted a dateless snapshot: {doc}"
+
+        got_rows, got_settlement = si.fetch_short_interest(_cfg(tmp_path), "2026-08-17")
+        assert (got_rows, got_settlement) == ({}, ""), \
+            "an unusable snapshot must not be served as if it were data"
+        # `finra_si` is `"ok" if si_rows else "down"` — empty rows is what makes it red.
+        assert not got_rows, "the LED keys on this, so it must be empty"
+
+    assert any("snapshot both unavailable" in e["reason"] for e in degrade.events()), \
+        "refusing the snapshot must leave the outage breadcrumb, not go quiet"
+
+
+def test_a_snapshot_that_has_its_settlement_is_still_served(monkeypatch, tmp_path):
+    """The other half, or the guard above is just a way to throw away good data: the
+    documented outage fallback must still fire for a well-formed snapshot."""
+    snap = tmp_path / "short_interest.json"
+    snap.write_text(json.dumps({"schema": 1, "settlement": "2026-07-31",
+                                "rows": {"NVDA": {"days_to_cover": 2.47, "shares": 1}}}))
+    monkeypatch.setattr(si, "_latest_settlement", lambda ua: None)
+    rows, settlement = si.fetch_short_interest(_cfg(tmp_path), "2026-08-17")
+    assert rows["NVDA"]["days_to_cover"] == 2.47 and settlement == "2026-07-31"
