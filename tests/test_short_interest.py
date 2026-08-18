@@ -2,6 +2,8 @@ import json
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 import radar.short_interest as si
 from radar import degrade
 
@@ -13,6 +15,17 @@ def _cfg(tmp_path, page_size=5000):
         snapshot_path=str(tmp_path / "short_interest.json"), page_size=page_size))
 
 
+@pytest.fixture(autouse=True)
+def _clear_degrade():
+    # House pattern (see tests/test_tickermap.py:19-24) -- degrade has no clear();
+    # reset() is the established mechanism. Without this, a warn-text assertion can
+    # go permanently green by luck of collection order rather than by correctness.
+    degrade.reset()
+    yield
+
+
+# --- parse_rows --------------------------------------------------------------
+
 def test_parses_days_to_cover_and_shares():
     rows, settlement = si.parse_rows(RAW)
     assert rows["NVDA"]["days_to_cover"] == 2.47
@@ -21,8 +34,9 @@ def test_parses_days_to_cover_and_shares():
 
 
 def test_sentinel_days_to_cover_is_filtered():
-    """999.99 means zero average volume, not a 999-day cover. Unfiltered it tops
-    every ranking."""
+    """999.99 is a clamp at the max representable value (measured: AACAF has a
+    non-zero ADV of 1331 and still clamps to 999.99), not a real 999-day cover.
+    Unfiltered it tops every ranking."""
     rows, _ = si.parse_rows(RAW)
     assert "AAALF" not in rows
 
@@ -32,6 +46,82 @@ def test_parse_rows_never_raises():
         rows, settlement = si.parse_rows(junk)
         assert rows == {} and settlement == ""
 
+
+# --- discovery: GET /partitions ----------------------------------------------
+
+def test_latest_settlement_hits_the_partitions_endpoint_with_get(monkeypatch):
+    """Pins the discovery contract. The obvious alternative -- POST the data
+    endpoint sorted by settlementDate descending, limit 1 -- is REJECTED by FINRA
+    (measured HTTP 400: 'Sorting is allowed only if all partition keys are specified
+    in an EQUAL CompareFilter'). This must never regress back to that shape."""
+    seen = {}
+
+    def fake_get(url, ua, **kw):
+        seen["url"] = url
+        return {"partitionFields": ["settlementDate"],
+                "availablePartitions": [{"partitions": ["2026-07-31"]},
+                                        {"partitions": ["2026-07-15"]}]}
+
+    monkeypatch.setattr(si, "_get_json", fake_get)
+    assert si._latest_settlement("ua") == "2026-07-31"
+    assert seen["url"] == \
+        "https://api.finra.org/partitions/group/otcMarket/name/consolidatedShortInterest"
+
+
+def test_latest_settlement_returns_none_on_malformed_response(monkeypatch):
+    monkeypatch.setattr(si, "_get_json", lambda *a, **k: {"availablePartitions": []})
+    assert si._latest_settlement("ua") is None
+    monkeypatch.setattr(si, "_get_json", lambda *a, **k: None)
+    assert si._latest_settlement("ua") is None
+
+
+# --- pagination: POST /data with an EQUAL compareFilter -----------------------
+
+def test_fetch_all_pages_sends_equal_compare_filter_on_settlement(monkeypatch):
+    """Pins the paging contract. An empty/missing compareFilters means FINRA does not
+    scope the query to the current settlement -- it walks its full >3M-row archive,
+    unordered by date (measured: offset 0 -> settlement 2020-04-15, offset 3,000,000
+    -> settlement 2024-10-15)."""
+    seen = []
+
+    def fake_post(url, payload, ua, **kw):
+        seen.append((url, payload))
+        return [], 0
+
+    monkeypatch.setattr(si, "_post_json", fake_post)
+    si._fetch_all_pages("ua", 5000, "2026-07-31")
+    assert len(seen) == 1
+    url, payload = seen[0]
+    assert url == "https://api.finra.org/data/group/otcMarket/name/consolidatedShortInterest"
+    assert payload["compareFilters"] == [{"fieldName": "settlementDate",
+                                          "fieldValue": "2026-07-31",
+                                          "compareType": "EQUAL"}]
+    assert payload["limit"] == 5000
+    assert payload["offset"] == 0
+
+
+def test_pagination_advances_offset_and_walks_until_short_page(monkeypatch, tmp_path):
+    """5,000-row cap: a full page means there is more to fetch. Recording the payload
+    (rather than a `lambda *a, **k: ...` stub that discards it) catches a
+    non-advancing offset -- against real FINRA that replays the same page forever and
+    hangs the job until the runner times out."""
+    seen_offsets = []
+    pages = [[dict(RAW[0], symbolCode=f"T{i}") for i in range(5000)],
+             [dict(RAW[0], symbolCode="LAST")]]
+
+    def fake_post(url, payload, ua, **kw):
+        seen_offsets.append(payload["offset"])
+        page = pages.pop(0) if pages else []
+        return page, 5001
+
+    monkeypatch.setattr(si, "_post_json", fake_post)
+    monkeypatch.setattr(si, "_latest_settlement", lambda ua: "2026-08-14")
+    rows, _ = si.fetch_short_interest(_cfg(tmp_path), "2026-08-17")
+    assert "LAST" in rows, "must keep paging past a full 5000-row page"
+    assert seen_offsets == [0, 5000]
+
+
+# --- fetch_short_interest: settlement gate, snapshot, fail-soft ---------------
 
 def test_refreshes_only_when_settlement_advances(monkeypatch, tmp_path):
     """Twice-monthly data. Re-pulling 22k rows daily is waste."""
@@ -50,7 +140,7 @@ def test_upstream_down_serves_snapshot_and_warns(monkeypatch, tmp_path):
     snap = tmp_path / "short_interest.json"
     snap.write_text(json.dumps({"schema": 1, "settlement": "2026-07-15",
                                 "rows": {"NVDA": {"days_to_cover": 3.0, "shares": 1}}}))
-    monkeypatch.setattr(si, "_post_json", lambda *a, **k: None)
+    monkeypatch.setattr(si, "_post_json", lambda *a, **k: (None, None))
     monkeypatch.setattr(si, "_latest_settlement", lambda ua: None)
     rows, settlement = si.fetch_short_interest(_cfg(tmp_path), "2026-08-17")
     assert rows["NVDA"]["days_to_cover"] == 3.0
@@ -58,17 +148,52 @@ def test_upstream_down_serves_snapshot_and_warns(monkeypatch, tmp_path):
     assert any("snapshot" in str(e).lower() for e in degrade.events())
 
 
-def test_both_gone_returns_empty(monkeypatch, tmp_path):
-    monkeypatch.setattr(si, "_post_json", lambda *a, **k: None)
+def test_both_gone_returns_empty_and_warns(monkeypatch, tmp_path):
+    monkeypatch.setattr(si, "_post_json", lambda *a, **k: (None, None))
     monkeypatch.setattr(si, "_latest_settlement", lambda ua: None)
+    assert si.fetch_short_interest(_cfg(tmp_path), "2026-08-17") == ({}, "")
+    assert degrade.events(), "silent failure reads as an upstream outage no one hears about"
+
+
+def test_row_count_mismatch_refuses_to_overwrite_snapshot(monkeypatch, tmp_path):
+    """The same guard as the sibling tickermap task: a page that fails or comes back
+    short mid-walk must not vendor a truncated slice of the universe. FINRA hands us
+    the guard for free via the `record-total` response header."""
+    snap = tmp_path / "short_interest.json"
+    snap.write_text(json.dumps({"schema": 1, "settlement": "2026-07-15",
+                                "rows": {"NVDA": {"days_to_cover": 3.0, "shares": 1}}}))
+    pages = [[dict(RAW[0], symbolCode=f"T{i}") for i in range(5000)]]  # only 1 of 5
+
+    def fake_post(url, payload, ua, **kw):
+        page = pages.pop(0) if pages else []
+        return page, 22341           # declared total never matches what we assembled
+
+    monkeypatch.setattr(si, "_post_json", fake_post)
+    monkeypatch.setattr(si, "_latest_settlement", lambda ua: "2026-07-31")
+    rows, settlement = si.fetch_short_interest(_cfg(tmp_path), "2026-08-17")
+    assert rows == {"NVDA": {"days_to_cover": 3.0, "shares": 1}}, \
+        "must serve the old snapshot, not the truncated fetch"
+    assert settlement == "2026-07-15"
+    assert json.loads(snap.read_text())["settlement"] == "2026-07-15", "snapshot unchanged"
+    assert any("row count" in str(e).lower() for e in degrade.events())
+
+
+def test_row_count_mismatch_with_no_snapshot_returns_empty(monkeypatch, tmp_path):
+    monkeypatch.setattr(si, "_post_json", lambda *a, **k: ([dict(RAW[0])], 22341))
+    monkeypatch.setattr(si, "_latest_settlement", lambda ua: "2026-07-31")
     assert si.fetch_short_interest(_cfg(tmp_path), "2026-08-17") == ({}, "")
 
 
-def test_pagination_walks_until_short_page(monkeypatch, tmp_path):
-    """5,000-row cap: a full page means there is more to fetch."""
-    pages = [[dict(RAW[0], symbolCode=f"T{i}") for i in range(5000)],
-             [dict(RAW[0], symbolCode="LAST")]]
-    monkeypatch.setattr(si, "_post_json", lambda *a, **k: pages.pop(0) if pages else [])
-    monkeypatch.setattr(si, "_latest_settlement", lambda ua: "2026-08-14")
+def test_snapshot_read_refilters_the_sentinel(monkeypatch, tmp_path):
+    """The snapshot rides the data branch and is the one input this module trusts
+    unvalidated -- a sentinel that slipped in through an older write path must still
+    be dropped on read."""
+    snap = tmp_path / "short_interest.json"
+    snap.write_text(json.dumps({"schema": 1, "settlement": "2026-07-31",
+                                "rows": {"NVDA": {"days_to_cover": 2.47, "shares": 1},
+                                        "AAALF": {"days_to_cover": 999.99, "shares": 1000}}}))
+    monkeypatch.setattr(si, "_post_json", lambda *a, **k: (None, None))
+    monkeypatch.setattr(si, "_latest_settlement", lambda ua: None)
     rows, _ = si.fetch_short_interest(_cfg(tmp_path), "2026-08-17")
-    assert "LAST" in rows, "must keep paging past a full 5000-row page"
+    assert "AAALF" not in rows
+    assert rows["NVDA"]["days_to_cover"] == 2.47
