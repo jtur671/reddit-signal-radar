@@ -346,6 +346,38 @@ session can tell "not done yet" from "done and reverted".
 
 ## 6. House rules a new session will otherwise violate
 
+- **Accepted risks on the three new E2 sources** — measured 2026-08-18 during the QA
+  game-day pass. None is a defect; all are things a future session would otherwise
+  rediscover the hard way.
+  - **Wikimedia D-1 unpublished at board time ⇒ attention blank BOARD-WIDE, LED stays
+    GREEN**, one warn, status `degraded`, **no email**. §4 records the *cause* as
+    inferred; this is the *consequence*. The board looks entirely normal with an empty
+    attn column. Traced end-to-end, not guessed.
+  - **No outage of the three new sources can ever reach `severe`**, and only `severe`
+    emails. All three could be dark for a month with `health.json` and a footer LED as
+    the sole surface. Consistent with `finra`/`cboe`/`cramer` — a deliberate policy,
+    recorded as one.
+  - **`spike_score` uses 28 *consecutive calendar* days** while the board runs 7 days a
+    week, so weekend attention is systematically depressed against a weekday-dominated
+    median. Cosmetic while `attention` is unweighted; **a real bias the moment the IC
+    follow-up weights it.** Magnitude unmeasured.
+  - **Day 1 after merge shrinks `data/about.json` from 420 entries to ~15–20**, because
+    only board + Still Running names get described. Correct by design (the schema bump
+    discards a cache that was 13.7% wrong-entity *hits*), invisible to users — but a 20×
+    file shrink on the data branch will look like data loss to whoever sees it first.
+  - **`_latest_settlement` trusts `availablePartitions[0]` to be newest-first** with no
+    bound. If FINRA reorders, the job vendors an old settlement and the short-circuit
+    serves it indefinitely. Fails *visibly* (`as_of` always renders), so a risk, not a
+    defect. `latest <= run_day` is one line if it ever bites.
+  - **`days_to_cover` is set only for board names, never for Still Running**, while
+    `attention` covers both — so the Still Running modal can never show days-to-cover.
+  - **The gate has never run on Python 3.11**, which is what CI pins; only 3.12 exists
+    locally. `ast.parse(feature_version=(3,11))` is clean across every file and no
+    3.12-only stdlib API is used — **syntax closed, semantics not.**
+  - **Disk is a non-issue, measured:** the whole `data` branch packs to **0.7 MB from
+    29.2 MB raw** (git deltas `history.json` to ~12 KB/version); both new snapshots add
+    **≤6.8 MB/yr** worst case. Recorded so it stops being re-litigated.
+
 - **Six production-state readers are still unguarded, and the guard is enumerated rather
   than enforced.** `tests/conftest.py`'s `_no_production_state` names its readers one by
   one. The same Critical has now landed **twice** on this branch — once for `about.json`,
