@@ -465,25 +465,58 @@ def test_a_ticker_finra_never_reported_gets_no_settlement_date_either(monkeypatc
     assert rows["KEEL"]["short_interest_shares"] is None
 
 
-def test_every_vendored_snapshot_survives_the_daily_run():
-    """The data-branch copy list in daily.yml is a WHITELIST, so a snapshot missing from
-    it is silently regenerated from scratch every run — the vendoring design is dead on
-    arrival and its documented outage fallback can never fire, because there is never a
-    cached file to fall back TO.
+def _pipeline_workflows():
+    """Every workflow that invokes the pipeline, DISCOVERED rather than listed.
+
+    Naming the files is how fleet-monitor.yml was missed for the whole of E2: the
+    original invariant read daily.yml and only daily.yml, while TWO workflows run
+    `python -m radar.run`. A third would have slipped through the same gap, so the
+    check finds its own subjects and asserts it found the ones we know about."""
+    from pathlib import Path
+    wfs = sorted(p for p in Path(".github/workflows").iterdir()
+                 if p.suffix in (".yml", ".yaml") and "python -m radar.run" in p.read_text())
+    assert {p.name for p in wfs} >= {"daily.yml", "fleet-monitor.yml"}, \
+        f"the pipeline runners moved or were renamed: found {[p.name for p in wfs]}"
+    return wfs
+
+
+def test_every_vendored_snapshot_survives_every_workflow_that_runs_the_pipeline():
+    """The data-branch copy list is a WHITELIST, so a snapshot missing from it is
+    silently regenerated from scratch — the vendoring design is dead on arrival and its
+    documented outage fallback can never fire, because there is never a cached file to
+    fall back TO.
 
     Every `snapshot_path` in config.yaml is a declaration that a file must survive the
     run, which makes this checkable rather than reviewable: short_interest.json was
     missing when this test was written, ticker_articles.json was missing one commit
-    before that. Two misses in two commits is a pattern, not an accident."""
+    before that, and fleet-monitor.yml was missing BOTH — because the check only ever
+    read daily.yml while two workflows run the pipeline. Three misses is a pattern."""
     import re
     from pathlib import Path
     paths = re.findall(r"^\s*snapshot_path:\s*[\"']?(\S+?)[\"']?\s*$",
                        Path("config.yaml").read_text(), re.M)
     assert len(paths) >= 3, f"expected every vendoring source to declare one, got {paths}"
-    wf = Path(".github/workflows/daily.yml").read_text()
-    copy_line = next(ln for ln in wf.splitlines() if "/tmp/state/data/" in ln)
-    for p in paths:
-        assert p in copy_line, f"{p} never survives the run — it is not in daily.yml's copy list"
+    for wf in _pipeline_workflows():
+        copy_line = next(ln for ln in wf.read_text().splitlines()
+                         if "/tmp/state/data/" in ln)
+        for p in paths:
+            assert p in copy_line, f"{p} is not in {wf.name}'s data-branch copy list"
+
+
+def test_every_workflow_that_runs_the_pipeline_declares_a_timeout():
+    """GitHub's default is 360 minutes. Both of these jobs hold the `pages` concurrency
+    group (cancel-in-progress: false) that daily-radar's publish must acquire, and
+    daily.yml's own timeout comment explicitly leans on that wait being SHORT — so an
+    undeclared timeout on either one is six hours of a hung transport blocking the
+    6:17 AM board, not just a slow job."""
+    import re
+    for wf in _pipeline_workflows():
+        text = wf.read_text()
+        m = re.search(r"^\s*timeout-minutes:\s*(\d+)\s*$", text, re.M)
+        assert m, f"{wf.name} inherits GitHub's 360-minute default"
+        assert int(m.group(1)) <= 45, f"{wf.name}: timeout-minutes {m.group(1)} is not a backstop"
+        assert "concurrency:" in text and "group: pages" in text, \
+            f"{wf.name} no longer shares the pages group — re-derive the number above"
 
 
 def test_wikimedia_led_is_unused_when_nothing_was_asked(monkeypatch, tmp_path):
