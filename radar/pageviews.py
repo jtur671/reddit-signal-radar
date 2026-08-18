@@ -212,10 +212,20 @@ def _get_series(title: str, start: str, end: str,
             if r.status_code in (429, 500, 502, 503):
                 time.sleep(sleep_s * (2 ** attempt)); continue
             if r.status_code == 403:
-                # Access refused, not an article refused: measured live 2026-08-18, an
-                # empty User-Agent gets 403 where a real one gets 200. That is a fact
-                # about OUR ACCESS to the source, it hits every ticker identically, and
-                # the LED must report it -- so it is carved out of the range below.
+                # Access refused, not an article refused. Measured live 2026-08-18
+                # against the real AQS endpoint, four UA shapes, one article:
+                #   User-Agent header ABSENT entirely      -> 403
+                #   requests' own default python-requests/ -> 403
+                #   User-Agent: "" (empty STRING)          -> 200
+                #   this module's descriptive UA           -> 200
+                # So what AQS refuses is a missing or generic client identifier, NOT an
+                # empty one -- an earlier version of this comment claimed the empty
+                # string 403s, and it does not. The carve-out is unaffected either way:
+                # a 403 is a fact about OUR ACCESS to the source, it hits every ticker
+                # identically, and the LED must report it -- so it stays carved out of
+                # the range below. The two shapes that DO 403 are both reachable: a
+                # future edit dropping the headers= argument lands straight on the
+                # python-requests/ default.
                 return None
             if 400 <= r.status_code < 500:
                 # Wikimedia ANSWERING, about our input: 400 malformed/over-long title,
