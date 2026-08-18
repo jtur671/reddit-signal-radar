@@ -179,9 +179,18 @@ def main(argv=None) -> int:
                  or ticker_titles.get(s.ticker))
         if title:                                   # unmapped + undescribed -> no request
             pv_titles[s.ticker] = title
+    pv_cfg = getattr(cfg, "pageviews", None)
     attention, raw_views, pv_failures = pageviews.fetch_attention(
         pv_titles, [s.ticker for s in attention_names], run_day,
-        sleep_s=float(getattr(getattr(cfg, "pageviews", None), "sleep_seconds", 0.2)))
+        sleep_s=float(getattr(pv_cfg, "sleep_seconds", 0.2)),
+        # `or`, not a getattr default: a `budget_seconds:` key present but EMPTY yields
+        # None through the real loader, and getattr's default only fires when the
+        # ATTRIBUTE is absent — `float(None)` is a TypeError out of the walk that gates
+        # the publish. Falls back to the module's own default so the number lives in one
+        # place; a deliberate 0 still means "no deadline", see WALK_BUDGET_SECONDS.
+        budget_s=float(getattr(pv_cfg, "budget_seconds", None)
+                       if getattr(pv_cfg, "budget_seconds", None) is not None
+                       else pageviews.WALK_BUDGET_SECONDS))
     si_rows, si_as_of = short_interest.fetch_short_interest(cfg, run_day,
                                                             dry_run=args.dry_run)
     for s in attention_names:

@@ -570,3 +570,169 @@ def test_a_zero_baseline_is_refused_rather_than_divided_by():
     # a zero MEDIAN means the name has no Wikipedia traffic to speak of, which is "no
     # signal" (the composite renormalizes around it), not the claim "attention collapsed".
     assert pv.spike_score(_flat(28, 0) + [0], min_baseline=0) is None
+
+
+# --- the wall-clock budget ------------------------------------------------------------
+
+class _Clock:
+    """A `time` stand-in that burns SIMULATED seconds, so a ten-minute walk costs the
+    suite nothing. Same rebind-the-module-global shape as conftest's _NoSleepTime (and
+    for the same reason: `pv.time` IS the stdlib module, so setattr on its `sleep` would
+    patch every other module's sleep too)."""
+
+    def __init__(self):
+        self.t = 0.0
+
+    def sleep(self, s):
+        self.t += s
+
+    def monotonic(self):
+        return self.t
+
+
+def _timed_series(clock, pattern):
+    """A `_get_series` stub that costs simulated time. `pattern` is a list of
+    (outcome, seconds) cycled over the walk.
+
+    The seconds are the module's own measured costs: a transport failure is
+    2 attempts x 20s timeout + 1s + 2s of backoff = 43s; an answered request is 0.22s
+    (the timing in pageviews.py's own docstring)."""
+    calls = []
+
+    def stub(title, start, end):
+        outcome, cost = pattern[len(calls) % len(pattern)]
+        calls.append(title)
+        clock.t += cost
+        return outcome
+
+    return stub, calls
+
+
+FLAP = [(None, 43.0), (None, 43.0), (pv.MISS, 0.22)]     # fail, fail, miss — forever
+
+
+def test_a_flapping_source_never_trips_the_breaker_and_burns_ten_minutes(monkeypatch):
+    """The hole the strike counter cannot see, measured before it was closed.
+
+    A MISS deliberately RESETS the consecutive-failure counter — that reset is what
+    makes the documented "Wikimedia has not published D-1" case survivable, so it must
+    stay. The consequence is that fail/fail/miss never reaches three in a row: the
+    breaker never trips, and the walk pays ~87s for every group of three names.
+
+    This test exists to pin the COST, so the deadline below is measured against a real
+    number rather than a guess. With the budget disabled, a 20-name walk in this
+    pattern costs ~580s — nearly ten minutes inside the job that gates the 6:17 AM
+    publish, and the whole time the strike counter reads at most two."""
+    clock = _Clock()
+    monkeypatch.setattr(pv, "time", clock)
+    stub, calls = _timed_series(clock, FLAP)
+    monkeypatch.setattr(pv, "_get_series", stub)
+    titles = {f"T{i}": f"Title {i}" for i in range(20)}
+
+    pv.fetch_attention(titles, list(titles), "2026-08-17", budget_s=0)
+
+    assert len(calls) == 20, "the breaker must NOT stop a flapping walk — the miss resets it"
+    assert clock.t > 500, f"the flap must really be expensive; measured {clock.t:.0f}s"
+    assert not any("skipping remaining" in e["reason"] for e in degrade.events()), \
+        "no three-in-a-row, so the strike counter never fires — that is the whole point"
+
+
+def test_the_wall_clock_budget_stops_a_flapping_walk(monkeypatch):
+    """The fix: a deadline beside the strike counter. The breaker measures STRIKES, this
+    measures TIME, and this failure mode needs both — the pattern above defeats a strike
+    counter by construction, and no strike counter can be tuned to catch it without
+    breaking the miss-reset the D-1 case depends on."""
+    clock = _Clock()
+    monkeypatch.setattr(pv, "time", clock)
+    stub, calls = _timed_series(clock, FLAP)
+    monkeypatch.setattr(pv, "_get_series", stub)
+    titles = {f"T{i}": f"Title {i}" for i in range(20)}
+
+    scores, raw, failed = pv.fetch_attention(titles, list(titles), "2026-08-17", budget_s=180)
+
+    assert len(calls) < 20, "the walk must stop early"
+    assert clock.t < 180 + 43, "and stop within one in-flight request of the budget"
+    assert failed == len(calls) - len(calls) // 3, "every failure still reaches the LED"
+    assert any("budget" in e["reason"] for e in degrade.events()), \
+        "abandoning names silently looks exactly like a covered board"
+    assert any("skipping remaining" in e["reason"] for e in degrade.events())
+
+
+def test_the_budget_does_not_truncate_a_healthy_walk(monkeypatch):
+    """The other direction, and the one that would turn this guard into an outage of its
+    own. A healthy 20-name walk costs ~0.42s per name (0.22s measured request + the 0.2s
+    courtesy sleep) — about 8s all in, against a 180s default. Every name is asked and
+    nothing warns."""
+    clock = _Clock()
+    monkeypatch.setattr(pv, "time", clock)
+    good = [10] * 28 + [40]
+    stub, calls = _timed_series(clock, [(good, 0.22)])
+    monkeypatch.setattr(pv, "_get_series", stub)
+    titles = {f"T{i}": f"Title {i}" for i in range(20)}
+
+    scores, raw, failed = pv.fetch_attention(titles, list(titles), "2026-08-17")
+
+    assert len(calls) == 20 and len(raw) == 20 and failed == 0
+    assert clock.t < pv.WALK_BUDGET_SECONDS / 10, \
+        f"a healthy walk must sit far under the budget; measured {clock.t:.1f}s"
+    assert not degrade.events(), "a walk that finished has nothing to report"
+
+
+def test_the_budget_never_fires_before_a_single_request_goes_out(monkeypatch):
+    """A deadline that can abandon the walk before it starts would produce the LED bug
+    this branch has now hit three times: zero requests, zero transport failures, and a
+    green `wikimedia` on a run that asked nothing. The elapsed clock is zero at the top
+    of the first iteration, so the first name is always attempted."""
+    clock = _Clock()
+    monkeypatch.setattr(pv, "time", clock)
+    stub, calls = _timed_series(clock, FLAP)
+    monkeypatch.setattr(pv, "_get_series", stub)
+    titles = {f"T{i}": f"Title {i}" for i in range(20)}
+
+    pv.fetch_attention(titles, list(titles), "2026-08-17", budget_s=0.0001)
+    assert len(calls) == 1, "at least one name is always asked"
+
+
+def test_a_hung_source_still_trips_the_breaker_first(monkeypatch):
+    """The two guards are independent and the strike counter still wins where it should:
+    a HUNG Wikimedia (every request a transport failure) is three strikes at 129s, well
+    inside the budget. Adding a deadline must not have weakened the breaker."""
+    clock = _Clock()
+    monkeypatch.setattr(pv, "time", clock)
+    stub, calls = _timed_series(clock, [(None, 43.0)])
+    monkeypatch.setattr(pv, "_get_series", stub)
+    titles = {f"T{i}": f"Title {i}" for i in range(20)}
+
+    _s, _r, failed = pv.fetch_attention(titles, list(titles), "2026-08-17")
+    assert len(calls) == pv.MAX_CONSECUTIVE_FAILURES and failed == 3
+    assert clock.t < pv.WALK_BUDGET_SECONDS, "the breaker got there first, not the clock"
+    assert not any("budget" in e["reason"] for e in degrade.events())
+
+
+def test_run_py_plumbs_the_budget_from_config(monkeypatch, tmp_path):
+    """The default lives in one place and the config key reaches it. A key present but
+    EMPTY must fall back to the module default rather than becoming `float(None)` — the
+    same `or`-not-getattr-default trap that silently disabled every ticker override."""
+    import radar.run as run
+    seen = {}
+    monkeypatch.setattr(run.pageviews, "fetch_attention",
+                        lambda titles, tickers, run_day, **k: (seen.update(k), ({}, {}, 0))[1])
+    cfg_real = run.load_config
+
+    def cfg_patched(path):
+        cfg = cfg_real(path)
+        cfg.pageviews.budget_seconds = None
+        return cfg
+    monkeypatch.setattr(run, "load_config", cfg_patched)
+    monkeypatch.setattr(run, "fetch_mentions", lambda cfg: [])
+    monkeypatch.setattr(run.tradestie, "fetch_wsb", lambda cfg: [])
+    monkeypatch.setattr(run.news, "headlines", lambda *a, **k: [])
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "")
+    run.main(["--dry-run", "--no-email", "--out", str(tmp_path / "out")])
+    assert seen["budget_s"] == pv.WALK_BUDGET_SECONDS
+
+    import yaml
+    from pathlib import Path
+    doc = yaml.safe_load(Path("config.yaml").read_text())
+    assert doc["pageviews"]["budget_seconds"] == pv.WALK_BUDGET_SECONDS, \
+        "config.yaml must document the same default the module ships"

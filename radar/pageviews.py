@@ -31,6 +31,26 @@ BASELINE_DAYS = 28
 FETCH_DAYS = 35          # slack, so missing datapoints still leave a full baseline
 MAX_CONSECUTIVE_FAILURES = 3   # circuit breaker; see fetch_attention
 
+# Wall-clock ceiling on the whole walk, in seconds. A SECOND guard, not a spare:
+# MAX_CONSECUTIVE_FAILURES counts strikes, this counts time, and the failure mode below
+# needs both because it defeats a strike counter by construction.
+#
+# A MISS RESETS the strike counter -- deliberately, because that reset is what makes the
+# documented "Wikimedia has not published D-1 yet" case survivable (see fetch_attention).
+# So a FLAPPING source, fail/fail/miss, never reaches three in a row. Measured costs from
+# this module: a transport failure is 2 attempts x 20s timeout + 1s + 2s backoff = 43s,
+# an answered request is 0.22s. That makes one fail/fail/miss group ~87s, and a 20-name
+# walk ~580s -- nearly TEN MINUTES inside the job that gates the 6:17 AM publish, with
+# the strike counter reading at most two the entire time.
+#
+# 180s is: ~21x a healthy 20-name walk (20 x (0.22s request + 0.2s courtesy sleep) ~= 8s),
+# room for four full worst-case transport failures before it fires, and a hard cap of 3
+# minutes on the flap instead of 10. daily.yml allows the whole job 45 minutes.
+# A non-positive budget disables the deadline outright -- an explicit off switch, so that
+# a mis-set value degrades to today's unbounded behaviour rather than to a walk that
+# abandons every name and reports a healthy source.
+WALK_BUDGET_SECONDS = 180.0
+
 # Sentinel for "Wikimedia answered, and the answer is that there is no usable series
 # here" -- a 404 (no such article) or a tail Wikimedia has not published yet. Distinct
 # from None, which means the TRANSPORT failed and Wikimedia said nothing at all. The
@@ -211,7 +231,8 @@ def _get_series(title: str, start: str, end: str,
     return None
 
 
-def fetch_attention(titles: dict, tickers: list, run_day: str, sleep_s: float = 0.2):
+def fetch_attention(titles: dict, tickers: list, run_day: str, sleep_s: float = 0.2,
+                    budget_s: float = WALK_BUDGET_SECONDS):
     """({ticker: 0-100}, {ticker: latest views}, transport_failures) for mapped tickers.
     Fail-soft: a ticker that errors or scores None is simply absent from the scores dict.
 
@@ -231,14 +252,32 @@ def fetch_attention(titles: dict, tickers: list, run_day: str, sleep_s: float = 
     therefore positive evidence the source is up. That distinction is load-bearing:
     Wikimedia's D-1 availability at board time is inferred, never observed (see
     docs/HANDOFF.md), so a board-wide stale tail is a live scenario -- and counting
-    refusals would trip the breaker on ticker three and drop attention for everyone."""
+    refusals would trip the breaker on ticker three and drop attention for everyone.
+
+    ALSO breaks after `budget_s` seconds of wall clock (see WALK_BUDGET_SECONDS). That is
+    the guard the strike counter cannot be: the miss-reset above is load-bearing, and it
+    is exactly what a flapping fail/fail/miss source exploits to stay under three strikes
+    forever while costing ~87s per group of three. Measured with `time.monotonic()`
+    rather than a request count because what actually threatens the publish is elapsed
+    time, and the same 20 names cost 8s healthy and 580s flapping.
+
+    Checked at the TOP of each iteration, so elapsed is 0 on the first one and at least
+    one name is always asked -- a walk that abandoned everything before asking would
+    report zero transport failures and light the wikimedia LED green on a run that did
+    nothing, which is the exact bug class run.py's LED ordering exists to prevent."""
     end = date.fromisoformat(run_day) - timedelta(days=1)
     start = end - timedelta(days=FETCH_DAYS)
     s, e = start.strftime("%Y%m%d"), end.strftime("%Y%m%d")
     scores, raw_views = {}, {}
     transport_failures = misses = consecutive_failures = 0
     asked = [t for t in tickers if titles.get(t)]
+    deadline = (time.monotonic() + budget_s) if budget_s and budget_s > 0 else None
     for i, ticker in enumerate(asked):
+        if deadline is not None and time.monotonic() >= deadline:
+            degrade.warn("wikimedia",
+                         f"skipping remaining {len(asked) - i} after exhausting the "
+                         f"{budget_s:g}s walk budget")
+            break
         series = _get_series(titles[ticker], s, e)
         if series is None:                      # the transport failed — breaker business
             transport_failures += 1

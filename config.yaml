@@ -126,6 +126,15 @@ tickermap:
 # pageviews.spike_score's signature until something actually plumbs it through.
 pageviews:
   sleep_seconds: 0.2
+  # Wall-clock ceiling on the whole serial walk. A SECOND guard beside pageviews.py's
+  # 3-strike breaker, because the breaker cannot see this one: a MISS resets the strike
+  # counter (load-bearing — it is what makes the "Wikimedia has not published D-1 yet"
+  # case survivable), so a flapping fail/fail/miss source never reaches three in a row
+  # and costs ~87s per group of three. Measured: 20 names ~= 580s, ten minutes inside the
+  # job that gates the 6:17 AM publish, with the strike counter never above two.
+  # 180s is ~21x a healthy 20-name walk (~8s). Must match pageviews.WALK_BUDGET_SECONDS;
+  # tests/test_pageviews.py::test_run_py_plumbs_the_budget_from_config pins that.
+  budget_seconds: 180.0
 # FINRA consolidated short interest — twice-monthly, settlement-based, and 11-24 days
 # behind the settlement date (measured 2026-08-17: latest available settlement was
 # 2026-07-31). CONTEXT ONLY, never a daily composite component, and never rendered

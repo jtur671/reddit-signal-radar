@@ -1,3 +1,4 @@
+import time as _time
 from pathlib import Path
 
 import pytest
@@ -89,12 +90,16 @@ class _NoSleepTime:
     pageviews.py's tests. This scoped rebind only replaces what `radar.pageviews` sees,
     leaving every other module's `time.sleep` real.
 
-    Only `sleep` is ever called on `time` in pageviews.py (retry backoff in
-    `_get_series`, politeness pacing in `fetch_attention`)."""
+    `sleep` and `monotonic` are the only two attributes pageviews.py touches on `time`
+    (retry backoff in `_get_series` and politeness pacing in `fetch_attention`; the walk
+    budget's deadline in `fetch_attention`). `monotonic` is the REAL one: the budget must
+    measure real elapsed time here, and since the sleeps above are free, a hermetic walk
+    finishes in milliseconds and never comes near WALK_BUDGET_SECONDS. Tests that want to
+    exercise the deadline rebind `pv.time` to a clock that burns simulated seconds —
+    see tests/test_pageviews.py::_Clock."""
 
-    @staticmethod
-    def sleep(*a, **k):
-        pass
+    sleep = staticmethod(lambda *a, **k: None)
+    monotonic = staticmethod(_time.monotonic)
 
 
 @pytest.fixture(autouse=True)
