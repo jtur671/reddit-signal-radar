@@ -374,20 +374,15 @@ session can tell "not done yet" from "done and reverted".
     defect. `latest <= run_day` is one line if it ever bites.
   - **`days_to_cover` is set only for board names, never for Still Running**, while
     `attention` covers both — so the Still Running modal can never show days-to-cover.
-  - **No gate has ever run in CI's actual configuration.** CI pins **Python 3.11** and
-    **requests 2.33.0**; this machine has only **Python 3.12.3** with **requests 2.32.3**
-    installed, no `python3.11`, and no `pip` in the venv to change it. So every green
-    suite on this branch — all 530 tests, every QA gate — is evidence about 3.12/2.32.3,
-    not about what publishes.
-    Two mitigations, both partial: `ast.parse(feature_version=(3,11))` is clean across
-    every file and no 3.12-only stdlib API is used (**syntax closed, semantics not**);
-    and `requirements.txt` pins 2.33.0 *specifically* for CVE-2024-47081 (`.netrc` leak)
-    and CVE-2026-25645 (temp reuse) — so the local venv is running the version those
-    pins exist to avoid. Nothing on this branch touches `.netrc` or temp files through
-    `requests`, so the CVEs are not a live exposure here; the *version skew* is the
-    finding, not the CVEs.
-    **↪ to close:** run the suite once under 3.11 + 2.33.0 (a container, or CI itself on
-    the first push) before trusting any of these numbers as CI-predictive.
+  - ~~**No gate has ever run in CI's actual configuration.**~~ **CLOSED 2026-08-18.**
+    Every gate in the QA gauntlet ran on this machine's Python 3.12.3 + requests 2.32.3,
+    while CI pins **3.11** and **2.33.0** — so none of those green suites were evidence
+    about what actually publishes. Closed by dispatching `tests` against the branch:
+    run [`32148326353`](https://github.com/jtur671/reddit-signal-radar/actions/runs/32148326353)
+    installed `requests-2.33.0` on `python-version: 3.11` and ran **537 passed in 28s**.
+    Worth keeping the habit: a feature-branch push does **not** trigger `tests` (it fires
+    on push-to-`main`, `pull_request`, or `workflow_dispatch`), so branch work is
+    unverified against the CI runtime until you dispatch it or open the PR.
   - **Disk is a non-issue, measured:** the whole `data` branch packs to **0.7 MB from
     29.2 MB raw** (git deltas `history.json` to ~12 KB/version); both new snapshots add
     **≤6.8 MB/yr** worst case. Recorded so it stops being re-litigated.
