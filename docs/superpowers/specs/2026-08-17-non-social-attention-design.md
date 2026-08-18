@@ -171,6 +171,27 @@ cap** — a full pull is 5 paginated calls. Vendor the whole universe (trimmed t
 so a name entering the board later is already covered and board churn never triggers a
 live fetch.
 
+**Endpoint mechanics — corrected 2026-08-17 after the first implementation shipped inert.**
+The original draft of this section left these implicit, and both plausible readings are
+wrong against the live API:
+
+- **Discovering the latest settlement date is a GET, not a sorted POST.** Asking the data
+  endpoint for one row sorted by settlement returns **HTTP 400**: *"Sorting is allowed
+  only if all partitions keys are specified in EQUAL CompareFilter."* Use
+  `GET https://api.finra.org/partitions/group/otcMarket/name/consolidatedShortInterest`
+  — keyless, no body, returns `availablePartitions` newest-first.
+- **Every page request MUST carry an `EQUAL` compareFilter on `settlementDate`.** An empty
+  `compareFilters` is not "no filter needed", it is *no filter*: measured, offset 0 returns
+  2020-04-15 data, offset 3,000,000 returns 2024-10-15, and the archive exceeds **3 million
+  rows** with **non-monotonic** settlement ordering. Unfiltered, the walk is 600+ sequential
+  POSTs and assigns each symbol an arbitrary historical settlement.
+- **`record-total` in the response headers is the truncation guard, and it is free.**
+  The filtered query returns `record-total: 22341`. Compare the assembled row count against
+  it before vendoring. Without this, a mid-walk page failure vendors a partial universe
+  stamped with the *correct* settlement date — so the refresh gate matches on the next run,
+  short-circuits, and serves a silently 55%-smaller universe for up to 14 days. This is the
+  same failure class as E2a §2.4, and it needs the same answer.
+
 **Filter `daysToCoverQuantity == 999.99`.** It is a sentinel for zero/near-zero average
 volume (measured: `AAALF`, ADV 0 → DTC 999.99), not a real 999-day cover. Unfiltered it
 dominates any sort or ranking.

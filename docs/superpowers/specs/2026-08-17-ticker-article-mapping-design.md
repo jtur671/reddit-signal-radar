@@ -148,6 +148,26 @@ On mismatch: `degrade.warn("tickermap", "row count N != expected M — keeping s
 and serve the existing snapshot. This is the single most dangerous behavior found in
 this research and it is invisible without the check.
 
+**Equality alone is NOT sufficient — corrected 2026-08-17 after review.** The check above
+only proves the two queries *agree*; it cannot detect them agreeing on a **degraded**
+answer. Measured: when WDQS returns HTTP 200 with zero bindings and `COUNT(*)` returns 0,
+`0 == 0` passes, the healthy snapshot is overwritten with an empty map and restamped
+`fetched: today` — destroying the fallback — and §2.7's freshness gate then serves that
+empty map for **30 days with no network call and no warning**. Per §2.6 an unmapped ticker
+renders nothing, so every description and pageview series goes dark for a month.
+
+The trigger is realistic: `EXCHANGES` is four hardcoded Q-ids. If Wikidata merges or
+redirects one, `?st ps:P414 ?exch` stops matching and the map shrinks materially while
+both queries continue to agree.
+
+Therefore the guard is three conditions, not one. Refuse to vendor when **any** holds:
+
+1. `expected != len(bindings)` — the truncation case above.
+2. `expected < MIN_ROWS` (1000) — an absolute floor. The healthy measured value is 4,015;
+   anything under a quarter of that is a broken query, not a shrinking stock market.
+3. `expected < 0.5 * previous_snapshot.rows_fetched` — a regression check. This is what
+   §3's persisted `rows_fetched` is *for*; without reading it back, storing it is decoration.
+
 Two further measured failure modes the fetcher must survive: **HTTP 504 at 65 s** when
 a large `VALUES` list of tickers is inlined (filter locally instead — the unfiltered
 bulk query is *faster* than the filtered one), and **HTTP 429** under rapid requests
@@ -158,16 +178,53 @@ bulk query is *faster* than the filtered one), and **HTTP 429** under rapid requ
 Curation is source, not state: it lives on `main` under review, not on the orphan
 `data` branch which CI overwrites. ~32 entries, each with a one-line reason.
 
+**30 entries, built and verified 2026-08-17.** Each title was checked three ways: the
+REST summary returning `type == "standard"` (so neither a redirect nor a disambiguation
+page), the pageviews API returning 200 with a full daily series, and the article's
+`traded_as` infobox field naming the expected exchange and ticker.
+
 **9 disambiguation picks** (§2.3 residual).
 
-**23 holding-company splits**, where Wikidata's ticker-bearing item legitimately has no
-article sitelink because the corporate entity and the article are separate items:
-`API`, `APP`, `CELH`, `CRCL`, `CRSR`, `CRWV`, `DC`, `FIG`, `GNS`, `KLAR`, `LITE`,
-`MDA`, `MRAM`, `ONON`, `PYPL`, `QBTS`, `RDDT`, `RGTI`, `RKLB`, `SA`, `TH`, `UUUU`,
-`WULF`. All 23 titles verified to exist via the Wikipedia API on 2026-08-17.
+**21 tickers absent from the US-scoped snapshot.** The original draft of this section
+claimed all of these were "holding-company splits". **That was wrong — corrected after
+measurement.** The real breakdown is three-way:
+
+- **7 are genuine holding-company splits** (the P249-bearing item exists on a US exchange
+  but carries no enwiki sitelink): `FIG`, `LITE`, `ONON`, `PYPL`, `QBTS`, `RDDT`, `RKLB`.
+- **13 have no `p:P414`/`pq:P249` statement on any exchange worldwide** — plain Wikidata
+  absence, not corporate structure: `APP`, `CELH`, `CRCL`, `CRSR`, `CRWV`, `DC`, `GNS`,
+  `KLAR`, `MRAM`, `RGTI`, `SA`, `TH`, `WULF`.
+- **1 is scoped out by exchange**: `MDA` is listed on TSX only, and has a working sitelink.
+
+**2 deliberately omitted, because a missing entry beats a wrong one:**
+
+- `API` — the Nasdaq issuer (Q106309492, agora.io) has **zero sitelinks in any language**.
+  The article titled exactly `Agora, Inc.` is an unrelated Baltimore publishing network,
+  and `Agora (company)` is a Polish media group. Both are wrong-entity traps.
+- `UUUU` — `Energy Fuels Inc.` is verifiably the right company, but the pageviews API
+  returns 404 for it across every window tested, so it yields no series. Note that
+  `Energy Fuels` (no `Inc.`) redirects to `Energy & Fuels`, the academic journal — the
+  exact bug in §1.
 
 Overrides win over the snapshot unconditionally. An override naming a title that does
 not exist is a test failure, not a runtime fallback (§4).
+
+### 2.5.1 Redirect titles are a silent corruption vector — and Wikidata emits them
+
+Measured 2026-08-17, and it invalidates this spec's own original §3 example. **The
+pageviews API does not follow redirects: it returns HTTP 200 with the *redirect page's*
+own traffic.** `Dow Inc.` is a redirect to `Dow Chemical Company` and returns **12
+views/day against the canonical article's 468** — a 39× silent understatement with no
+error.
+
+This is not confined to the override file. Wikidata's sitelink for Q62739842 **is**
+`Dow Inc.`, so the snapshot itself emits redirect titles.
+
+**Resolution:** canonicalize through the Wikipedia summary response, which already returns
+the canonical `title`, and which `about.py` already calls once per board ticker. Capture
+that canonical title into the about cache and prefer it when fetching pageviews, falling
+back to the mapped title when absent. This reuses a call already being made rather than
+adding ~3,779 new ones.
 
 ### 2.6 What `about.py` becomes
 
@@ -229,9 +286,14 @@ Two counts, deliberately distinct — conflating them would defeat §2.4:
 
 ```yaml
 overrides:
-  PYPL: {title: "PayPal", why: "P249 item Q135683211 'PayPal Holdings' has no sitelink"}
-  DOW:  {title: "Dow Inc.", why: "same-family ambiguity vs Dow Chemical Company"}
+  PYPL: {title: "PayPal", why: "P249 item has no enwiki sitelink", views: 1942}
+  DOW:  {title: "Dow Chemical Company", why: "canonical; Wikidata's 'Dow Inc.' is a redirect", views: 468}
 ```
+
+The `DOW` line is the corrected one. This spec's first draft wrote `Dow Inc.`, which is a
+**redirect** — see §2.5.1 for why that would have shipped a 39× understated series at
+HTTP 200. `views` records the measured mean daily views at verification time, so a later
+reader can tell a dead mapping from a quiet one.
 
 `data/about.json` gains `"schema": 1` at the top level (§2.8).
 
