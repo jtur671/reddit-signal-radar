@@ -180,7 +180,7 @@ def main(argv=None) -> int:
         if title:                                   # unmapped + undescribed -> no request
             pv_titles[s.ticker] = title
     pv_cfg = getattr(cfg, "pageviews", None)
-    attention, raw_views, pv_failures = pageviews.fetch_attention(
+    attention, raw_views, pv_failures, pv_truncated = pageviews.fetch_attention(
         pv_titles, [s.ticker for s in attention_names], run_day,
         sleep_s=float(getattr(pv_cfg, "sleep_seconds", 0.2)),
         # `or`, not a getattr default: a `budget_seconds:` key present but EMPTY yields
@@ -255,10 +255,20 @@ def main(argv=None) -> int:
         # And partial is its own state rather than "down": some names genuinely do carry
         # attention data on such a run, so claiming a dead source would be as wrong in
         # the other direction. degraded = asked, some answered, some transports died.
+        # `pv_truncated` is the FIFTH world and the one this ordering used to miss
+        # outright: pageviews' wall-clock budget abandons the tail of the walk, and that
+        # break moved neither of the two inputs above, so a walk that asked 15 of 20
+        # names read "ok". Simulated against the real 20s timeout: a Wikimedia answering
+        # in 12s gets 15/20 asked and 0 failures; at 19s, 10/20 and 0 failures. Under the
+        # timeout, so nothing is a transport failure — over what the walk can afford.
+        # It reads "degraded", not "down", because the source is UP; we did not finish
+        # asking. And it is checked AFTER the transport tests so that a truncated walk
+        # whose every answer also died still reports the outage it is.
         "wikimedia": ("unused" if not pv_titles          # nothing was ever asked of it
                       else "down" if pv_failures and not raw_views      # asked, all died
                       else "degraded" if pv_failures     # asked, some died, some answered
-                      else "ok"),                        # asked, and nothing failed
+                      else "degraded" if pv_truncated    # asked, but not all of them
+                      else "ok"),                        # asked everything, nothing failed
         # Two states here, checked rather than assumed: unlike wikimedia, this source
         # takes no per-ticker input, so there is no "nothing was asked" world to confuse
         # with failure — fetch_short_interest always queries the settlement endpoint and

@@ -233,14 +233,31 @@ def _get_series(title: str, start: str, end: str,
 
 def fetch_attention(titles: dict, tickers: list, run_day: str, sleep_s: float = 0.2,
                     budget_s: float = WALK_BUDGET_SECONDS):
-    """({ticker: 0-100}, {ticker: latest views}, transport_failures) for mapped tickers.
-    Fail-soft: a ticker that errors or scores None is simply absent from the scores dict.
+    """({ticker: 0-100}, {ticker: latest views}, transport_failures, truncated) for
+    mapped tickers. Fail-soft: a ticker that errors or scores None is simply absent from
+    the scores dict.
 
     The third element is the count of tickers where the TRANSPORT failed -- Wikimedia
     said nothing at all. It is what radar/run.py's wikimedia LED keys on, because that
     is the only outcome that means "the source is down": a board where every mapped
     title 404s produced no scores and no raw views, and is still a perfectly healthy
     Wikimedia answering every request.
+
+    The fourth is whether the WALK BUDGET cut the walk short, and it is a separate value
+    rather than an increment on the third for a measured reason. transport_failures and
+    raw_views were the LED's only two inputs, and the budget `break` moved NEITHER -- so
+    a walk that asked 15 of 20 names lit the LED green. Simulated against the real 20s
+    timeout, 20 mapped names, budget 180s: a source answering in 12s gets 15/20 asked, 0
+    failures, LED "ok"; at 19s, 10/20 asked, 0 failures, LED "ok"; only at a full 20s do
+    the answers become timeouts and the LED correctly reads "down". The trigger band is
+    Wikimedia answering consistently in ~10-19.9s -- under the timeout, so nothing is a
+    transport failure, but over what the walk can afford.
+    Folding it into transport_failures instead would have been wrong in the other
+    direction: a truncated walk whose answered names all MISSED has no raw views, and
+    run.py's `failures and not raw_views` rule would then call a healthy Wikimedia
+    "down". The source is up; we just did not finish asking. That is `degraded`.
+    The BREAKER's break is NOT a truncation: those names were abandoned because the
+    transport died, which the third element already reports as the outage it is.
 
     Breaks after MAX_CONSECUTIVE_FAILURES. This walk is serial and each request carries a
     20s timeout, so a hung Wikimedia costs 15 tickers x 20s ~= 5 minutes of stall inside
@@ -264,16 +281,20 @@ def fetch_attention(titles: dict, tickers: list, run_day: str, sleep_s: float = 
     Checked at the TOP of each iteration, so elapsed is 0 on the first one and at least
     one name is always asked -- a walk that abandoned everything before asking would
     report zero transport failures and light the wikimedia LED green on a run that did
-    nothing, which is the exact bug class run.py's LED ordering exists to prevent."""
+    nothing, which is the exact bug class run.py's LED ordering exists to prevent. That
+    guard covered EVERYTHING and not MOST, which is why the truncation flag above had to
+    exist as well: asking one name of twenty was already enough to satisfy it."""
     end = date.fromisoformat(run_day) - timedelta(days=1)
     start = end - timedelta(days=FETCH_DAYS)
     s, e = start.strftime("%Y%m%d"), end.strftime("%Y%m%d")
     scores, raw_views = {}, {}
     transport_failures = misses = consecutive_failures = 0
+    truncated = False
     asked = [t for t in tickers if titles.get(t)]
     deadline = (time.monotonic() + budget_s) if budget_s and budget_s > 0 else None
     for i, ticker in enumerate(asked):
         if deadline is not None and time.monotonic() >= deadline:
+            truncated = True                    # the LED reads this; see the docstring
             degrade.warn("wikimedia",
                          f"skipping remaining {len(asked) - i} after exhausting the "
                          f"{budget_s:g}s walk budget")
@@ -311,4 +332,4 @@ def fetch_attention(titles: dict, tickers: list, run_day: str, sleep_s: float = 
     if misses:
         degrade.warn("wikimedia", f"{misses} ticker(s) returned no usable series "
                                   f"(no article, or {e} not published yet)")
-    return scores, raw_views, transport_failures
+    return scores, raw_views, transport_failures, truncated

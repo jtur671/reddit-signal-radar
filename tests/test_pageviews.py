@@ -77,7 +77,7 @@ def test_unmapped_ticker_makes_no_request(monkeypatch):
     a missing entry could otherwise mean 'fetched and failed', which is different."""
     calls = []
     monkeypatch.setattr(pv, "_get_series", lambda *a, **k: calls.append(a))
-    scores, raw, failed = pv.fetch_attention({}, ["MVIS"], "2026-08-17")
+    scores, raw, failed, _trunc = pv.fetch_attention({}, ["MVIS"], "2026-08-17")
     assert calls == []
     assert scores == {} and raw == {}
     assert failed == 0, "nothing was asked, so nothing failed — the LED reads unused"
@@ -89,7 +89,7 @@ def test_maps_ticker_through_the_exact_title(monkeypatch):
         seen["title"] = title
         return [100] * 28 + [200]
     monkeypatch.setattr(pv, "_get_series", fake)
-    scores, raw, _failed = pv.fetch_attention({"TSLA": "Tesla, Inc."}, ["TSLA"], "2026-08-17")
+    scores, raw, _failed, _trunc = pv.fetch_attention({"TSLA": "Tesla, Inc."}, ["TSLA"], "2026-08-17")
     assert seen["title"] == "Tesla, Inc."
     assert scores["TSLA"] == 75.0
     assert raw["TSLA"] == 200
@@ -99,7 +99,7 @@ def test_one_ticker_failing_does_not_take_down_the_rest(monkeypatch):
     def fake(title, start, end):
         return None if title == "Bad" else [100] * 28 + [200]
     monkeypatch.setattr(pv, "_get_series", fake)
-    scores, _raw, _failed = pv.fetch_attention({"A": "Bad", "B": "Good"}, ["A", "B"], "2026-08-17")
+    scores, _raw, _failed, _trunc = pv.fetch_attention({"A": "Bad", "B": "Good"}, ["A", "B"], "2026-08-17")
     assert "A" not in scores and scores["B"] == 75.0
     # radar/degrade.py's own docstring is about exactly this regression: a fail-soft
     # path that goes silent. Deleting the warn() call must not leave the suite green.
@@ -110,7 +110,7 @@ def test_thin_baseline_is_absent_not_zero(monkeypatch):
     """None from spike_score must not become 0.0 -- a real zero says 'collapsed
     attention', absence says 'no signal'. composite.py renormalizes around absence."""
     monkeypatch.setattr(pv, "_get_series", lambda *a, **k: [2] * 28 + [12])
-    scores, raw, _failed = pv.fetch_attention({"T": "Title"}, ["T"], "2026-08-17")
+    scores, raw, _failed, _trunc = pv.fetch_attention({"T": "Title"}, ["T"], "2026-08-17")
     assert "T" not in scores
     assert raw["T"] == 12, "raw views still published even when unscored"
 
@@ -174,7 +174,7 @@ def test_get_series_rejects_a_stale_tail(monkeypatch):
 
     assert pv._get_series("Tesla, Inc.", "20260712", "20260816") == pv.MISS
 
-    scores, raw, failed = pv.fetch_attention({"TSLA": "Tesla, Inc."}, ["TSLA"], "2026-08-17")
+    scores, raw, failed, _trunc = pv.fetch_attention({"TSLA": "Tesla, Inc."}, ["TSLA"], "2026-08-17")
     assert "TSLA" not in scores
     assert "TSLA" not in raw
     assert any(e["what"] == "wikimedia" for e in degrade.events())
@@ -193,7 +193,7 @@ def test_a_wikimedia_outage_trips_a_breaker_instead_of_stalling_the_run(monkeypa
     calls = []
     monkeypatch.setattr(pv, "_get_series", lambda *a, **k: calls.append(a[0]))  # -> None
     titles = {f"T{i}": f"Title {i}" for i in range(15)}
-    scores, raw, failed = pv.fetch_attention(titles, list(titles), "2026-08-17", sleep_s=0)
+    scores, raw, failed, _trunc = pv.fetch_attention(titles, list(titles), "2026-08-17", sleep_s=0)
 
     assert len(calls) == 3, f"breaker never tripped — made {len(calls)} calls into a dead source"
     assert (scores, raw) == ({}, {})
@@ -217,7 +217,7 @@ def test_the_breaker_counts_CONSECUTIVE_failures_not_total(monkeypatch):
 
     monkeypatch.setattr(pv, "_get_series", flaky)
     titles = {f"T{i}": f"Title {i}" for i in range(15)}
-    scores, raw, _failed = pv.fetch_attention(titles, list(titles), "2026-08-17", sleep_s=0)
+    scores, raw, _failed, _trunc = pv.fetch_attention(titles, list(titles), "2026-08-17", sleep_s=0)
 
     assert len(calls) == 15, "scattered failures must not trip the breaker"
     assert len(scores) == 7 and len(raw) == 7
@@ -336,7 +336,7 @@ def test_three_consecutive_404s_do_not_trip_the_breaker(monkeypatch):
 
     monkeypatch.setattr(pv.requests, "get", fake_get)
     titles = {f"T{i}": f"Title {i}" for i in range(6)}
-    scores, raw, _failed = pv.fetch_attention(titles, list(titles), "2026-08-17", sleep_s=0)
+    scores, raw, _failed, _trunc = pv.fetch_attention(titles, list(titles), "2026-08-17", sleep_s=0)
 
     assert len(calls) == 6, f"walk stopped after {len(calls)} — 404s tripped the breaker"
     assert len(raw) == 3, "the three real articles must still be measured"
@@ -360,7 +360,7 @@ def test_three_consecutive_stale_tail_refusals_do_not_trip_the_breaker(monkeypat
 
     monkeypatch.setattr(pv.requests, "get", fake_get)
     titles = {f"T{i}": f"Title {i}" for i in range(6)}
-    scores, raw, _failed = pv.fetch_attention(titles, list(titles), "2026-08-17", sleep_s=0)
+    scores, raw, _failed, _trunc = pv.fetch_attention(titles, list(titles), "2026-08-17", sleep_s=0)
 
     assert len(calls) == 6, f"walk stopped after {len(calls)} — refusals tripped the breaker"
     assert len(raw) == 3, "the three fresh-tailed articles must still be measured"
@@ -375,12 +375,12 @@ def test_only_transport_failures_are_reported_as_an_outage(monkeypatch):
     monkeypatch.setattr(pv.requests, "get",
                         lambda url, headers=None, timeout=None: _resp(404, {}))
     titles = {f"T{i}": f"Title {i}" for i in range(4)}
-    _s, _r, failed = pv.fetch_attention(titles, list(titles), "2026-08-17", sleep_s=0)
+    _s, _r, failed, _trunc = pv.fetch_attention(titles, list(titles), "2026-08-17", sleep_s=0)
     assert failed == 0, "a 404 is an answer, not an outage"
 
     monkeypatch.setattr(pv.requests, "get",
                         lambda url, headers=None, timeout=None: _resp(403, {}))
-    _s, _r, failed = pv.fetch_attention(titles, list(titles), "2026-08-17", sleep_s=0)
+    _s, _r, failed, _trunc = pv.fetch_attention(titles, list(titles), "2026-08-17", sleep_s=0)
     assert failed == pv.MAX_CONSECUTIVE_FAILURES, \
         "access refused IS an outage and must reach the LED"
     # 403, not the 418 this test used to send. The rest of the 4xx range is now a MISS,
@@ -423,7 +423,7 @@ def test_a_non_finite_view_count_is_a_miss_not_an_escaping_overflow(monkeypatch)
                         lambda url, headers=None, timeout=None: _resp(200, body))
     assert pv._get_series("Tesla, Inc.", "20260712", "20260816") == pv.MISS
 
-    scores, raw, failed = pv.fetch_attention({"T": "Title"}, ["T"], "2026-08-17", sleep_s=0)
+    scores, raw, failed, _trunc = pv.fetch_attention({"T": "Title"}, ["T"], "2026-08-17", sleep_s=0)
     assert (scores, raw, failed) == ({}, {}, 0), \
         "a garbage body is a miss about one name, not an outage"
 
@@ -458,7 +458,7 @@ def test_a_non_string_title_is_a_miss_not_an_AttributeError(monkeypatch):
         assert pv._get_series(bad, "20260712", "20260816") == pv.MISS, f"{bad!r}"
     assert calls == [], "a malformed title must never reach Wikimedia"
 
-    scores, raw, failed = pv.fetch_attention({"A": 123}, ["A"], "2026-08-17", sleep_s=0)
+    scores, raw, failed, _trunc = pv.fetch_attention({"A": 123}, ["A"], "2026-08-17", sleep_s=0)
     assert (scores, raw, failed) == ({}, {}, 0)
 
 
@@ -479,7 +479,7 @@ def test_our_own_bad_title_is_not_counted_as_a_wikimedia_outage(monkeypatch):
 
         monkeypatch.setattr(pv.requests, "get", fake_get)
         titles = {f"T{i}": f"Title {i}" for i in range(15)}
-        scores, raw, failed = pv.fetch_attention(titles, list(titles), "2026-08-17",
+        scores, raw, failed, _trunc = pv.fetch_attention(titles, list(titles), "2026-08-17",
                                                  sleep_s=0)
         assert len(calls) == 15, f"{code} tripped the breaker after {len(calls)} tickers"
         assert (scores, raw) == ({}, {})
@@ -648,11 +648,13 @@ def test_the_wall_clock_budget_stops_a_flapping_walk(monkeypatch):
     monkeypatch.setattr(pv, "_get_series", stub)
     titles = {f"T{i}": f"Title {i}" for i in range(20)}
 
-    scores, raw, failed = pv.fetch_attention(titles, list(titles), "2026-08-17", budget_s=180)
+    scores, raw, failed, truncated = pv.fetch_attention(titles, list(titles), "2026-08-17",
+                                                        budget_s=180)
 
     assert len(calls) < 20, "the walk must stop early"
     assert clock.t < 180 + 43, "and stop within one in-flight request of the budget"
     assert failed == len(calls) - len(calls) // 3, "every failure still reaches the LED"
+    assert truncated is True, "and so does the abandonment itself"
     assert any("budget" in e["reason"] for e in degrade.events()), \
         "abandoning names silently looks exactly like a covered board"
     assert any("skipping remaining" in e["reason"] for e in degrade.events())
@@ -670,9 +672,9 @@ def test_the_budget_does_not_truncate_a_healthy_walk(monkeypatch):
     monkeypatch.setattr(pv, "_get_series", stub)
     titles = {f"T{i}": f"Title {i}" for i in range(20)}
 
-    scores, raw, failed = pv.fetch_attention(titles, list(titles), "2026-08-17")
+    scores, raw, failed, truncated = pv.fetch_attention(titles, list(titles), "2026-08-17")
 
-    assert len(calls) == 20 and len(raw) == 20 and failed == 0
+    assert len(calls) == 20 and len(raw) == 20 and failed == 0 and truncated is False
     assert clock.t < pv.WALK_BUDGET_SECONDS / 10, \
         f"a healthy walk must sit far under the budget; measured {clock.t:.1f}s"
     assert not degrade.events(), "a walk that finished has nothing to report"
@@ -703,7 +705,7 @@ def test_a_hung_source_still_trips_the_breaker_first(monkeypatch):
     monkeypatch.setattr(pv, "_get_series", stub)
     titles = {f"T{i}": f"Title {i}" for i in range(20)}
 
-    _s, _r, failed = pv.fetch_attention(titles, list(titles), "2026-08-17")
+    _s, _r, failed, _trunc = pv.fetch_attention(titles, list(titles), "2026-08-17")
     assert len(calls) == pv.MAX_CONSECUTIVE_FAILURES and failed == 3
     assert clock.t < pv.WALK_BUDGET_SECONDS, "the breaker got there first, not the clock"
     assert not any("budget" in e["reason"] for e in degrade.events())
@@ -716,7 +718,8 @@ def test_run_py_plumbs_the_budget_from_config(monkeypatch, tmp_path):
     import radar.run as run
     seen = {}
     monkeypatch.setattr(run.pageviews, "fetch_attention",
-                        lambda titles, tickers, run_day, **k: (seen.update(k), ({}, {}, 0))[1])
+                        lambda titles, tickers, run_day, **k: (seen.update(k),
+                                                              ({}, {}, 0, False))[1])
     cfg_real = run.load_config
 
     def cfg_patched(path):
@@ -742,3 +745,76 @@ def test_run_py_plumbs_the_budget_from_config(monkeypatch, tmp_path):
     doc = yaml.safe_load(Path("config.yaml").read_text())
     assert doc["pageviews"]["budget_seconds"] == pv.WALK_BUDGET_SECONDS, \
         "config.yaml must document the same default the module ships"
+
+
+def test_a_budget_truncated_walk_is_reported_and_is_not_a_transport_failure(monkeypatch):
+    """The pair-wise miss: the budget `break` incremented NEITHER `transport_failures`
+    NOR `raw_views`, and those two were the ONLY inputs to run.py's wikimedia LED. So a
+    walk that never asked a quarter of the board reported a green source.
+
+    The trigger band is narrow and entirely realistic: Wikimedia answering consistently
+    in ~10-19.9s — under `_get_series`'s 20s timeout, so nothing counts as a transport
+    failure, but over what a 20-name walk can afford inside a 180s budget. Measured on
+    the simulated clock at 12s/answer: 15 of 20 asked, 0 failures, 5 names silently
+    abandoned. `degrade.warn` recorded it, but health["problems"] is discoverable, not
+    glanceable, and the LED is the glanceable surface.
+
+    Truncation is returned SEPARATELY from the failure count rather than folded into it,
+    deliberately: a truncated walk where every answered name also missed has zero raw
+    views, and folding it in would make run.py's `pv_failures and not raw_views` rule
+    call a perfectly healthy Wikimedia "down". The source is up; we just did not finish
+    asking. That is `degraded`."""
+    clock = _Clock()
+    monkeypatch.setattr(pv, "time", clock)
+    good = [10] * 28 + [40]
+    stub, calls = _timed_series(clock, [(good, 12.0)])       # slow, but never a timeout
+    monkeypatch.setattr(pv, "_get_series", stub)
+    titles = {f"T{i}": f"Title {i}" for i in range(20)}
+
+    scores, raw, failed, truncated = pv.fetch_attention(titles, list(titles), "2026-08-17",
+                                                        budget_s=180)
+
+    assert len(calls) < 20, "the budget must really have cut the walk short"
+    assert failed == 0, "a 12s answer is an ANSWER — charging it to the breaker is the " \
+                        "bug the MISS sentinel exists to prevent"
+    assert raw, "and the names it did reach still carry their views"
+    assert truncated is True, \
+        "a walk that abandoned names must say so in the value the LED reads"
+
+
+def test_a_complete_walk_reports_no_truncation(monkeypatch):
+    """The other direction, and the one that keeps the new flag from becoming a
+    permanent yellow LED: a healthy 20-name walk finishes every name well inside the
+    budget and must report truncated=False. Pinned in both directions on purpose — a
+    flag that is always True is exactly as uninformative as one that is always False."""
+    clock = _Clock()
+    monkeypatch.setattr(pv, "time", clock)
+    good = [10] * 28 + [40]
+    stub, calls = _timed_series(clock, [(good, 0.22)])
+    monkeypatch.setattr(pv, "_get_series", stub)
+    titles = {f"T{i}": f"Title {i}" for i in range(20)}
+
+    scores, raw, failed, truncated = pv.fetch_attention(titles, list(titles), "2026-08-17")
+
+    assert len(calls) == 20 and failed == 0
+    assert truncated is False
+    assert not degrade.events()
+
+
+def test_the_breaker_break_is_not_reported_as_a_budget_truncation(monkeypatch):
+    """The two `break`s are different claims and must stay distinguishable. A HUNG
+    Wikimedia trips the strike counter at 129s, inside the 180s budget: that walk
+    abandoned names too, but the reason is a transport failure the LED already reads —
+    `pv_failures` is 3 and raw_views is empty, which is `down`. Reporting it as a budget
+    truncation as well would be true-but-useless; reporting it INSTEAD would downgrade a
+    real outage to `degraded`."""
+    clock = _Clock()
+    monkeypatch.setattr(pv, "time", clock)
+    stub, calls = _timed_series(clock, [(None, 43.0)])
+    monkeypatch.setattr(pv, "_get_series", stub)
+    titles = {f"T{i}": f"Title {i}" for i in range(20)}
+
+    _s, _r, failed, truncated = pv.fetch_attention(titles, list(titles), "2026-08-17")
+
+    assert len(calls) == pv.MAX_CONSECUTIVE_FAILURES and failed == 3
+    assert truncated is False, "the breaker stopped this walk, not the clock"

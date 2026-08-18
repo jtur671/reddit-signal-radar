@@ -240,7 +240,7 @@ def test_attention_ships_in_components_and_weights_stay_seven(monkeypatch, tmp_p
     _offline(monkeypatch, run, _board(run))
     monkeypatch.setattr(run.pageviews, "fetch_attention",
                         lambda titles, tickers, run_day, **k: ({"IREN": 88.0},
-                                                                {"IREN": 5000}, 0))
+                                                                {"IREN": 5000}, 0, False))
 
     out = tmp_path / "out"
     assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
@@ -262,7 +262,7 @@ def test_attention_does_not_move_the_composite(monkeypatch, tmp_path):
     def composites(attention):
         _offline(monkeypatch, run, _board(run))
         monkeypatch.setattr(run.pageviews, "fetch_attention",
-                            lambda titles, tickers, run_day, **k: (attention, {}, 0))
+                            lambda titles, tickers, run_day, **k: (attention, {}, 0, False))
         out = tmp_path / ("out" + str(len(attention)))
         assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
         data = json.loads((out / "data.json").read_text())
@@ -294,7 +294,7 @@ def test_pageviews_uses_the_canonical_title_not_the_mapped_one(monkeypatch, tmp_
                                                 "title": canonical.get(title, title)})
     seen = {}
     monkeypatch.setattr(run.pageviews, "fetch_attention",
-                        lambda titles, tickers, run_day, **k: (seen.update(titles), ({}, {}, 0))[1])
+                        lambda titles, tickers, run_day, **k: (seen.update(titles), ({}, {}, 0, False))[1])
 
     out = tmp_path / "out"
     assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
@@ -314,7 +314,7 @@ def test_pageviews_falls_back_to_the_mapped_title_when_about_has_none(monkeypatc
     monkeypatch.setattr(run.about, "fetch_summary", lambda *a, **k: None)   # empty title
     seen = {}
     monkeypatch.setattr(run.pageviews, "fetch_attention",
-                        lambda titles, tickers, run_day, **k: (seen.update(titles), ({}, {}, 0))[1])
+                        lambda titles, tickers, run_day, **k: (seen.update(titles), ({}, {}, 0, False))[1])
 
     out = tmp_path / "out"
     assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
@@ -430,7 +430,7 @@ def test_new_sources_report_ok_when_they_answer(monkeypatch, tmp_path):
     _offline(monkeypatch, run, _board(run))
     _mapped_board(monkeypatch, run)
     monkeypatch.setattr(run.pageviews, "fetch_attention",
-                        lambda titles, tickers, run_day, **k: ({}, {"IREN": 5000}, 0))
+                        lambda titles, tickers, run_day, **k: ({}, {"IREN": 5000}, 0, False))
     monkeypatch.setattr(run.short_interest, "fetch_short_interest",
                         lambda cfg, run_day, **k: ({"IREN": {"days_to_cover": 6.7,
                                                          "shares": 12_000_000}},
@@ -597,7 +597,7 @@ def test_still_running_names_get_attention_too(monkeypatch, tmp_path):
     def fake_fetch(titles, tickers, run_day, **k):
         seen["titles"] = dict(titles)
         seen["tickers"] = list(tickers)
-        return ({t: 70.0 for t in tickers}, {t: 4321 for t in tickers}, 0)
+        return ({t: 70.0 for t in tickers}, {t: 4321 for t in tickers}, 0, False)
 
     monkeypatch.setattr(run.pageviews, "fetch_attention", fake_fetch)
 
@@ -841,7 +841,7 @@ def test_a_transport_failure_can_never_light_wikimedia_green(monkeypatch, tmp_pa
         _offline(monkeypatch, run, _board(run))
         _mapped_board(monkeypatch, run)
         monkeypatch.setattr(run.pageviews, "fetch_attention",
-                            lambda titles, tickers, run_day, _rv=raw_views, **k: ({}, _rv, 3))
+                            lambda titles, tickers, run_day, _rv=raw_views, **k: ({}, _rv, 3, False))
         out = tmp_path / ("out" + expected)
         assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
         health = json.loads((out / "health.json").read_text())
@@ -1002,3 +1002,49 @@ def test_the_modal_renders_short_ratio_as_a_percentage():
         compact = re.sub(r"\s+", "", ln)
         assert "d.short_ratio*100" in compact, \
             f"a fraction rendered as a percentage without scaling: {ln.strip()}"
+
+
+def test_wikimedia_led_is_degraded_when_the_budget_truncated_the_walk(monkeypatch, tmp_path):
+    """The LED's own comment claimed this class was guarded — "a walk that abandoned
+    everything before asking would light the LED green — the exact bug class this
+    ordering exists to prevent". The guard covered EVERYTHING, not MOST: the budget
+    `break` in fetch_attention incremented neither `transport_failures` nor `raw_views`,
+    the LED's only two inputs, so a walk that asked 15 of 20 names read `ok`.
+
+    A pair-wise miss — the LED ordering and the walk budget landed in different commits
+    and each was reviewed alone. `degraded` is the honest state: the source is up, we
+    just did not finish asking."""
+    import json
+    import radar.run as run
+    _offline(monkeypatch, run, _board(run))
+    mapped = dict(run.tickermap.load_overrides("radar/ticker_overrides.yml"))
+    mapped["IREN"] = "IREN Limited"
+    monkeypatch.setattr(run.tickermap, "fetch_ticker_map", lambda cfg, run_day, **k: mapped)
+    monkeypatch.setattr(run.pageviews, "fetch_attention",
+                        lambda titles, tickers, run_day, **k: (
+                            {}, {t: 4321 for t in list(tickers)[:1]}, 0, True))
+
+    out = tmp_path / "out"
+    assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
+    health = json.loads((out / "health.json").read_text())
+    assert health["sources"]["wikimedia"] == "degraded", \
+        "names we never asked about cannot be reported as a covered board"
+
+
+def test_wikimedia_led_is_ok_when_the_walk_finished(monkeypatch, tmp_path):
+    """The other direction, pinned so the truncation state cannot become a permanent
+    yellow: the same walk, same answers, finished — `ok`."""
+    import json
+    import radar.run as run
+    _offline(monkeypatch, run, _board(run))
+    mapped = dict(run.tickermap.load_overrides("radar/ticker_overrides.yml"))
+    mapped["IREN"] = "IREN Limited"
+    monkeypatch.setattr(run.tickermap, "fetch_ticker_map", lambda cfg, run_day, **k: mapped)
+    monkeypatch.setattr(run.pageviews, "fetch_attention",
+                        lambda titles, tickers, run_day, **k: (
+                            {}, {t: 4321 for t in list(tickers)[:1]}, 0, False))
+
+    out = tmp_path / "out"
+    assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
+    health = json.loads((out / "health.json").read_text())
+    assert health["sources"]["wikimedia"] == "ok"
