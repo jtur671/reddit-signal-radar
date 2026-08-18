@@ -1,4 +1,30 @@
 import pytest
+import requests
+
+
+class _NoNetRequests:
+    """Stand-in for `radar.pageviews`'s module-global `requests`, so the guard sits one
+    layer BELOW `_get_series` rather than replacing it.
+
+    Stubbing `_get_series` itself was the obvious move and is wrong twice over:
+    tests/test_pageviews.py::test_get_series_uses_all_access_user_and_a_real_user_agent
+    calls the real transport (it is the only test that inspects the URL and UA, and it
+    is what catches an all-access/user -> all-agents swap), and
+    test_get_series_rejects_a_stale_tail asserts `_get_series(...) is None` — which a
+    None-returning stub would satisfy for entirely the wrong reason: a green test
+    asserting nothing. Rebinding the module global keeps both running their real logic
+    while the socket stays shut, and a test that sets `pv.requests.get` itself just
+    mutates this object and wins.
+
+    Only `get` and `RequestException` are ever touched in pageviews.py; RequestException
+    is the real class so the module's own `except` clause catches what this raises and
+    takes the documented fail-soft path."""
+
+    RequestException = requests.RequestException
+
+    @staticmethod
+    def get(*a, **k):
+        raise requests.RequestException("hermeticity guard: no live Wikimedia in tests")
 
 
 @pytest.fixture(autouse=True)
@@ -28,10 +54,26 @@ def _no_live_quotes_or_summaries(monkeypatch):
     would otherwise fire a ~22s live SPARQL query at query.wikidata.org whenever the
     vendored snapshot is missing or stale — and the snapshot lives on the orphan `data`
     branch, so in a test checkout it is simply absent. None sends the fetch down the
-    documented outage path, which is itself worth exercising."""
+    documented outage path, which is itself worth exercising.
+
+    E2's two new sources are the fourth and fifth, and both now run on every `main()`.
+    pageviews is one live REST call PER BOARD TICKER (15 of them, each with a sleep
+    behind it) — guarded at its `requests` global, see _NoNetRequests for why not at
+    `_get_series`. short_interest fronts FINRA with two transports: `_get_json` is the
+    settlement-discovery GET (and the only network call inside `_latest_settlement`, so
+    stubbing the transport shuts the socket while the discovery logic still runs), and
+    `_post_json` is the paging data POST. `_post_json` returns a TUPLE — (rows,
+    record_total) — so its stub must be `(None, None)`; a bare None would unpack-error
+    instead of taking the documented outage path. No test calls either FINRA transport
+    for real, so stubbing them by name breaks nothing."""
     import radar.enrich
     import radar.about
     import radar.tickermap
+    import radar.pageviews
+    import radar.short_interest
     monkeypatch.setattr(radar.enrich, "_yf_quote", lambda symbol: None)
     monkeypatch.setattr(radar.about, "fetch_summary", lambda *a, **k: None)
     monkeypatch.setattr(radar.tickermap, "_get_json", lambda *a, **k: None)
+    monkeypatch.setattr(radar.pageviews, "requests", _NoNetRequests())
+    monkeypatch.setattr(radar.short_interest, "_get_json", lambda *a, **k: None)
+    monkeypatch.setattr(radar.short_interest, "_post_json", lambda *a, **k: (None, None))

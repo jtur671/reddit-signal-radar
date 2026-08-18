@@ -359,7 +359,7 @@ tr[data-ticker]{cursor:pointer}
     </tbody>
   </table>
   </div>
-  <div class="dna-legend">signal dna: vel · dir · eng · shorts · options · alerts · cramer⁻¹ — cell brightness = 0–100 · empty cell = source didn't cover this name today · ◆ = unusual options activity</div>
+  <div class="dna-legend">signal dna: vel · dir · eng · shorts · options · alerts · attn · cramer⁻¹ — cell brightness = 0–100 · empty cell = source didn't cover this name today · attn = Wikipedia attention vs this name's own 28-day median (published, unweighted) · ◆ = unusual options activity</div>
 
   <!-- 06 STILL RUNNING -->
   {% if still_running %}
@@ -500,13 +500,22 @@ tr[data-ticker]{cursor:pointer}
     mx.appendChild(metric('price', d.price==null?'—':('$'+d.price+(d.pct_change==null?'':' '+(d.pct_change>=0?'+':'')+d.pct_change+'%'))));
     if(d.composite!=null) mx.appendChild(metric('composite', d.composite+'/100'));
     if(d.short_ratio!=null) mx.appendChild(metric('short vol', Math.round(d.short_ratio*100)+'%'));
+    // Short INTEREST, not short volume: twice-monthly and 11-24 days behind its
+    // settlement date, sitting one metric away from the D-1 short vol above. The date is
+    // part of the value, so both conditions gate one render — there is no code path here
+    // that can print a bare days-to-cover number.
+    if(d.days_to_cover!=null&&d.short_interest_as_of) mx.appendChild(metric('days to cover', Number(d.days_to_cover).toFixed(1)+' (as of '+d.short_interest_as_of+')'));
+    if(d.pageviews!=null) mx.appendChild(metric('wiki views', d.pageviews));
     if(d.pc_ratio!=null) mx.appendChild(metric('put/call', Number(d.pc_ratio).toFixed(2)));
     if(d.cramer) mx.appendChild(metric('cramer call', String(d.cramer).replace(/_/g,' ')));
     // signal-component bars: null = source didn't cover the name (bar hidden at 0,
     // value shows an em dash) — a different fact than a real 0.
+    // Mirrors run.py's _COMP_ORDER, attn included: attention is published in every
+    // components block (with no weight, so it never moves the composite) and the strip
+    // shows what was measured.
     var CO=[['velocity','vel'],['direction','dir'],['engagement','eng'],
             ['short_pressure','shorts'],['options','options'],
-            ['events','alerts'],['cramer_inverse','cramer⁻¹']];
+            ['events','alerts'],['attention','attn'],['cramer_inverse','cramer⁻¹']];
     var cw=document.getElementById('m-comps'), cl=document.getElementById('m-compslabel');
     while(cw.firstChild) cw.removeChild(cw.firstChild);
     var comps=d.components||{}, any=false;

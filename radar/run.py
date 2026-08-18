@@ -24,6 +24,7 @@ from radar.render import render_html, write_outputs
 from radar.email_report import send_email
 from radar import trump, about, news
 from radar import tickermap
+from radar import pageviews, short_interest
 from radar import backtest
 from radar.plays_log import append_picks, load_picks
 
@@ -154,6 +155,38 @@ def main(argv=None) -> int:
         if c:
             s.cramer = c
             history.annotate(run_day, s.ticker, cramer=c)
+    # Attention from OUTSIDE the forums, plus short interest as slow-moving context.
+    # Deliberately after the about pass: the title sent to Wikimedia prefers the
+    # CANONICAL one that pass cached off the REST summary response (which follows
+    # redirects) over the mapped title from Wikidata (whose sitelinks include redirect
+    # titles). The pageviews API does NOT follow redirects — it answers HTTP 200 with
+    # the redirect page's own traffic, measured at 12 views/day for `Dow Inc.` against
+    # canonical `Dow Chemical Company`'s 468. A 39x understatement, no error raised.
+    pv_titles = {}
+    for s in board:
+        title = ((about_cache.get(s.ticker) or {}).get("title")
+                 or ticker_titles.get(s.ticker))
+        if title:                                   # unmapped + undescribed -> no request
+            pv_titles[s.ticker] = title
+    attention, raw_views = pageviews.fetch_attention(
+        pv_titles, [s.ticker for s in board], run_day,
+        sleep_s=float(getattr(getattr(cfg, "pageviews", None), "sleep_seconds", 0.2)))
+    si_rows, si_as_of = short_interest.fetch_short_interest(cfg, run_day)
+    for s in board:
+        s.attention = attention.get(s.ticker)
+        s.pageviews = raw_views.get(s.ticker)
+        row = si_rows.get(s.ticker) or {}
+        if si_as_of and row.get("days_to_cover") is not None:
+            # The number and its date travel together or not at all, in BOTH directions.
+            # Short interest is 11-24 days stale by nature and ships beside short_ratio,
+            # which is genuinely D-1, so an undated days-to-cover borrows a freshness it
+            # does not have — and a lone as_of on a ticker FINRA never reported implies
+            # a measurement that does not exist. Pairing them here, where the values are
+            # SET, is what makes every downstream surface safe by construction.
+            s.days_to_cover = row["days_to_cover"]
+            s.short_interest_shares = row.get("shares")
+            s.short_interest_as_of = si_as_of
+        history.annotate(run_day, s.ticker, attention=s.attention, pageviews=s.pageviews)
     history.prune(keep_through=run_day, days=cfg.history_days)
     if not args.dry_run:
         history.save()
@@ -182,6 +215,17 @@ def main(argv=None) -> int:
         "cboe": "ok" if cboe_hits else ("down" if board else "unused"),
         "cramer": "ok" if cramer_by else "down",
         "tickermap": "ok" if len(ticker_titles) > overrides_n else "down",
+        # Keyed on RAW VIEWS, not scores: raw_views is populated whenever Wikimedia
+        # actually answered, while scores additionally clears spike_score's 21-day /
+        # 10-view baseline floor. A healthy Wikimedia serving only thin-baseline names
+        # is up, and lighting that red would be a false alarm about a working source.
+        "wikimedia": "ok" if raw_views else "down",
+        # fetch_short_interest returns ({}, "") ONLY when upstream and the vendored
+        # snapshot are both gone, so this can genuinely read red. Snapshot-served rows
+        # read "ok" on purpose: at a twice-monthly settlement cadence a snapshot of the
+        # current settlement is the same data, not a degraded copy of it — and a real
+        # upstream outage still leaves its own degrade.warn breadcrumb in health.
+        "finra_si": "ok" if si_rows else "down",
     }
     html = render_html(**_build_context(board, signals, run_day, corpus, refreshed,
                                         refreshed_iso, today_read, chips, detail_json,
@@ -197,6 +241,11 @@ def main(argv=None) -> int:
                                 components=s.components,
                                 short_ratio=s.short_ratio, pc_ratio=s.pc_ratio,
                                 uoa=s.uoa, cramer=s.cramer,
+                                pageviews=s.pageviews,
+                                # context, never a component — and never undated
+                                days_to_cover=s.days_to_cover,
+                                short_interest_shares=s.short_interest_shares,
+                                short_interest_as_of=s.short_interest_as_of,
                                 mentions=s.mentions, score=round(s.score, 2),
                                 state=s.state, price=s.price)
                            for s in board],
@@ -495,6 +544,9 @@ def _detail_blob(board, history, run_day, reddit_subs=None):
             state=s.state, pct_bull=int(s.pct_bull), price=s.price, pct_change=s.pct_change,
             composite=s.composite, components=(s.components or {}),
             short_ratio=s.short_ratio, pc_ratio=s.pc_ratio, uoa=s.uoa, cramer=s.cramer,
+            pageviews=s.pageviews,
+            # the modal renders these two together or not at all — see the template
+            days_to_cover=s.days_to_cover, short_interest_as_of=s.short_interest_as_of,
             upvotes=s.upvotes, themes=(s.themes or []), summary=s.summary, why=_why(s),
             headlines=(s.headlines or [])[:3],   # the actual news driving the chatter
             reddit=_reddit_search_url(s.ticker, reddit_subs),  # link to live Reddit discussions
@@ -513,9 +565,13 @@ def _chip_list(board, themes):
         chips.append("Trump")
     return chips
 
+# Display order for the signal-DNA strip. `attention` is shown like any other component
+# even though it carries no weight in the blend — it is a published measurement, and the
+# strip is the transparency surface, not the composite.
 _COMP_ORDER = [("velocity", "vel"), ("direction", "dir"), ("engagement", "eng"),
                ("short_pressure", "shorts"), ("options", "options"),
-               ("events", "alerts"), ("cramer_inverse", "cramer⁻¹")]
+               ("events", "alerts"), ("attention", "attn"),
+               ("cramer_inverse", "cramer⁻¹")]
 
 def _comp_list(s):
     """Fixed-order (label, value) pairs for the signal-DNA strip. A None value means
