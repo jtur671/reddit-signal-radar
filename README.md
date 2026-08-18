@@ -57,17 +57,23 @@ upstream hobby repo disappearing), and Finnhub company headlines feeding the exi
 DeepSeek catalyst summaries when `FINNHUB_API_KEY` is set, falling back to the original
 Google News RSS search otherwise. `data.json` gains a `signals` array (per board row:
 ticker, `composite` 0–100, a `components` breakdown — velocity/direction/engagement/
-short_pressure/options/events/cramer_inverse, each 0–100 or `null` when a source doesn't
-cover that name (`events` is signed by the fleet monitor that fired — bearish 0 / neutral
-50 / bullish 100 — and `null` when no fresh alert covers the ticker, so a quiet name isn't
-punished with a real zero) — plus the raw `short_ratio`/`pc_ratio`/`uoa`/`cramer` values) and the raw
+short_pressure/options/events/cramer_inverse/attention, each 0–100 or `null` when a source
+doesn't cover that name (`events` is signed by the fleet monitor that fired — bearish 0 /
+neutral 50 / bullish 100 — and `null` when no fresh alert covers the ticker, so a quiet name
+isn't punished with a real zero; `attention` is a self-relative Wikimedia pageview spike,
+published for every ticker but deliberately carries no weight in `composite.weights`, so it
+never moves the blended number) — plus the raw `short_ratio`/`pc_ratio`/`uoa`/`cramer` values) and the raw
 `weights` config (`config.yaml`'s `composite.weights`, before per-row renormalization —
 `radar/composite.py`'s `blend()` drops null components and renormalizes over what's left
 per ticker, but that per-row renormalization isn't what's published here). Weights are
-heuristic until
-`backtest.json`'s `power.sufficient` flips true, then get recalibrated there — a config
-change, not a code change; the consuming bot should trust `components` over the single
-`composite` number. The composite also shows in the dashboard's per-ticker detail modal.
+heuristic and stay that way for now: the plan is to recalibrate them from measured
+per-component ICs once `backtest.json`'s `power.sufficient` flips true, but **nothing
+computes per-component ICs yet** — `radar/backtest.py`'s `_frames()` emits the raw
+velocity score — so there is no measurement behind that plan. Changing a weight is a
+config edit; producing the number that would justify one is unbuilt work (tracked in
+[docs/ROADMAP.md](docs/ROADMAP.md)). The consuming bot should trust `components` over
+the single `composite` number. The composite also shows in the dashboard's per-ticker
+detail modal.
 
 ## Local run
 
@@ -114,7 +120,8 @@ The daily run is driven by `.github/workflows/daily.yml`.
   widen-phase sources: `finra` (`max_lookback_days` for the Reg SHO file walk-back),
   `cboe` (`top_n` chains to pull, `uoa_vol_oi` / `min_volume` for the UOA flag), `cramer`
   (feed `url`, `max_age_days`, `snapshot_path`), and `composite` (`weights` per
-  component — heuristic until recalibrated from `backtest.json`). (Half-life / lookback /
+  component — heuristic, and still heuristic: the ICs that would recalibrate them are
+  not computed anywhere yet, see above). (Half-life / lookback /
   `fetch` apply only to the legacy raw-Reddit path.)
 - `data/themes.yaml` — theme watchlists (seed tickers + keywords) used to tag the board.
 - `data/trump_watch.yaml` — company/asset name → ticker map for the Trump monitor.

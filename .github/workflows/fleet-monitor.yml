@@ -13,6 +13,25 @@ concurrency:
 jobs:
   monitor:
     runs-on: ubuntu-latest
+    # GitHub's default is 360 minutes, and this job had no timeout at all while holding
+    # the `pages` concurrency group (cancel-in-progress: false) that daily-radar's publish
+    # must acquire — six hours of a hung transport blocking the 6:17 AM board, not just a
+    # slow monitor run. daily.yml's own timeout comment explicitly leans on this wait
+    # being short.
+    # 20, derived from daily.yml's budget rather than picked: daily allows itself 45 min
+    # for its pipeline PLUS the wait on this group. That derivation used to cite daily's
+    # "~17 min ESTIMATED post-E2", which was napkin math and wrong by roughly two orders
+    # of magnitude. Re-derived from MEASUREMENTS: daily's worst real run is 13 min (40
+    # runs via `gh`) and E2's three sources add ~15s ordinarily / ~70s on a monthly
+    # Wikidata-refresh day (measured 2026-08-18, see daily.yml). So 20 here keeps
+    # 13 + 20 = 33 inside that 45, with more room than the estimate ever claimed.
+    # Unchanged at 20 because the measurement widened the margin, not narrowed it —
+    # shrinking it would only buy a faster trip on the one thing a trip can cost, the
+    # OPTIONAL alert-triggered dashboard rebuild below — the fleet's alert email and its
+    # dedup cursor are both already committed by the step above it — and delaying the
+    # daily publish is strictly worse than skipping one dashboard redeploy.
+    # Fails 18x sooner than the default. Re-derive if daily.yml's 45 changes.
+    timeout-minutes: 20
     steps:
       # Actions pinned to commit SHAs, not tags: a tag is mutable, and this runner holds
       # every repo secret. Bump deliberately (`gh api repos/<a>/git/ref/tags/<v>`).
@@ -46,7 +65,17 @@ jobs:
             git worktree add --detach /tmp/state "$(git commit-tree "$(git mktree </dev/null)" -m 'state: seed')"
           fi
           mkdir -p /tmp/state/data
-          cp -f data/*_seen.json data/*_alert.json /tmp/state/data/ 2>/dev/null || true
+          # Same WHITELIST as daily.yml, and for the same reason: this job also runs
+          # `python -m radar.run` (the alert-triggered rebuild below), so it is also a
+          # writer of every vendored snapshot. Listing only the monitor's own cursors
+          # meant the whitelist was incomplete for a pipeline runner — invisible while
+          # the worktree happens to start from the restored data branch, and a silent
+          # loss the moment it does not (a cold start seeds ONLY what is copied here).
+          # Anything with a `snapshot_path:` in config.yaml belongs on this line;
+          # tests/test_run_smoke.py::test_every_vendored_snapshot_survives_every_workflow_that_runs_the_pipeline
+          # now checks EVERY workflow that runs the pipeline, not just daily.yml —
+          # reading only daily.yml is exactly how this line was missed for all of E2.
+          cp -f data/*_seen.json data/*_alert.json data/history.json data/about.json data/plays_log.json data/cramer_snapshot.json data/ticker_articles.json data/short_interest.json /tmp/state/data/ 2>/dev/null || true
           git -C /tmp/state add -A data
           git -C /tmp/state diff --cached --quiet || git -C /tmp/state commit -m "state: fleet monitor $(date -u +%FT%TZ)"
           git -C /tmp/state push origin HEAD:refs/heads/data

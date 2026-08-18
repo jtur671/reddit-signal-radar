@@ -1,7 +1,13 @@
 from radar.composite import (blend, components_for, percentile_rank, CRAMER_INVERSE,
-                             EVENT_DIRECTION)
+                             EVENT_DIRECTION, DEFAULT_WEIGHTS)
 from radar.run import alert_direction_map
 from radar.models import Signal
+from radar.config import load_config
+
+def _sig(**k):
+    base = dict(ticker="AAA")
+    base.update(k)
+    return Signal(**base)
 
 def test_percentile_rank():
     assert percentile_rank(30.0, [10.0, 20.0, 30.0, 40.0]) == 75.0   # 3 of 4 <= value
@@ -113,3 +119,50 @@ def test_alert_direction_map_splits_multi_ticker_and_strips_cashtags():
     alerts = [{"tickers": "$SPY · $TLT · $IWM", "direction": "neutral"}]
     assert alert_direction_map(alerts) == {"SPY": "neutral", "TLT": "neutral", "IWM": "neutral"}
     assert alert_direction_map([{"tickers": "", "direction": "bearish"}]) == {}
+
+
+def test_attention_is_published_in_components():
+    s = _sig(attention=88.0)
+    assert components_for(s, [s], None, {})["attention"] == 88.0
+
+
+def test_attention_is_none_when_unscored():
+    assert components_for(_sig(attention=None), [_sig()], None, {})["attention"] is None
+
+
+def test_attention_does_not_change_the_composite():
+    """The central claim of spec 2.3. attention ships with no weight, so the blended
+    number must be byte-identical with and without it. If someone adds a weight for
+    it, this test fails and the regime-boundary conversation happens BEFORE the
+    backtest series is silently broken."""
+    weights = dict(DEFAULT_WEIGHTS)
+    without = {"velocity": 70.0, "direction": 60.0}
+    with_att = dict(without, attention=100.0)
+    assert blend(with_att, weights) == blend(without, weights)
+
+
+def test_default_weights_has_exactly_seven_keys():
+    """attention must NOT be here. Its absence is the mechanism."""
+    assert len(DEFAULT_WEIGHTS) == 7
+    assert "attention" not in DEFAULT_WEIGHTS
+
+
+def test_config_weights_are_the_seven_and_exclude_attention():
+    """Production reads config.yaml's composite.weights (run.py:155-157), not
+    DEFAULT_WEIGHTS -- that constant is only the fallback for a missing config
+    block. The prior test guarded the fallback path; this one guards the path
+    that actually runs. Someone can add `attention: 0.10` to config.yaml (and
+    shrink another weight to keep the sum at 1.0) without this failing unless
+    it asserts against the real file."""
+    w = vars(load_config("config.yaml").composite.weights)
+    assert set(w) == set(DEFAULT_WEIGHTS)
+    assert "attention" not in w
+
+
+def test_attention_zero_is_not_none():
+    # Same bug class as test_engagement_zero_is_not_none / test_events_is_none_when_no_
+    # fresh_alert above: pageviews.spike_score genuinely emits 0.0 when today's views
+    # collapse to <= 1/4 of the ticker's own 28-day median -- a real, meaningful
+    # measurement, not "no data". A truthiness check (`if s.attention else None`)
+    # would silently turn that into None and get it renormalized away.
+    assert components_for(_sig(attention=0.0), [_sig()], None, {})["attention"] == 0.0

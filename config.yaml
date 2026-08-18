@@ -105,10 +105,51 @@ cramer:
   url: "https://raw.githubusercontent.com/jf-silverman/analyzing-stock-calls/main/data/stock_sentiments.json"
   max_age_days: 30
   snapshot_path: "data/cramer_snapshot.json"
+# Ticker -> exact Wikipedia article title, from Wikidata (p:P414/pq:P249, US exchanges).
+# Refreshed only when the vendored snapshot is older than max_age_days: US listing churn
+# is ~25/year against ~3,500 tickers (<1%/yr), so a monthly refresh is generous.
+tickermap:
+  snapshot_path: data/ticker_articles.json
+  overrides_path: radar/ticker_overrides.yml
+  max_age_days: 30
+# Wikimedia pageviews — attention from OUTSIDE the forums, the discriminator between a
+# brigade (moves Reddit, not Wikipedia) and a real story (moves both). agent=user, not
+# all-agents: measured 32% bot inflation on NVDA (3,765 user vs 5,501 all-agents), and
+# bot traffic is not attention. Titles come from the CANONICAL article title the about
+# cache captured off the redirect-following REST summary, NOT the mapped title — the
+# pageviews API does not follow redirects and answers HTTP 200 with the redirect page's
+# own traffic (measured: Dow Inc. 12 views/day vs Dow Chemical Company 468, a 39x
+# silent understatement). Published as a component but deliberately UNWEIGHTED below.
+# No min_baseline_views key here on purpose: fetch_attention calls spike_score with its
+# defaults and takes no such argument, so the key would be config nothing reads — an
+# invitation to tune a number with no effect. The 10-view floor lives in
+# pageviews.spike_score's signature until something actually plumbs it through.
+pageviews:
+  sleep_seconds: 0.2
+  # Wall-clock ceiling on the whole serial walk. A SECOND guard beside pageviews.py's
+  # 3-strike breaker, because the breaker cannot see this one: a MISS resets the strike
+  # counter (load-bearing — it is what makes the "Wikimedia has not published D-1 yet"
+  # case survivable), so a flapping fail/fail/miss source never reaches three in a row
+  # and costs ~87s per group of three. Measured: 20 names ~= 580s, ten minutes inside the
+  # job that gates the 6:17 AM publish, with the strike counter never above two.
+  # 180s is ~21x a healthy 20-name walk (~8s). Must match pageviews.WALK_BUDGET_SECONDS;
+  # tests/test_pageviews.py::test_run_py_plumbs_the_budget_from_config pins that.
+  budget_seconds: 180.0
+# FINRA consolidated short interest — twice-monthly, settlement-based, and 11-24 days
+# behind the settlement date (measured 2026-08-17: latest available settlement was
+# 2026-07-31). CONTEXT ONLY, never a daily composite component, and never rendered
+# without its `as_of` settlement date: it sits beside short_ratio, which is genuinely
+# D-1, and a bare days-to-cover number would borrow a freshness it does not have.
+short_interest:
+  snapshot_path: data/short_interest.json
+  page_size: 5000
 # Transparent composite score: blends every phase-2 signal into one 0-100 number,
 # published alongside its components so the consuming bot can trust the parts over
-# the whole. Heuristic weights until backtest.json's power block turns sufficient;
-# then recalibrate here (a config change, not a code change).
+# the whole. Heuristic weights, intended to be recalibrated from measured ICs once
+# backtest.json's power block turns sufficient -- but per-component ICs are not
+# computed anywhere yet, so these numbers stay heuristic for now. Adding a key here
+# changes every composite going forward: pair it with a dated regime_notes entry
+# (radar/backtest.py REGIME_NOTES), don't just edit this file.
 composite:
   weights:
     velocity: 0.30

@@ -23,19 +23,25 @@ from radar.enrich import enrich
 from radar.render import render_html, write_outputs
 from radar.email_report import send_email
 from radar import trump, about, news
+from radar import tickermap
+from radar import pageviews, short_interest
 from radar import backtest
 from radar.plays_log import append_picks, load_picks
 
-def _enrich_ticker(s, by_ticker, about_cache, about_ua, themes):
+def _enrich_ticker(s, by_ticker, about_cache, about_ua, themes, titles):
     """Attach themes, engagement, 'what it is', the news catalyst, and a DeepSeek
-    summary to one Signal. Shared by the board and the Still Running lane."""
+    summary to one Signal. Shared by the board and the Still Running lane.
+
+    `titles` is the ticker -> exact Wikipedia article title map. A ticker missing from
+    it gets no description and makes no request — never a name-based guess."""
     a = by_ticker.get(s.ticker)
     s.themes = themes.themes_for(s.ticker)
     if a is None:
         return
     s.upvotes = a.upvotes
     s.pct_bull = engagement_pct(a.upvotes, a.mentions)   # engagement proxy (not directional)
-    info = about.describe(s.ticker, a.name, about_cache, about_ua)  # 'what is this company'
+    info = about.describe(s.ticker, a.name, titles.get(s.ticker),
+                          about_cache, about_ua)          # 'what is this company'
     s.name, s.about_desc, s.about_extract = info["name"], info["desc"], info["extract"]
     theme = s.themes[0] if s.themes else "stocks"
     s.headlines = news.headlines(s.ticker, a.name, about_ua)   # the catalyst behind the chatter
@@ -75,10 +81,22 @@ def main(argv=None) -> int:
     by_ticker = {a.ticker: a for a in aggregates}
     about_cache = about.load_cache("data/about.json")
     about_ua = getattr(getattr(cfg, "apewisdom", None), "user_agent", "reddit-signal-radar/0.1")
+    ticker_titles = tickermap.fetch_ticker_map(cfg, run_day,   # exact article titles; fail-soft {}
+                                               dry_run=args.dry_run)  # fetch yes, vendor no
+    # The health floor for tickermap. fetch_ticker_map ALWAYS merges the curated
+    # overrides over whatever it resolved, so it never returns {} and a truthiness check
+    # on the merged map is an LED that can only ever read "ok" — which is worse than no
+    # LED, because it asserts health during a total outage. A map no larger than the
+    # override file means the live query and the vendored snapshot both produced nothing.
+    # `or` not just a getattr default: an `overrides_path:` key present but EMPTY yields
+    # None, which the getattr default never covers and which used to crash main() outright.
+    overrides_n = len(tickermap.load_overrides(
+        getattr(getattr(cfg, "tickermap", None), "overrides_path", None)
+        or "radar/ticker_overrides.yml"))
     for s in board:
-        _enrich_ticker(s, by_ticker, about_cache, about_ua, themes)
+        _enrich_ticker(s, by_ticker, about_cache, about_ua, themes, ticker_titles)
     for s in still:
-        _enrich_ticker(s, by_ticker, about_cache, about_ua, themes)
+        _enrich_ticker(s, by_ticker, about_cache, about_ua, themes, ticker_titles)
     enrich(board + still)
     today_read = _today_read(board, themes)            # DeepSeek smart read (deterministic fallback)
     why_matters = _why_matters(board, today_read)      # DeepSeek 'why you should care' so-what
@@ -141,6 +159,56 @@ def main(argv=None) -> int:
         if c:
             s.cramer = c
             history.annotate(run_day, s.ticker, cramer=c)
+    # Attention from OUTSIDE the forums, plus short interest as slow-moving context.
+    # Deliberately after the about pass: the title sent to Wikimedia prefers the
+    # CANONICAL one that pass cached off the REST summary response (which follows
+    # redirects) over the mapped title from Wikidata (whose sitelinks include redirect
+    # titles). The pageviews API does NOT follow redirects — it answers HTTP 200 with
+    # the redirect page's own traffic, measured at 12 views/day for `Dow Inc.` against
+    # canonical `Dow Chemical Company`'s 468. A 39x understatement, no error raised.
+    # Board PLUS Still Running, which is exactly what the E2 spec costs ("~15-20
+    # requests per run (board plus Still Running)", non-social-attention-design 2.4).
+    # Still Running names are off the top-N board precisely because Reddit has moved on,
+    # which makes "is the wider world still looking this up?" the most informative
+    # question we can ask about them. `still` is disjoint from `board` by construction
+    # (still_running.py skips anything already on it), so this asks nothing twice.
+    attention_names = board + still
+    pv_titles = {}
+    for s in attention_names:
+        title = ((about_cache.get(s.ticker) or {}).get("title")
+                 or ticker_titles.get(s.ticker))
+        if title:                                   # unmapped + undescribed -> no request
+            pv_titles[s.ticker] = title
+    pv_cfg = getattr(cfg, "pageviews", None)
+    attention, raw_views, pv_failures, pv_truncated = pageviews.fetch_attention(
+        pv_titles, [s.ticker for s in attention_names], run_day,
+        sleep_s=float(getattr(pv_cfg, "sleep_seconds", 0.2)),
+        # `or`, not a getattr default: a `budget_seconds:` key present but EMPTY yields
+        # None through the real loader, and getattr's default only fires when the
+        # ATTRIBUTE is absent — `float(None)` is a TypeError out of the walk that gates
+        # the publish. Falls back to the module's own default so the number lives in one
+        # place; a deliberate 0 still means "no deadline", see WALK_BUDGET_SECONDS.
+        budget_s=float(getattr(pv_cfg, "budget_seconds", None)
+                       if getattr(pv_cfg, "budget_seconds", None) is not None
+                       else pageviews.WALK_BUDGET_SECONDS))
+    si_rows, si_as_of = short_interest.fetch_short_interest(cfg, run_day,
+                                                            dry_run=args.dry_run)
+    for s in attention_names:
+        s.attention = attention.get(s.ticker)
+        s.pageviews = raw_views.get(s.ticker)
+        history.annotate(run_day, s.ticker, attention=s.attention, pageviews=s.pageviews)
+    for s in board:
+        row = si_rows.get(s.ticker) or {}
+        if si_as_of and row.get("days_to_cover") is not None:
+            # The number and its date travel together or not at all, in BOTH directions.
+            # Short interest is 11-24 days stale by nature and ships beside short_ratio,
+            # which is genuinely D-1, so an undated days-to-cover borrows a freshness it
+            # does not have — and a lone as_of on a ticker FINRA never reported implies
+            # a measurement that does not exist. Pairing them here, where the values are
+            # SET, is what makes every downstream surface safe by construction.
+            s.days_to_cover = row["days_to_cover"]
+            s.short_interest_shares = row.get("shares")
+            s.short_interest_as_of = si_as_of
     history.prune(keep_through=run_day, days=cfg.history_days)
     if not args.dry_run:
         history.save()
@@ -168,6 +236,47 @@ def main(argv=None) -> int:
         "finra": "ok" if short_ratios else "down",
         "cboe": "ok" if cboe_hits else ("down" if board else "unused"),
         "cramer": "ok" if cramer_by else "down",
+        "tickermap": "ok" if len(ticker_titles) > overrides_n else "down",
+        # FOUR states, and the ORDER is the whole guard. raw_views is empty in three
+        # different worlds and only one of them is an outage: Wikimedia failed; nothing
+        # was ever asked of it (tickermap down and a cold about cache — a real Tuesday,
+        # and "down" there asserts an outage that never happened); or every mapped title
+        # answered 404 / served a window that does not reach D-1. That last one is a
+        # HEALTHY Wikimedia — a 404 is an answer — and it is not hypothetical: D-1
+        # availability at board time is inferred from dump timestamps, never observed
+        # (docs/HANDOFF.md), so a whole board can legitimately come back empty. So a
+        # miss NEVER darkens the LED, and only TRANSPORT failures can.
+        # But transport failures must be checked BEFORE raw_views, not after: a
+        # `"ok" if raw_views` first test made a genuine PARTIAL outage read green —
+        # measured, 12 tickers, 2 answered, then 3 consecutive transport failures tripped
+        # pageviews' breaker and 10 tickers got nothing, and the glanceable surface said
+        # the source was fine. Both degrade warns landed in health["problems"], which is
+        # discoverable, not visible.
+        # And partial is its own state rather than "down": some names genuinely do carry
+        # attention data on such a run, so claiming a dead source would be as wrong in
+        # the other direction. degraded = asked, some answered, some transports died.
+        # `pv_truncated` is the FIFTH world and the one this ordering used to miss
+        # outright: pageviews' wall-clock budget abandons the tail of the walk, and that
+        # break moved neither of the two inputs above, so a walk that asked 15 of 20
+        # names read "ok". Simulated against the real 20s timeout: a Wikimedia answering
+        # in 12s gets 15/20 asked and 0 failures; at 19s, 10/20 and 0 failures. Under the
+        # timeout, so nothing is a transport failure — over what the walk can afford.
+        # It reads "degraded", not "down", because the source is UP; we did not finish
+        # asking. And it is checked AFTER the transport tests so that a truncated walk
+        # whose every answer also died still reports the outage it is.
+        "wikimedia": ("unused" if not pv_titles          # nothing was ever asked of it
+                      else "down" if pv_failures and not raw_views      # asked, all died
+                      else "degraded" if pv_failures     # asked, some died, some answered
+                      else "degraded" if pv_truncated    # asked, but not all of them
+                      else "ok"),                        # asked everything, nothing failed
+        # Two states here, checked rather than assumed: unlike wikimedia, this source
+        # takes no per-ticker input, so there is no "nothing was asked" world to confuse
+        # with failure — fetch_short_interest always queries the settlement endpoint and
+        # returns ({}, "") ONLY when upstream and the vendored snapshot are both gone.
+        # Snapshot-served rows read "ok" on purpose: at a twice-monthly settlement
+        # cadence a snapshot of the current settlement is the same data, not a degraded
+        # copy — and a real upstream outage still leaves its degrade.warn in health.
+        "finra_si": "ok" if si_rows else "down",
     }
     html = render_html(**_build_context(board, signals, run_day, corpus, refreshed,
                                         refreshed_iso, today_read, chips, detail_json,
@@ -183,6 +292,11 @@ def main(argv=None) -> int:
                                 components=s.components,
                                 short_ratio=s.short_ratio, pc_ratio=s.pc_ratio,
                                 uoa=s.uoa, cramer=s.cramer,
+                                pageviews=s.pageviews,
+                                # context, never a component — and never undated
+                                days_to_cover=s.days_to_cover,
+                                short_interest_shares=s.short_interest_shares,
+                                short_interest_as_of=s.short_interest_as_of,
                                 mentions=s.mentions, score=round(s.score, 2),
                                 state=s.state, price=s.price)
                            for s in board],
@@ -481,6 +595,9 @@ def _detail_blob(board, history, run_day, reddit_subs=None):
             state=s.state, pct_bull=int(s.pct_bull), price=s.price, pct_change=s.pct_change,
             composite=s.composite, components=(s.components or {}),
             short_ratio=s.short_ratio, pc_ratio=s.pc_ratio, uoa=s.uoa, cramer=s.cramer,
+            pageviews=s.pageviews,
+            # the modal renders these two together or not at all — see the template
+            days_to_cover=s.days_to_cover, short_interest_as_of=s.short_interest_as_of,
             upvotes=s.upvotes, themes=(s.themes or []), summary=s.summary, why=_why(s),
             headlines=(s.headlines or [])[:3],   # the actual news driving the chatter
             reddit=_reddit_search_url(s.ticker, reddit_subs),  # link to live Reddit discussions
@@ -499,9 +616,13 @@ def _chip_list(board, themes):
         chips.append("Trump")
     return chips
 
+# Display order for the signal-DNA strip. `attention` is shown like any other component
+# even though it carries no weight in the blend — it is a published measurement, and the
+# strip is the transparency surface, not the composite.
 _COMP_ORDER = [("velocity", "vel"), ("direction", "dir"), ("engagement", "eng"),
                ("short_pressure", "shorts"), ("options", "options"),
-               ("events", "alerts"), ("cramer_inverse", "cramer⁻¹")]
+               ("events", "alerts"), ("attention", "attn"),
+               ("cramer_inverse", "cramer⁻¹")]
 
 def _comp_list(s):
     """Fixed-order (label, value) pairs for the signal-DNA strip. A None value means

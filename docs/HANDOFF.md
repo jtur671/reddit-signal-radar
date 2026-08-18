@@ -24,12 +24,12 @@ of this document.
 
 | | |
 |---|---|
-| Branch | `harden/audit-fixes` (ahead of `main`; security-audit fixes + this research) |
+| Branch | `fix/test-hermeticity` (ahead of `main`). `harden/audit-fixes` merged to `main` as `3934e78` |
 | Prod | daily board + email 6:17 AM ET; 9-monitor fleet on a 30-min tick |
-| Tests | **353 passed in 45.24s** (measured 2026-08-17, `.venv`, after the audit-fixes wave). Re-run rather than quote: `source .venv/bin/activate && python -m pytest` |
+| Tests | **453 passed** (measured 2026-08-17 after E2a+E2; was 353/45.24s before this branch). Re-run rather than quote: `source .venv/bin/activate && python -m pytest` |
 | Data branch | `origin/data` — 654 tickers, 76 daily snapshots, 8,364 ticker-days (measured 2026-08-17) |
 | Backtest power gate | needs 150 days, has 76 → opens ≈ **2026-11-01** |
-| Current phase | **E2 — Non-social attention**, spec not yet written |
+| Current phase | **E2 — Non-social attention: BUILT 2026-08-17, never run live.** Next action is verifying the first 6:17 AM run, §2 |
 
 ### ~~Open defect found during research (blocks E1)~~ — RESOLVED `e602bce`, see §5.
 
@@ -86,14 +86,30 @@ An item is not done until its hook has been run.
       **↪ hook:** tick E1 in [[ROADMAP]], move this whole block to §5, set §1 phase to E2.
       Done.
 
-### E2 — Non-social attention · next
+### E2 — Non-social attention · **BUILT 2026-08-17**, not yet run live
 
-- [ ] Decide: new weighted components, or published-but-unweighted until the power gate
+- [x] Decide: new weighted components, or published-but-unweighted until the power gate
       **↪ hook:** record the decision and its reason in §5 — this one will be re-litigated.
-- [ ] Wikimedia pageviews ingest
-- [ ] Short interest + days-to-cover ingest
-      **↪ hook:** if these become composite components, add a `regime_notes` entry and
-      update `config.yaml`'s `composite.weights` comment.
+      Done — **published-but-unweighted**, full reasoning in §5.
+- [x] Specs written and approved: [[2026-08-17-ticker-article-mapping-design]] (E2a,
+      the prerequisite) and [[2026-08-17-non-social-attention-design]] (E2).
+- [x] **E2a — ticker→article mapping.** `radar/tickermap.py` + `radar/ticker_overrides.yml`
+      (30 curated entries), `radar/about.py` rewritten to consume exact titles.
+- [x] Wikimedia pageviews ingest — `radar/pageviews.py`, published as an unweighted
+      `attention` component.
+- [x] Short interest + days-to-cover ingest — `radar/short_interest.py`, FINRA consolidated,
+      an `as_of`-stamped context field that is **not** a composite component.
+- [ ] **Verify the first live run.** Nothing here has ever contacted Wikimedia or FINRA
+      from the daily job — the whole suite is hermetic by design, so the first real
+      exercise is the next 6:17 AM run.
+      **↪ hook:** check `health.json`'s `sources` for `tickermap` / `wikimedia` / `finra_si`,
+      confirm `data/ticker_articles.json` and `data/short_interest.json` landed on the
+      `data` branch, and put the measured ticker-map coverage in §4 next to the 80.3%
+      estimate. If the map resolves materially fewer than ~265 of 330 equities, say so.
+      ~~**↪ hook:** if these become composite components, add a `regime_notes` entry~~ —
+      **not triggered.** `attention` ships with no weight, so the composite value is
+      bit-for-bit unchanged and the backtest series stays comparable. Short interest is
+      not a component at all. If either is ever weighted, this hook comes back.
 
 ### E3 — Second attention source · ✅ unblocked 2026-08-17 (StockTwits answers CI)
 
@@ -152,8 +168,10 @@ Two things it settled that were guesses before:
 
 ## 4. Numbers to check against reality later
 
-Every one of these is an estimate that a future session will be tempted to quote as
-fact. Replace with a measurement when you can.
+Every one of these is a number a future session will be tempted to quote as fact.
+Rows still marked *inferred*/*est.* are estimates — replace them with a measurement when
+you can. Rows marked **MEASURED** carry the date and the sample size; re-measure rather
+than trusting the label, and if a re-measurement disagrees, say so here.
 
 | Claim | Value | Basis | Replace when |
 |---|---|---|---|
@@ -163,7 +181,14 @@ fact. Replace with a measurement when you can.
 | Board names/day (post-floor) | ~54 | history, 2026-08-08→17 | monthly |
 | Reddit RSS budget | 1 req / ~60s / IP | `x-ratelimit-*` headers | if RSS is ever used |
 | EFTS page cap | 100 hits | `len(hits)` vs `total` | if paging is added |
-| Test suite | 353 passed / 45.24s | measured 2026-08-17, after the audit-fixes wave | every branch |
+| Test suite | **537 passed / 2.0s** | measured 2026-08-18 on `fix/test-hermeticity` after the GATE 7 loop-back (was 530/2.0s before it, 465/3.7s after the outsourced-review fix wave, 446/2.36s after E2a+E2, 353/43.95s before the suite went hermetic, `b6b90ad`); 0 network violations under a socket blocker. **Python 3.12.3 / requests 2.32.3 — NOT CI's pinned 3.11 / 2.33.0**, see §5 | every branch |
+| Ticker-map coverage | 80.3% of the 330-equity universe (est.) | Wikidata US-scoped + 30 overrides; **never run live** | first live run |
+| Catalyst/attention sources contacted live | **E2's three, by hand — never by the workflow** | 2026-08-18, from a dev machine, driving the real module functions: `short_interest._latest_settlement` + `_fetch_all_pages` (22,341 rows, `complete=True`), `pageviews._get_series` (10 titles), `tickermap._get_json` (`COUNT` and `MAIN`, 4,015 rows both). The suite itself stays hermetic by design, so this is evidence about the ENDPOINTS, not about the job | first live run — nothing here proves the GitHub-hosted runner's IP gets the same answers |
+| Wikimedia D-1 availability at board time | D-1 present on the AQS API by **05:28 UTC**, ~4.8 h before the 10:17 UTC job | **MEASURED 2026-08-18** — the previous *inferred* value (~02:30 UTC on D+1, from `dumps.wikimedia.org` rollup timestamps, 13/13 days 02:14–02:49) is now superseded by direct observation: D-1 (2026-08-17) answered on the AQS API itself at 05:28 UTC, re-confirmed at 05:53 UTC with `_get_series`'s own tail check passing on 8 of 10 real board-shaped titles (the other 2 were `MISS` — no article, not a stale tail) | **ONE observation, not a pattern.** It closes "does D-1 ever exist by board time"; it does not establish a publication *schedule*. Re-check on a few more mornings before quoting a time. Blast radius stays bounded either way: a board-wide stale tail costs the attention signal for that day but no longer trips the breaker or reds the `wikimedia` LED (see §5, 2026-08-17 fix wave) |
+| Short-interest staleness | 11–24 days, sawtooth | measured 2026-08-17: latest settlement 2026-07-31, next (08-14) publishes 08-25 | every FINRA schedule change |
+| `about.py` ticker→article wrong-entity rate | **13.7%** (34 of 249 resolved) | measured 2026-08-17 against `origin/data` `about.json`, 420 tickers | after E2a lands — target 0.4% |
+| Ticker→article coverage | 59.3% of 420 → **80.3%** of the 330-equity universe | measured 2026-08-17; the other 90 are ETFs/crypto that cannot carry an exchange ticker statement | after E2a lands |
+| WDQS `MAIN` query vs its ~60 s silent-truncation wall | **4.2–40.3 s** across one morning; **40.3 s worst observed** → ~20 s of headroom | measured 2026-08-18, n=7 against the live endpoint (`COUNT` 3.3–13.7 s). The spread is WDQS's own result cache, not our query — a cache-busted cold run measured 4.2–13.9 s (n=5) and a warm one 0.4 s. The thinnest margin on the branch, and the only E2 number that could plausibly move | any WDQS schema/load change, or if `EXCHANGES`/`_WHERE` grows. It fails **CLOSED** — truncation makes `COUNT != len(bindings)`, which refuses the fetch and keeps the snapshot (`radar/tickermap.py`) — so this is a degradation (a stale map for a month), never a bad map |
 | `edgar8k` `"bankruptcy"` hits/day vs the 100-hit page cap | **127 / 188 / 197** over the monitor's real 2-day window (2026-08-11→12, 12→13, 13→14) | measured 2026-08-17 against `efts.sec.gov` | if EFTS paging is added or the phrase is narrowed |
 
 **`edgar8k`'s `"bankruptcy"` phrase already exceeds the EFTS page cap every day, and
@@ -182,6 +207,111 @@ Move completed checklist blocks here with the date and commit SHA. Keep it short
 decision log in [[ROADMAP]] is where *why* lives; this is just *what*, so a future
 session can tell "not done yet" from "done and reverted".
 
+- **2026-08-17** — **Outsourced-review fix wave** on `fix/test-hermeticity`; **465 tests
+  passing, 0 network violations**. Five findings, all verified against the code first:
+  - `radar/pageviews.py` collapsed three outcomes into `None` — transport failure, a
+    404, and the fail-closed stale-tail refusal — so all three fed one 3-strike breaker.
+    Because D-1 availability at board time is *inferred* (see §4), an unpublished D-1
+    would have refused on EVERY ticker, tripped the breaker on the third, dropped
+    attention for the whole board, and lit `wikimedia` red for an outage that never
+    happened. `_get_series` now returns a `MISS` sentinel (same shape as
+    `options.py`'s `"missing"`); only transport failures count, and the LED keys on
+    those rather than on `raw_views` being empty.
+  - `radar/tickermap.py` tested an end-date for PRESENCE where the spec and its own
+    docstring say *in the past*. A planned future delisting therefore read as ended, and
+    where that statement was the correct current listing the ticker resolved cleanly to
+    the WRONG article. `parse_rows` now takes `run_day`; an unparseable date fails
+    toward omission, never toward a guess.
+  - `radar/short_interest.py` skipped its truncation guard entirely when FINRA omitted
+    the `record-total` header, vendoring a partial universe under the correct settlement
+    date — which then matches the refresh gate and is served for up to two weeks.
+    `_fetch_all_pages` now reports completeness explicitly instead of leaving the caller
+    to infer it from `total is not None`; that inference *was* the bug.
+  - Still Running names never got attention, though the E2 spec costs the ingest as
+    "board plus Still Running" and the detail modal already renders `wiki views` for
+    them. They are exactly the names where "is the wider world still looking?" carries
+    information.
+
+- **2026-08-17** — **E2a + E2 built.** Twelve fleet-facing commits on
+  `fix/test-hermeticity`; **446 tests passing, 0 DNS lookups** under a socket blocker.
+  New modules: `radar/tickermap.py`, `radar/pageviews.py`, `radar/short_interest.py`,
+  `radar/ticker_overrides.yml`. `radar/about.py` no longer guesses titles from company
+  names. `attention` joins `components` **with no weight**, so the composite value is
+  unchanged and **this is not a regime boundary**.
+  **What review caught that would otherwise have shipped** — recorded because each was a
+  defect in the spec or plan, not in the implementation, and the same mistake is easy to
+  repeat:
+  - `radar/short_interest.py` would have shipped **inert**. Its discovery call returns
+    HTTP 400 (FINRA rejects sorting without partition keys in an EQUAL filter), and its
+    paging call omitted the settlement filter entirely, walking a >3M-row multi-year
+    archive instead of the 22,341-row settlement.
+  - The tickermap truncation guard could be bypassed: WDQS returning 200 with **zero**
+    rows while `COUNT(*)` agreed at zero passed an equality-only check, overwriting the
+    healthy snapshot with an empty map and serving it for 30 days with no warning.
+  - Adding `attention: 0.10` to `config.yaml` while cutting `velocity` to 0.20 kept the
+    weight sum at 1.0 and passed **all 392 tests**, silently re-pricing every composite.
+    The guard had been aimed at `DEFAULT_WEIGHTS`, which production only reads as a
+    fallback.
+  - A test read **production cache state**: `daily.yml` restores `data/` before the pytest
+    gate, so the first day a real ticker landed in `about.json` the gate would fail and
+    **halt the daily publish** — no board, no email — until someone hand-edited the data
+    branch.
+  - An empty cache entry was a permanent hit, which made the entire 30-entry override
+    file **inert** for any ticker cached before its override existed.
+  - Two health LEDs could not tell the truth: `tickermap` could never read `down` (the
+    overrides kept the map non-empty), and `wikimedia` read `down` when nothing had been
+    *asked*, not when Wikimedia had failed.
+  - Two tests were **tautological** — one compared a value against a string built from
+    that same value, and one asserted nothing at all.
+- **2026-08-17** — **E2 weighting decided: published-but-unweighted.** Recording the
+  reasoning because the checklist warned this one gets re-litigated.
+  **Short interest is excluded permanently** — measured 11–24 days stale, twice monthly
+  (latest available on 2026-08-17 is the 2026-07-31 settlement; 2026-08-14 publishes
+  2026-08-25). Inside a daily composite that is a fortnightly step function, and the
+  backtest would misattribute each step to whichever day it landed on. It ships as an
+  `as_of`-stamped context field.
+  **`attention` (pageviews) is unweighted for now**, for two reasons — the second is the
+  one that actually decides it:
+  1. The power gate needs 150 days and has 76 (≈2026-11-01), so no measured weight exists.
+  2. **The recalibration story this project has assumed since 2026-08-07 is false.**
+     `radar/backtest.py`'s `_frames()` (`backtest.py:117`) emits the raw velocity engine
+     score, not composite components; grepping that module for `components`,
+     `short_ratio`, `cramer` or `composite` returns only the `REGIME_NOTES` strings.
+     **Per-component ICs are computed nowhere in this repo.** So "recalibrate from
+     measured ICs — a config change, not a code change" (stated in `radar/composite.py:5`,
+     `config.yaml:111`, `README.md:66`) is wrong as written: changing a weight's *number*
+     is config-only, but producing the measurement that justifies it does not exist and
+     is a code change nobody has scoped.
+  Mechanically this costs nothing: `composite.py:54` filters on `weights.get(k, 0) > 0`,
+  so a component with no weight publishes in `data.json` and is dropped from the blend —
+  no rebalance of the existing seven (`tests/test_run_smoke.py:51` pins the sum to 1.0),
+  and **no regime boundary**, since the composite value is unchanged.
+  **↪ follow-up:** building the per-component IC estimator is the prerequisite for ever
+  weighting `attention`, and should correct that claim in all three files. The inputs are
+  already persisted (`history.annotate` writes `ts_bull`, `short_ratio`, `pc_ratio`,
+  `uoa`, `cramer` per ticker-day) — this is an estimator, not an ingest.
+- **2026-08-17** — **E2 + E2a specs approved.** Research measured two things the roadmap
+  had wrong. (a) Pageviews and short interest are **not peers** — 7.5 h fresh vs 11–24
+  days stale — so they are specced as separate tiers, not one slot.
+  (b) A prerequisite the roadmap did not see: `radar/about.py` maps ticker→article by
+  guessing from ApeWisdom's company name, and the live cache on `origin/data` is 59.3%
+  populated and **13.7% wrong-entity** — `AAPL`→the fruit, `ADBE`→a building material,
+  `HTZ`→the SI unit, `SDGR`→a dead physicist, `ID`→Mount Everest. Cosmetic on the About
+  modal today; a silent permanent signal inversion the moment pageviews consume it
+  (`SDGR` would feed ~988 physics pageviews/day into a biotech score whose real value is
+  41). Fixed by a Wikidata-derived exact-title map: precision 13.7% → 0.4% wrong, and it
+  **fails closed** — `MVIS` resolves to nothing rather than a 1979 game console. Specs:
+  [[2026-08-17-ticker-article-mapping-design]], [[2026-08-17-non-social-attention-design]].
+- **2026-08-17** — **Test suite made hermetic** (`b6b90ad`, branch `fix/test-hermeticity`).
+  353 passed 43.95 s → 0.95 s; 0 DNS lookups under a socket blocker. Guarded
+  `radar.enrich._yf_quote` and `radar.about.fetch_summary` in a second autouse
+  `tests/conftest.py` fixture, and stubbed FINRA + CBOE in
+  `test_run_smoke.py::test_dry_run_writes_dashboard`. `tests/test_enrich.py` needed the
+  real `_yf_quote` restored in four tests (a `sys.modules` fake does not undo a
+  `setattr` on the module-level name); one of those four had been passing **vacuously**
+  — it asserts `(None, None)`, exactly what the stub returned for any input, so it had
+  silently stopped guarding the camelCase/snake_case distinction it exists for. See §6
+  for the three false claims this replaced.
 - **2026-08-17** — **E1 done.** Signed the `events` composite component (`bearish 0 /
   neutral 50 / bullish 100`, `None` when no fresh alert covers the ticker — was `100`/`0`
   with `0` doing double duty as both "bearish" and "no alert"), generalized the EDGAR
@@ -219,6 +349,67 @@ session can tell "not done yet" from "done and reverted".
 
 ## 6. House rules a new session will otherwise violate
 
+- **Accepted risks on the three new E2 sources** — measured 2026-08-18 during the QA
+  game-day pass. None is a defect; all are things a future session would otherwise
+  rediscover the hard way.
+  - **Wikimedia D-1 unpublished at board time ⇒ attention blank BOARD-WIDE, LED stays
+    GREEN**, one warn, status `degraded`, **no email**. §4 records the *cause* as
+    inferred; this is the *consequence*. The board looks entirely normal with an empty
+    attn column. Traced end-to-end, not guessed.
+  - **No outage of the three new sources can ever reach `severe`**, and only `severe`
+    emails. All three could be dark for a month with `health.json` and a footer LED as
+    the sole surface. Consistent with `finra`/`cboe`/`cramer` — a deliberate policy,
+    recorded as one.
+  - **`spike_score` uses 28 *consecutive calendar* days** while the board runs 7 days a
+    week, so weekend attention is systematically depressed against a weekday-dominated
+    median. Cosmetic while `attention` is unweighted; **a real bias the moment the IC
+    follow-up weights it.** Magnitude unmeasured.
+  - **Day 1 after merge shrinks `data/about.json` from 420 entries to ~15–20**, because
+    only board + Still Running names get described. Correct by design (the schema bump
+    discards a cache that was 13.7% wrong-entity *hits*), invisible to users — but a 20×
+    file shrink on the data branch will look like data loss to whoever sees it first.
+  - **`_latest_settlement` trusts `availablePartitions[0]` to be newest-first** with no
+    bound. If FINRA reorders, the job vendors an old settlement and the short-circuit
+    serves it indefinitely. Fails *visibly* (`as_of` always renders), so a risk, not a
+    defect. `latest <= run_day` is one line if it ever bites.
+  - **`days_to_cover` is set only for board names, never for Still Running**, while
+    `attention` covers both — so the Still Running modal can never show days-to-cover.
+  - ~~**No gate has ever run in CI's actual configuration.**~~ **CLOSED 2026-08-18.**
+    Every gate in the QA gauntlet ran on this machine's Python 3.12.3 + requests 2.32.3,
+    while CI pins **3.11** and **2.33.0** — so none of those green suites were evidence
+    about what actually publishes. Closed by dispatching `tests` against the branch:
+    run [`32148326353`](https://github.com/jtur671/reddit-signal-radar/actions/runs/32148326353)
+    installed `requests-2.33.0` on `python-version: 3.11` and ran **537 passed in 28s**.
+    Worth keeping the habit: a feature-branch push does **not** trigger `tests` (it fires
+    on push-to-`main`, `pull_request`, or `workflow_dispatch`), so branch work is
+    unverified against the CI runtime until you dispatch it or open the PR.
+  - **Disk is a non-issue, measured:** the whole `data` branch packs to **0.7 MB from
+    29.2 MB raw** (git deltas `history.json` to ~12 KB/version); both new snapshots add
+    **≤6.8 MB/yr** worst case. Recorded so it stops being re-litigated.
+
+- **Six production-state readers are still unguarded, and the guard is enumerated rather
+  than enforced.** `tests/conftest.py`'s `_no_production_state` names its readers one by
+  one. The same Critical has now landed **twice** on this branch — once for `about.json`,
+  once for the two new snapshots — so a seventh reader arriving uncovered is a demonstrated
+  risk, not a hypothetical one.
+  Measured 2026-08-17 by instrumenting `Path.read_text` and `open` across the whole suite
+  with CI-restored `data/`, the currently-unguarded reads are:
+  `data/history.json` (`run.py` `History.load`, 46 reads) and the five
+  `data/*_alert.json` files via `_load_alerts`' glob (23 reads each).
+  They do **not** break the gate today — 453 passed with all of it present — because alert
+  cards are age-gated by `alert_is_fresh` and nothing asserts on sparkline content. That is
+  a property of today's assertions, not a guarantee.
+  `data/cramer_snapshot.json` is a declared `snapshot_path` with no guard too; it escapes
+  only because `fetch_cramer` is skipped under `--dry-run`.
+  **↪ the fix, and why the obvious version is too weak:** a session-scoped plugin that wraps
+  `Path.read_text`/`open`, derives the production-state set from **`.gitignore`'s `data/`
+  entries** (the maintained source of truth for generated state), and asserts the observed
+  reads are within an explicit allowlist. Deriving from `config.yaml`'s `snapshot_path`
+  values instead is ~6 lines but strictly weaker — it would have missed `about.json`, the
+  *first* occurrence of this bug, because `run.py` hardcodes that path and config never
+  declares it. Measured against today's suite the interceptor gives zero false positives
+  and six true positives.
+
 - **Bot state lives on the orphan `data` branch, not `main`.** Local `data/` is stale.
   `git fetch origin data && git checkout origin/data -- data/` before reasoning about
   real state. Committing state to `main` is a regression.
@@ -235,14 +426,31 @@ session can tell "not done yet" from "done and reverted".
 - **Never quote a test count, ticker count, or date you did not run a command for.**
   This project's docs have been wrong that way before; the tables above exist so the
   next session measures instead of remembering.
-- **The test suite makes live network calls, and it gates the daily publish.**
-  `tests/test_run_cboe.py`'s three tests call `run.main()` end-to-end. They stub
-  mentions, Tradestie, short ratios, DeepSeek, news and `option_stats` — but leave
-  **yfinance price enrichment and the Cramer feed live**. Measured 2026-08-17: those
-  three account for **~44 s of the suite's ~48 s**, and on one slow-network window the
-  whole suite took **786 s (13 min)** instead of 48 s while still passing 353/353.
-  Both `test.yml` and `daily.yml` run pytest as a gate, and five modules
-  (`apewisdom`, `fetch`, `shorts`, `cramer`, `news`) use real `time.sleep` exponential
-  backoff — so a slow upstream host slows or stalls the 6:17 AM publish. Not fixed:
-  stubbing those two calls would make the suite hermetic and ~45 s faster. Worth doing
-  before the suite grows.
+- ~~**The test suite makes live network calls, and it gates the daily publish.**~~
+  **FIXED 2026-08-17, `b6b90ad`** — and the entry that stood here was wrong in three
+  ways, which is worth recording because a future session would have built on it:
+  - It said the **Cramer feed** was live. It was not. `radar/run.py:138` reads
+    `fetch_cramer(cfg, run_day) if not args.dry_run else {}` and every test passes
+    `--dry-run`, so it was never reachable.
+  - It **missed Wikipedia entirely** — `run.py:79/81` → `about.describe` →
+    `en.wikipedia.org`, and `data/about.json` is gitignored so the cache is always
+    empty and every board ticker was a live fetch. This was the larger of the two
+    real callers.
+  - It named only `tests/test_run_cboe.py`. `tests/test_run_smoke.py::test_dry_run_writes_dashboard`
+    was worse, leaving **FINRA and CBOE** live too — while its own inline comment
+    claimed "no live network in tests".
+
+  Measured before/after: **353 passed 43.95 s → 353 passed 0.95 s**, and a socket
+  blocker now reports **0 DNS lookups** (validated against the pristine tree as a
+  control, where the same blocker fails the smoke test). The guard is a second autouse
+  fixture in `tests/conftest.py`.
+
+  **Still true, still unfixed** — these are production stall risks, not test ones, and
+  they are what could actually delay the 6:17 AM publish. `daily.yml` runs pytest as a
+  gate with no `timeout:`, so a hung suite hangs the job. **Nine** modules (not five)
+  use real `time.sleep` exponential backoff: `apewisdom`, `fetch`, `shorts`, `cramer`,
+  `news`, `tradestie`, `options`, `trump`, `monitors/edgar`. Of those, `shorts`,
+  `cramer`, `news` and `trump` **discard the `sleep_s`/`retries` knobs their own helpers
+  expose** (the callers never pass them), so they have no config-side brake at all. And
+  `radar/enrich.py:7` calls yfinance with **no timeout whatsoever** — that, not backoff,
+  is the likeliest cause of the 786 s window recorded earlier.
