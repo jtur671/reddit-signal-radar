@@ -29,6 +29,7 @@ UA = "reddit-signal-radar/0.1 (open-source ticker signal bot)"
 
 BASELINE_DAYS = 28
 FETCH_DAYS = 35          # slack, so missing datapoints still leave a full baseline
+MAX_CONSECUTIVE_FAILURES = 3   # circuit breaker; see fetch_attention
 
 
 def spike_score(series, min_baseline: int = 10, min_days: int = 21) -> float | None:
@@ -95,19 +96,32 @@ def _get_series(title: str, start: str, end: str) -> list[int] | None:
 
 def fetch_attention(titles: dict, tickers: list, run_day: str, sleep_s: float = 0.2):
     """({ticker: 0-100}, {ticker: latest views}) for mapped tickers. Fail-soft: a
-    ticker that errors or scores None is simply absent from the scores dict."""
+    ticker that errors or scores None is simply absent from the scores dict.
+
+    Breaks after MAX_CONSECUTIVE_FAILURES. This walk is serial and each request carries a
+    20s timeout, so a hung Wikimedia costs 15 tickers x 20s ~= 5 minutes of stall inside
+    the job that gates the daily publish -- and every one of those requests buys the same
+    answer. Same breaker as radar/run.py's cboe loop, for the same measured reason. The
+    counter is CONSECUTIVE, not total: a name with no article or a stale redirect is
+    ordinary and must not stop a healthy walk."""
     end = date.fromisoformat(run_day) - timedelta(days=1)
     start = end - timedelta(days=FETCH_DAYS)
     s, e = start.strftime("%Y%m%d"), end.strftime("%Y%m%d")
     scores, raw_views, failures = {}, {}, 0
-    for ticker in tickers:
-        title = titles.get(ticker)
-        if not title:
-            continue
-        series = _get_series(title, s, e)
+    consecutive_failures = 0
+    asked = [t for t in tickers if titles.get(t)]
+    for i, ticker in enumerate(asked):
+        series = _get_series(titles[ticker], s, e)
         if not series:
             failures += 1
+            consecutive_failures += 1
+            if consecutive_failures >= MAX_CONSECUTIVE_FAILURES:
+                degrade.warn("wikimedia",
+                             f"skipping remaining {len(asked) - i - 1} after "
+                             f"{MAX_CONSECUTIVE_FAILURES} consecutive failures")
+                break
             continue
+        consecutive_failures = 0
         raw_views[ticker] = series[-1]
         score = spike_score(series)
         if score is not None:

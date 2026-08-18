@@ -197,3 +197,36 @@ def test_snapshot_read_refilters_the_sentinel(monkeypatch, tmp_path):
     rows, _ = si.fetch_short_interest(_cfg(tmp_path), "2026-08-17")
     assert "AAALF" not in rows
     assert rows["NVDA"]["days_to_cover"] == 2.47
+
+
+def test_the_page_walk_has_a_hard_cap(monkeypatch):
+    """`while True` with `offset += page_size` in a scheduled job is an unbounded loop:
+    it exits only on a SHORT page, so a FINRA endpoint that ignores `offset` (or starts
+    echoing full pages during an incident) walks forever and hangs the daily job until
+    the runner kills it — no board, no email, no publish.
+
+    The fake here raises rather than looping forever, so a missing cap fails this test in
+    milliseconds instead of hanging the suite. 10 pages is 50,000 rows against a measured
+    22,341-row settlement, so the cap cannot fire on healthy data."""
+    calls = []
+
+    def fake_post(url, payload, ua, **k):
+        calls.append(payload["offset"])
+        if len(calls) > si.MAX_PAGES + 5:
+            raise AssertionError("unbounded page walk — the cap never fired")
+        return ([dict(RAW[0]) for _ in range(3)], 999999)      # always a FULL page
+
+    monkeypatch.setattr(si, "_post_json", fake_post)
+    rows, total = si._fetch_all_pages("ua", 3, "2026-07-31")
+
+    assert len(calls) == si.MAX_PAGES, f"walked {len(calls)} pages, cap is {si.MAX_PAGES}"
+    assert calls == [i * 3 for i in range(si.MAX_PAGES)], "offset must still advance"
+    assert rows is not None and len(rows) == si.MAX_PAGES * 3, "the capped rows are returned"
+    assert any("page cap" in e["reason"] for e in degrade.events()), \
+        "hitting the cap is abnormal — it must leave a breadcrumb"
+
+
+def test_the_page_cap_is_generous_enough_never_to_fire_on_healthy_data(monkeypatch):
+    """The other half: a cap that trips on a normal settlement would silently truncate
+    the universe every day. Measured 22,341 rows at page_size 5000 = 5 pages."""
+    assert si.MAX_PAGES * si.PAGE >= 50000

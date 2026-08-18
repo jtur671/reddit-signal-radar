@@ -168,7 +168,7 @@ def _snapshot_rows(snap: Path) -> int | None:
         return None
 
 
-def fetch_ticker_map(cfg, run_day: str) -> dict[str, str]:
+def fetch_ticker_map(cfg, run_day: str, dry_run: bool = False) -> dict[str, str]:
     """Live fetch -> COUNT(*) validate -> vendor -> parse; snapshot fallback on outage
     or on a count/floor/regression refusal; {} + warn when both are gone. Overrides
     always win.
@@ -176,7 +176,11 @@ def fetch_ticker_map(cfg, run_day: str) -> dict[str, str]:
     The COUNT(*) check alone only proves the live query and the count query AGREE --
     it cannot tell they agree on a DEGRADED answer. MIN_ROWS and the regression check
     against the previous snapshot's rows_fetched catch that: a healthy fetch is never
-    replaced by a much smaller one, even when the two queries are internally consistent."""
+    replaced by a much smaller one, even when the two queries are internally consistent.
+
+    `dry_run` suppresses the snapshot WRITE only -- the fetch, the COUNT(*) check and
+    every refusal path still run, so a dry run exercises the full code path without
+    rewriting a file the scheduled job owns."""
     tc = getattr(cfg, "tickermap", None)
     snap = Path(getattr(tc, "snapshot_path", "data/ticker_articles.json"))
     ov_path = getattr(tc, "overrides_path", "radar/ticker_overrides.yml")
@@ -225,14 +229,15 @@ def fetch_ticker_map(cfg, run_day: str) -> dict[str, str]:
         if prev_rows is not None and n < prev_rows / 2:
             return _refuse(f"row count {n} under half of previous {prev_rows} — keeping snapshot")
         parsed = parse_rows(raw)
-        try:
-            snap.parent.mkdir(parents=True, exist_ok=True)
-            snap.write_text(json.dumps({"schema": 1, "fetched": run_day,
-                                        "rows_fetched": n,
-                                        "rows_expected": expected,
-                                        "map": parsed}, sort_keys=True))
-        except OSError as e:
-            degrade.warn("tickermap snapshot write", e)
+        if not dry_run:
+            try:
+                snap.parent.mkdir(parents=True, exist_ok=True)
+                snap.write_text(json.dumps({"schema": 1, "fetched": run_day,
+                                            "rows_fetched": n,
+                                            "rows_expected": expected,
+                                            "map": parsed}, sort_keys=True))
+            except OSError as e:
+                degrade.warn("tickermap snapshot write", e)
         return _finish(parsed)
 
     cached = _snapshot_map(snap)

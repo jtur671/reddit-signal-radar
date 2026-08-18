@@ -12,5 +12,6 @@ data/plays_log.json
 data/backtest.json
 data/cramer_snapshot.json
 data/ticker_articles.json
+data/short_interest.json
 data/*_seen.json
 data/*_alert.json

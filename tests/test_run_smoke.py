@@ -80,7 +80,7 @@ def test_run_maps_titles_and_reports_the_source(monkeypatch, tmp_path):
     # floor and would (correctly) light the LED red. Neither IREN nor KEEL is an override.
     mapped = dict(run.tickermap.load_overrides("radar/ticker_overrides.yml"))
     mapped["IREN"] = "IREN Limited"
-    monkeypatch.setattr(run.tickermap, "fetch_ticker_map", lambda cfg, run_day: mapped)
+    monkeypatch.setattr(run.tickermap, "fetch_ticker_map", lambda cfg, run_day, **k: mapped)
     monkeypatch.setattr(run.about, "fetch_summary",
                         lambda title, ua="x": fetched.append(title) or {
                             "desc": "d", "extract": "e", "title": title})
@@ -109,7 +109,7 @@ def test_run_reports_tickermap_down_when_the_map_is_empty(monkeypatch, tmp_path)
     monkeypatch.setattr(run, "option_stats", lambda ticker, cfg: None)
     monkeypatch.setenv("DEEPSEEK_API_KEY", "")
     monkeypatch.setattr(run.news, "headlines", lambda *a, **k: [])
-    monkeypatch.setattr(run.tickermap, "fetch_ticker_map", lambda cfg, run_day: {})
+    monkeypatch.setattr(run.tickermap, "fetch_ticker_map", lambda cfg, run_day, **k: {})
 
     out = tmp_path / "out"
     assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
@@ -142,7 +142,7 @@ def test_tickermap_led_is_down_when_only_the_overrides_survive(monkeypatch, tmp_
 
     only_overrides = run.tickermap.load_overrides("radar/ticker_overrides.yml")
     assert only_overrides, "the curated override file must be readable for this test to mean anything"
-    monkeypatch.setattr(run.tickermap, "fetch_ticker_map", lambda cfg, run_day: dict(only_overrides))
+    monkeypatch.setattr(run.tickermap, "fetch_ticker_map", lambda cfg, run_day, **k: dict(only_overrides))
 
     out = tmp_path / "out"
     assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
@@ -174,7 +174,7 @@ def test_tickermap_led_is_ok_when_wikidata_adds_anything(monkeypatch, tmp_path):
     assert len(merged) > 1, "the curated override file must be readable and non-trivial"
     assert "IREN" not in merged, "IREN must be a Wikidata resolution, not an override"
     merged["IREN"] = "IREN Limited"        # one thing Wikidata resolved
-    monkeypatch.setattr(run.tickermap, "fetch_ticker_map", lambda cfg, run_day: merged)
+    monkeypatch.setattr(run.tickermap, "fetch_ticker_map", lambda cfg, run_day, **k: merged)
 
     out = tmp_path / "out"
     assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
@@ -198,7 +198,7 @@ def test_footer_leds_render_the_tickermap_source(monkeypatch, tmp_path):
     monkeypatch.setattr(run, "option_stats", lambda ticker, cfg: None)
     monkeypatch.setenv("DEEPSEEK_API_KEY", "")
     monkeypatch.setattr(run.news, "headlines", lambda *a, **k: [])
-    monkeypatch.setattr(run.tickermap, "fetch_ticker_map", lambda cfg, run_day: {})
+    monkeypatch.setattr(run.tickermap, "fetch_ticker_map", lambda cfg, run_day, **k: {})
 
     out = tmp_path / "out"
     assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
@@ -284,7 +284,7 @@ def test_pageviews_uses_the_canonical_title_not_the_mapped_one(monkeypatch, tmp_
     _offline(monkeypatch, run, _board(run))
     monkeypatch.setattr(run.about, "load_cache", lambda path: {})
     monkeypatch.setattr(run.tickermap, "fetch_ticker_map",
-                        lambda cfg, run_day: {"IREN": "Iris Energy",   # a REDIRECT title
+                        lambda cfg, run_day, **k: {"IREN": "Iris Energy",   # a REDIRECT title
                                                "KEEL": "Keel Infrastructure"})
     # The summary endpoint resolves IREN's redirect; KEEL's article answers under the
     # title we asked for, so its canonical and mapped titles are the same string.
@@ -310,7 +310,7 @@ def test_pageviews_falls_back_to_the_mapped_title_when_about_has_none(monkeypatc
     _offline(monkeypatch, run, _board(run))
     monkeypatch.setattr(run.about, "load_cache", lambda path: {})
     monkeypatch.setattr(run.tickermap, "fetch_ticker_map",
-                        lambda cfg, run_day: {"IREN": "IREN Limited"})
+                        lambda cfg, run_day, **k: {"IREN": "IREN Limited"})
     monkeypatch.setattr(run.about, "fetch_summary", lambda *a, **k: None)   # empty title
     seen = {}
     monkeypatch.setattr(run.pageviews, "fetch_attention",
@@ -331,7 +331,7 @@ def test_short_interest_never_ships_without_its_settlement_date(monkeypatch, tmp
     import radar.run as run
     _offline(monkeypatch, run, _board(run))
     monkeypatch.setattr(run.short_interest, "fetch_short_interest",
-                        lambda cfg, run_day: ({"IREN": {"days_to_cover": 6.7,
+                        lambda cfg, run_day, **k: ({"IREN": {"days_to_cover": 6.7,
                                                          "shares": 12_000_000}},
                                                "2026-07-31"))
 
@@ -345,7 +345,11 @@ def test_short_interest_never_ships_without_its_settlement_date(monkeypatch, tmp
     assert "days_to_cover" not in row["components"], "short interest is context, never a component"
 
     html = (out / "index.html").read_text()
-    assert "2026-07-31" in html, "the settlement date reaches the page, not just the payload"
+    # Weak by construction, and labelled as such: the date is in the page because the
+    # detail blob is embedded as JSON, so this cannot tell whether the modal RENDERS it
+    # beside the number. test_the_modal_cannot_render_days_to_cover_without_its_as_of is
+    # the guard that actually checks that; this only pins that the field ships at all.
+    assert "2026-07-31" in html, "the settlement date reaches the page payload"
 
 
 def test_a_dateless_settlement_suppresses_days_to_cover_entirely(monkeypatch, tmp_path):
@@ -356,7 +360,7 @@ def test_a_dateless_settlement_suppresses_days_to_cover_entirely(monkeypatch, tm
     import radar.run as run
     _offline(monkeypatch, run, _board(run))
     monkeypatch.setattr(run.short_interest, "fetch_short_interest",
-                        lambda cfg, run_day: ({"IREN": {"days_to_cover": 6.7,
+                        lambda cfg, run_day, **k: ({"IREN": {"days_to_cover": 6.7,
                                                          "shares": 12_000_000}}, ""))
 
     out = tmp_path / "out"
@@ -380,23 +384,33 @@ def test_the_modal_cannot_render_days_to_cover_without_its_as_of():
         assert "short_interest_as_of" in ln, f"undated days-to-cover: {ln.strip()}"
 
 
-def test_new_sources_report_themselves_down_when_both_are_dead(monkeypatch, tmp_path):
+def test_finra_si_goes_red_and_wikimedia_reads_unused_on_a_dead_run(monkeypatch, tmp_path):
     """The LED trap, guarded: `"ok" if X else "down"` is only honest when X can actually
-    be empty on failure. Under the hermeticity stubs both sources take their real outage
-    paths — Wikimedia returns no series for any ticker, FINRA has neither an upstream nor
-    a vendored snapshot — so this asserts the red state is reachable, which is exactly
-    what the tickermap LED could not do before it was fixed."""
+    be empty on failure. FINRA here is genuinely dead — no upstream (the transport guard)
+    and no vendored snapshot (absent in a test checkout) — so red is reachable, which is
+    exactly what the tickermap LED could not do before it was fixed.
+
+    Wikimedia in this same run is NOT dead, and the original version of this test claimed
+    it was: with tickermap serving overrides only, neither board ticker has a title, so
+    `_get_series` is called ZERO times (measured — asserted below, not assumed). Nothing
+    was asked, so nothing failed, and the honest reading is "unused". The two states are
+    pinned separately by the two tests above this one."""
     import json
     import radar.run as run
     _offline(monkeypatch, run, _board(run))
+    calls = []
+    real = run.pageviews._get_series
+    monkeypatch.setattr(run.pageviews, "_get_series",
+                        lambda *a, **k: calls.append(a) or real(*a, **k))
 
     out = tmp_path / "out"
     assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
     health = json.loads((out / "health.json").read_text())
-    assert health["sources"]["wikimedia"] == "down"
+    assert calls == [], "no mapped titles, so Wikimedia was never asked anything"
+    assert health["sources"]["wikimedia"] == "unused"
     assert health["sources"]["finra_si"] == "down"
     html = (out / "index.html").read_text()
-    assert "wikimedia · down" in html and "finra_si · down" in html   # generic footer loop
+    assert "wikimedia · unused" in html and "finra_si · down" in html  # generic footer loop
     assert "IREN" in html                                             # and the board still ships
 
 
@@ -411,7 +425,7 @@ def test_new_sources_report_ok_when_they_answer(monkeypatch, tmp_path):
     monkeypatch.setattr(run.pageviews, "fetch_attention",
                         lambda titles, tickers, run_day, **k: ({}, {"IREN": 5000}))
     monkeypatch.setattr(run.short_interest, "fetch_short_interest",
-                        lambda cfg, run_day: ({"IREN": {"days_to_cover": 6.7,
+                        lambda cfg, run_day, **k: ({"IREN": {"days_to_cover": 6.7,
                                                          "shares": 12_000_000}},
                                                "2026-07-31"))
 
@@ -431,7 +445,7 @@ def test_a_ticker_finra_never_reported_gets_no_settlement_date_either(monkeypatc
     import radar.run as run
     _offline(monkeypatch, run, _board(run))
     monkeypatch.setattr(run.short_interest, "fetch_short_interest",
-                        lambda cfg, run_day: ({"IREN": {"days_to_cover": 6.7,
+                        lambda cfg, run_day, **k: ({"IREN": {"days_to_cover": 6.7,
                                                          "shares": 12_000_000}},
                                                "2026-07-31"))
 
@@ -442,3 +456,140 @@ def test_a_ticker_finra_never_reported_gets_no_settlement_date_either(monkeypatc
     assert rows["KEEL"]["days_to_cover"] is None
     assert rows["KEEL"]["short_interest_as_of"] is None, "a date with no number is a claim of data"
     assert rows["KEEL"]["short_interest_shares"] is None
+
+
+def test_every_vendored_snapshot_survives_the_daily_run():
+    """The data-branch copy list in daily.yml is a WHITELIST, so a snapshot missing from
+    it is silently regenerated from scratch every run — the vendoring design is dead on
+    arrival and its documented outage fallback can never fire, because there is never a
+    cached file to fall back TO.
+
+    Every `snapshot_path` in config.yaml is a declaration that a file must survive the
+    run, which makes this checkable rather than reviewable: short_interest.json was
+    missing when this test was written, ticker_articles.json was missing one commit
+    before that. Two misses in two commits is a pattern, not an accident."""
+    import re
+    from pathlib import Path
+    paths = re.findall(r"^\s*snapshot_path:\s*[\"']?(\S+?)[\"']?\s*$",
+                       Path("config.yaml").read_text(), re.M)
+    assert len(paths) >= 3, f"expected every vendoring source to declare one, got {paths}"
+    wf = Path(".github/workflows/daily.yml").read_text()
+    copy_line = next(ln for ln in wf.splitlines() if "/tmp/state/data/" in ln)
+    for p in paths:
+        assert p in copy_line, f"{p} never survives the run — it is not in daily.yml's copy list"
+
+
+def test_wikimedia_led_is_unused_when_nothing_was_asked(monkeypatch, tmp_path):
+    """A red LED must mean Wikimedia FAILED, not that we never called it. With no titles —
+    tickermap down and a cold about cache, which is a real Tuesday — fetch_attention makes
+    ZERO requests, and a red LED there asserts an outage that did not happen. Same third
+    state as the cboe LED one line above it in run.py."""
+    import json
+    import radar.run as run
+    _offline(monkeypatch, run, _board(run))
+    monkeypatch.setattr(run.tickermap, "fetch_ticker_map", lambda cfg, run_day, **k: {})
+    calls = []
+    real = run.pageviews._get_series
+    monkeypatch.setattr(run.pageviews, "_get_series",
+                        lambda *a, **k: calls.append(a) or real(*a, **k))
+
+    out = tmp_path / "out"
+    assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
+    assert calls == [], "no titles means no requests — nothing was asked of Wikimedia"
+    health = json.loads((out / "health.json").read_text())
+    assert health["sources"]["wikimedia"] == "unused"
+
+
+def test_wikimedia_led_is_down_when_a_title_was_asked_and_the_transport_failed(monkeypatch,
+                                                                               tmp_path):
+    """The other side, and the one no test covered: a title IS present, fetch_attention
+    really runs, `_get_series` really fails (conftest's transport guard raises the same
+    RequestException a Wikimedia outage would), and the LED goes red. This exercises the
+    whole chain — titles -> fetch_attention -> raw_views -> LED — rather than asserting
+    on a stubbed-out fetch_attention."""
+    import json
+    import radar.run as run
+    _offline(monkeypatch, run, _board(run))
+    mapped = dict(run.tickermap.load_overrides("radar/ticker_overrides.yml"))
+    mapped["IREN"] = "IREN Limited"
+    monkeypatch.setattr(run.tickermap, "fetch_ticker_map", lambda cfg, run_day, **k: mapped)
+    calls = []
+    real = run.pageviews._get_series
+    monkeypatch.setattr(run.pageviews, "_get_series",
+                        lambda *a, **k: calls.append(a) or real(*a, **k))
+
+    out = tmp_path / "out"
+    assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
+    assert calls, "a mapped title must actually be requested"
+    assert all(c[0] == "IREN Limited" for c in calls)
+    health = json.loads((out / "health.json").read_text())
+    assert health["sources"]["wikimedia"] == "down", "asked and got nothing back IS an outage"
+
+
+def test_the_dna_strip_and_the_modal_bars_stay_in_sync():
+    """run.py's _COMP_ORDER and the template's `CO` array are a hand-maintained mirror
+    with no drift guard: the table strip renders from one and the modal bars from the
+    other, so a component added or removed on one side alone shows different signals on
+    two surfaces of the same page and nothing goes red. Verified by deletion — dropping
+    `attention` from BOTH left the entire suite passing before this test existed.
+
+    The third assertion catches the reverse drift: a component added to composite.py
+    that neither surface renders at all."""
+    import re
+    from pathlib import Path
+    import radar.run as run
+    from radar.composite import components_for
+    from radar.models import Signal
+
+    tpl = Path("radar/templates/dashboard.html.j2").read_text()
+    block = re.search(r"var CO=\[(.*?)\];", tpl, re.S)
+    assert block, "the modal's component array must be findable"
+    pairs = [list(p) for p in re.findall(r"\['([a-z_]+)'\s*,\s*'([^']+)'\]", block.group(1))]
+    assert pairs == [list(p) for p in run._COMP_ORDER], "strip and modal bars have drifted"
+    assert ["attention", "attn"] in pairs, "attention is published, so it renders"
+
+    emitted = set(components_for(Signal(ticker="X"), [Signal(ticker="X")], None, {}))
+    assert emitted == {k for k, _ in run._COMP_ORDER}, \
+        "every component the composite emits must have a cell on both surfaces"
+
+
+def test_dry_run_writes_no_vendored_snapshot(monkeypatch, tmp_path):
+    """--dry-run must not mutate repo state. Every other vendoring source is gated
+    (fetch_cramer, history.save, about.save_cache, append_picks); short interest and the
+    ticker map were not, so debugging a run locally rewrote files the daily job owns.
+    The FETCH still runs — only the write is suppressed — so --dry-run keeps exercising
+    the full path."""
+    import radar.run as run
+    _offline(monkeypatch, run, _board(run))
+    snaps = {"si": tmp_path / "si.json", "tm": tmp_path / "tm.json"}
+    cfg_real = run.load_config
+
+    def cfg_patched(path):
+        cfg = cfg_real(path)
+        cfg.short_interest.snapshot_path = str(snaps["si"])
+        cfg.tickermap.snapshot_path = str(snaps["tm"])
+        return cfg
+    monkeypatch.setattr(run, "load_config", cfg_patched)
+    # Both upstreams must ANSWER, or the test is vacuous: each module only writes on a
+    # successful fetch, so a stubbed-out transport reaches a fallback path that was never
+    # going to write anything. Verified by mutation — with the gate removed both files
+    # appear, and this test goes red for both.
+    monkeypatch.setattr(run.short_interest, "_latest_settlement", lambda ua: "2026-07-31")
+    monkeypatch.setattr(run.short_interest, "_post_json",
+                        lambda url, payload, ua, **k: ([{"symbolCode": "IREN",
+                                                          "daysToCoverQuantity": 6.7,
+                                                          "currentShortPositionQuantity": 12,
+                                                          "settlementDate": "2026-07-31"}], 1))
+    # A healthy WDQS answer: MIN_ROWS (1000) rows and a COUNT that agrees with them.
+    rows = [{"ticker": {"value": f"T{i}"}, "enwiki": {"value": f"Title {i}"},
+             "rank": {"value": "http://wikiba.se/ontology#NormalRank"}}
+            for i in range(run.tickermap.MIN_ROWS)]
+    monkeypatch.setattr(run.tickermap, "_get_json",
+                        lambda q, ua, **kw: ({"results": {"bindings": [
+                            {"n": {"value": str(len(rows))}}]}} if "COUNT" in q
+                            else {"results": {"bindings": rows}}))
+
+    out = tmp_path / "out"
+    assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
+    assert not snaps["si"].exists(), "--dry-run wrote the short-interest snapshot"
+    assert not snaps["tm"].exists(), "--dry-run wrote the ticker-map snapshot"

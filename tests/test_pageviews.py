@@ -175,3 +175,43 @@ def test_get_series_rejects_a_stale_tail(monkeypatch):
     assert "TSLA" not in scores
     assert "TSLA" not in raw
     assert any(e["what"] == "wikimedia" for e in degrade.events())
+
+
+def test_a_wikimedia_outage_trips_a_breaker_instead_of_stalling_the_run(monkeypatch):
+    """No breaker meant a hung Wikimedia cost 15 tickers x timeout=20s ~= 5 minutes of
+    serial stall inside the job that gates the 6:17 AM publish. This project already has
+    the precedent and the pattern: radar/run.py:133-140 breaks cboe after 3 consecutive
+    failures, and config.yaml records why ("worst case was 2x30s x10 tickers ~ 10.5 min
+    serial stall on outage").
+
+    Three consecutive failures is a dead source, not a coincidence — keep going and you
+    are just paying the timeout again for the same answer."""
+    calls = []
+    monkeypatch.setattr(pv, "_get_series", lambda *a, **k: calls.append(a[0]))  # -> None
+    titles = {f"T{i}": f"Title {i}" for i in range(15)}
+    scores, raw = pv.fetch_attention(titles, list(titles), "2026-08-17", sleep_s=0)
+
+    assert len(calls) == 3, f"breaker never tripped — made {len(calls)} calls into a dead source"
+    assert (scores, raw) == ({}, {})
+    assert any("skipping remaining" in e["reason"] for e in degrade.events()), \
+        "a tripped breaker must say so — a silent early exit looks like a covered board"
+
+
+def test_the_breaker_counts_CONSECUTIVE_failures_not_total(monkeypatch):
+    """The distinction that makes the breaker safe: scattered failures across a healthy
+    Wikimedia (a name with no article, a redirect gone stale) must never stop the walk.
+    Only an unbroken run of three does. Here every other ticker fails, so the counter
+    keeps resetting and all 15 are attempted."""
+    calls = []
+    good = [10] * 28 + [40]
+
+    def flaky(title, start, end):
+        calls.append(title)
+        return None if len(calls) % 2 else good
+
+    monkeypatch.setattr(pv, "_get_series", flaky)
+    titles = {f"T{i}": f"Title {i}" for i in range(15)}
+    scores, raw = pv.fetch_attention(titles, list(titles), "2026-08-17", sleep_s=0)
+
+    assert len(calls) == 15, "scattered failures must not trip the breaker"
+    assert len(scores) == 7 and len(raw) == 7

@@ -81,7 +81,8 @@ def main(argv=None) -> int:
     by_ticker = {a.ticker: a for a in aggregates}
     about_cache = about.load_cache("data/about.json")
     about_ua = getattr(getattr(cfg, "apewisdom", None), "user_agent", "reddit-signal-radar/0.1")
-    ticker_titles = tickermap.fetch_ticker_map(cfg, run_day)   # exact article titles; fail-soft {}
+    ticker_titles = tickermap.fetch_ticker_map(cfg, run_day,   # exact article titles; fail-soft {}
+                                               dry_run=args.dry_run)  # fetch yes, vendor no
     # The health floor for tickermap. fetch_ticker_map ALWAYS merges the curated
     # overrides over whatever it resolved, so it never returns {} and a truthiness check
     # on the merged map is an LED that can only ever read "ok" — which is worse than no
@@ -174,7 +175,8 @@ def main(argv=None) -> int:
     attention, raw_views = pageviews.fetch_attention(
         pv_titles, [s.ticker for s in board], run_day,
         sleep_s=float(getattr(getattr(cfg, "pageviews", None), "sleep_seconds", 0.2)))
-    si_rows, si_as_of = short_interest.fetch_short_interest(cfg, run_day)
+    si_rows, si_as_of = short_interest.fetch_short_interest(cfg, run_day,
+                                                            dry_run=args.dry_run)
     for s in board:
         s.attention = attention.get(s.ticker)
         s.pageviews = raw_views.get(s.ticker)
@@ -218,16 +220,22 @@ def main(argv=None) -> int:
         "cboe": "ok" if cboe_hits else ("down" if board else "unused"),
         "cramer": "ok" if cramer_by else "down",
         "tickermap": "ok" if len(ticker_titles) > overrides_n else "down",
+        # Three states, like cboe above, because raw_views is empty in TWO different
+        # worlds: Wikimedia failed, or nothing was ever asked of it. With no titles
+        # (tickermap down and a cold about cache — a real Tuesday) fetch_attention makes
+        # zero requests, and "down" there asserts an outage that never happened.
         # Keyed on RAW VIEWS, not scores: raw_views is populated whenever Wikimedia
         # actually answered, while scores additionally clears spike_score's 21-day /
         # 10-view baseline floor. A healthy Wikimedia serving only thin-baseline names
         # is up, and lighting that red would be a false alarm about a working source.
-        "wikimedia": "ok" if raw_views else "down",
-        # fetch_short_interest returns ({}, "") ONLY when upstream and the vendored
-        # snapshot are both gone, so this can genuinely read red. Snapshot-served rows
-        # read "ok" on purpose: at a twice-monthly settlement cadence a snapshot of the
-        # current settlement is the same data, not a degraded copy of it — and a real
-        # upstream outage still leaves its own degrade.warn breadcrumb in health.
+        "wikimedia": "ok" if raw_views else ("down" if pv_titles else "unused"),
+        # Two states here, checked rather than assumed: unlike wikimedia, this source
+        # takes no per-ticker input, so there is no "nothing was asked" world to confuse
+        # with failure — fetch_short_interest always queries the settlement endpoint and
+        # returns ({}, "") ONLY when upstream and the vendored snapshot are both gone.
+        # Snapshot-served rows read "ok" on purpose: at a twice-monthly settlement
+        # cadence a snapshot of the current settlement is the same data, not a degraded
+        # copy — and a real upstream outage still leaves its degrade.warn in health.
         "finra_si": "ok" if si_rows else "down",
     }
     html = render_html(**_build_context(board, signals, run_day, corpus, refreshed,

@@ -62,7 +62,14 @@ jobs:
           # config.yaml's "refreshed only when older than max_age_days" is false in prod:
           # every run pays the ~22s SPARQL query, and any WDQS hiccup drops the ticker map
           # to overrides-only for the day.
-          cp -f data/history.json data/about.json data/plays_log.json data/cramer_snapshot.json data/ticker_articles.json /tmp/state/data/ 2>/dev/null || true
+          # short_interest.json is the same story with a longer fuse: FINRA's settlement
+          # short-circuit can never fire without it, so every run re-walks the full
+          # ~22,341-row settlement, and the documented snapshot fallback is unreachable —
+          # a FINRA outage would strip short-interest context off every board row.
+          # Anything with a `snapshot_path:` in config.yaml belongs on this line;
+          # tests/test_run_smoke.py::test_every_vendored_snapshot_survives_the_daily_run
+          # fails if one is ever left off again (twice in two commits before it existed).
+          cp -f data/history.json data/about.json data/plays_log.json data/cramer_snapshot.json data/ticker_articles.json data/short_interest.json /tmp/state/data/ 2>/dev/null || true
           git -C /tmp/state add -A data
           git -C /tmp/state diff --cached --quiet || git -C /tmp/state commit -m "state: daily $(date -u +%F)"
           git -C /tmp/state push origin HEAD:refs/heads/data

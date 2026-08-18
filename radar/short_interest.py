@@ -45,6 +45,12 @@ PARTITIONS_URL = "https://api.finra.org/partitions/group/otcMarket/name/consolid
 # not "divide by zero".
 SENTINEL_DTC = 999.99
 PAGE = 5000                # FINRA's hard cap per request
+# The page walk exits on a SHORT page, which is a promise the endpoint makes and can
+# break: one that ignores `offset` (or echoes full pages during an incident) would loop
+# forever inside a scheduled job and hang the 6:17 AM publish until the runner times out.
+# 10 x 5,000 = 50,000 rows against a measured 22,341-row settlement, so this is unreachable
+# on healthy data and a loud breadcrumb when it is not.
+MAX_PAGES = 10
 
 
 def _get_json(url: str, ua: str, retries: int = 2, sleep_s: float = 1.0):
@@ -140,11 +146,17 @@ def _fetch_all_pages(ua: str, page_size: int, settlement: str) -> tuple[list | N
     it FINRA walks its full unordered multi-million-row archive instead of the
     current settlement's ~22K rows). Returns (rows, record_total); rows is None only
     when the very first page fails outright, so the caller can fall back to the
-    snapshot rather than vendor a partial or empty universe."""
+    snapshot rather than vendor a partial or empty universe.
+
+    Bounded by MAX_PAGES rather than trusting the short page to arrive: the short-page
+    exit is a promise the endpoint makes, and this runs unattended on a schedule. A
+    capped walk is by definition partial, and whenever FINRA also sends `record-total`
+    the caller's row-count guard turns it into a "keep the snapshot" decision rather
+    than a truncated universe; the warn below is the breadcrumb either way."""
     rows: list = []
     total: int | None = None
     offset = 0
-    while True:
+    for _ in range(MAX_PAGES):
         payload = {"limit": page_size, "offset": offset,
                    "compareFilters": [{"fieldName": "settlementDate",
                                         "fieldValue": settlement, "compareType": "EQUAL"}]}
@@ -159,6 +171,10 @@ def _fetch_all_pages(ua: str, page_size: int, settlement: str) -> tuple[list | N
         if len(page) < page_size:
             return rows, total
         offset += page_size
+    degrade.warn("short interest feed",
+                 f"page cap {MAX_PAGES} hit at offset {offset} — endpoint never sent a "
+                 f"short page; treating the walk as incomplete")
+    return rows, total
 
 
 def _read_snapshot(snap: Path) -> tuple[dict[str, dict], str] | None:
@@ -178,11 +194,15 @@ def _read_snapshot(snap: Path) -> tuple[dict[str, dict], str] | None:
     return clean, str(doc.get("settlement", ""))
 
 
-def fetch_short_interest(cfg, run_day: str) -> tuple[dict[str, dict], str]:
+def fetch_short_interest(cfg, run_day: str, dry_run: bool = False) -> tuple[dict[str, dict], str]:
     """Settlement-gated fetch -> vendor snapshot -> parse; snapshot fallback on
     outage or on a row-count mismatch; ({}, "") + warn when both are gone. The
     snapshot rides the data branch and is refreshed only when the settlement date
-    advances."""
+    advances.
+
+    `dry_run` suppresses the snapshot WRITE only -- discovery, the full page walk and
+    the row-count guard all still run, so a dry run exercises the whole path without
+    rewriting a file the scheduled job owns."""
     sc = getattr(cfg, "short_interest", None)
     snap = Path(getattr(sc, "snapshot_path", "data/short_interest.json"))
     page_size = int(getattr(sc, "page_size", PAGE))
@@ -208,13 +228,15 @@ def fetch_short_interest(cfg, run_day: str) -> tuple[dict[str, dict], str]:
                              f"row count {len(raw)} != expected {total} — keeping snapshot")
                 return cached if cached is not None else ({}, "")
             if rows:
-                try:
-                    text = json.dumps({"schema": 1, "settlement": settlement, "rows": rows},
-                                       sort_keys=True)
-                    if not snap.exists() or snap.read_text() != text:
-                        snap.write_text(text)
-                except OSError as e:
-                    degrade.warn("short interest snapshot write", e)
+                if not dry_run:
+                    try:
+                        text = json.dumps({"schema": 1, "settlement": settlement,
+                                            "rows": rows}, sort_keys=True)
+                        snap.parent.mkdir(parents=True, exist_ok=True)
+                        if not snap.exists() or snap.read_text() != text:
+                            snap.write_text(text)
+                    except OSError as e:
+                        degrade.warn("short interest snapshot write", e)
                 return rows, settlement
 
     if cached is not None:
