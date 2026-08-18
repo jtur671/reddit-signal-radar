@@ -365,6 +365,28 @@
 },
 {
 "date": "2026-08-18",
+"ticker": "AGI",
+"thesis": "Alamos Gold's 15% jump on strong earnings and a major stake by Van Eck Associates suggests institutional conviction, yet the stock is still early in its move with Reddit mentions accelerating 9.7x.",
+"risk": "Gold price volatility could reverse gains quickly.",
+"conviction": "high",
+"mentions": 29,
+"vel": 9.7,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-08-18",
+"ticker": "BK",
+"thesis": "BNY hitting a record high and being added to multiple best-stock lists signals strong momentum, but the stock is still under the radar with fresh Reddit attention.",
+"risk": "Momentum could stall if broader financials pull back.",
+"conviction": "medium",
+"mentions": 40,
+"vel": null,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-18",
 "ticker": "HIVE",
 "thesis": "A $350M AI cloud deal plus Nvidia partnership gives HIVE a concrete revenue catalyst, and the sustained mention growth indicates ongoing interest before the broader market fully prices it in.",
 "risk": "AI compute contracts can be lumpy, and the stock is volatile with high beta.",
@@ -372,6 +394,17 @@
 "mentions": 16,
 "vel": 5.3,
 "state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-08-18",
+"ticker": "KLAR",
+"thesis": "Ahead of imminent earnings, analysts are revising forecasts upward, and the 'buy the dip' narrative around improving margins provides a concrete catalyst before the report.",
+"risk": "Earnings could disappoint despite positive revisions.",
+"conviction": "medium",
+"mentions": 49,
+"vel": 3.3,
+"state": "hot",
 "crypto": false
 },
 {
