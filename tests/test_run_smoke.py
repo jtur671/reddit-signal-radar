@@ -831,3 +831,33 @@ def test_the_led_stylesheet_can_render_every_state_run_py_emits():
     tpl = Path("radar/templates/dashboard.html.j2").read_text()
     for state in emitted - {"ok"}:
         assert f".srcs .led.{state}{{" in tpl, f"no LED colour for state {state!r}"
+
+
+def test_a_corrupt_history_still_publishes_a_board(monkeypatch, tmp_path):
+    """The pipeline half of the History.load fix. `data/history.json` rides the orphan
+    data branch and is written with a bare truncate-then-write, so one interrupted job
+    leaves a torn file — and a hard `json.loads` there took down every subsequent run,
+    not just the one that tore it. Measured before the fix: truncating the file red-lined
+    25 tests and would equally have killed the publish.
+
+    Now it degrades: the board ships, every name reads as brand-new against an empty
+    baseline (score.py's documented INV-8 path, identical to a genuine day-1 cold start),
+    the Still Running lane is empty for a day, and health carries the reason."""
+    import json
+    import radar.run as run
+    _offline(monkeypatch, run, _board(run))
+    corrupt = tmp_path / "history.json"
+    corrupt.write_text('{"IREN": {"2026-08-1')            # killed mid-write
+    real = run.History.load.__func__                      # the real body, on a fake path
+    monkeypatch.setattr(run.History, "load",
+                        classmethod(lambda cls, path: real(cls, str(corrupt))))
+
+    out = tmp_path / "out"
+    assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
+    health = json.loads((out / "health.json").read_text())
+    assert any("history unreadable" in p for p in health["problems"]), \
+        "a silently empty baseline is worse than the crash it replaced"
+    data = json.loads((out / "data.json").read_text())
+    assert set(data["board"]) == {"IREN", "KEEL"}, "the board still ships"
+    assert all(s["state"] == "new" for s in data["signals"]), \
+        "an empty baseline is a cold start, and every name reads brand-new against it"
