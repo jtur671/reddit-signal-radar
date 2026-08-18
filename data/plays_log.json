@@ -362,6 +362,39 @@
 "vel": 36.0,
 "state": "hot",
 "crypto": true
+},
+{
+"date": "2026-08-18",
+"ticker": "HIVE",
+"thesis": "A $350M AI cloud deal plus Nvidia partnership gives HIVE a concrete revenue catalyst, and the sustained mention growth indicates ongoing interest before the broader market fully prices it in.",
+"risk": "AI compute contracts can be lumpy, and the stock is volatile with high beta.",
+"conviction": "medium",
+"mentions": 16,
+"vel": 5.3,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-08-18",
+"ticker": "NKE",
+"thesis": "Nike's retail preview showing broadline growth is a fresh positive catalyst after years of decline, and the 99.9x mention surge suggests the market is just waking up to the turnaround.",
+"risk": "Consumer spending could weaken, or the turnaround may not translate to earnings as fast as hoped.",
+"conviction": "medium",
+"mentions": 118,
+"vel": 118.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-18",
+"ticker": "TLT",
+"thesis": "Retail sales miss is fueling bets on Fed cuts, which would boost long-duration bonds; TLT is the purest play on that macro shift and is still early in the move.",
+"risk": "If inflation data surprises hot, rate-cut expectations could unwind quickly.",
+"conviction": "high",
+"mentions": 47,
+"vel": 15.7,
+"state": "hot",
+"crypto": false
 }
 ]
 }
