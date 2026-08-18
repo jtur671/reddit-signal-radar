@@ -76,12 +76,20 @@ def test_parse_rows_coerces_non_string_ticker_and_title():
 
 def test_query_uses_the_qualifier_path_and_shares_a_where_with_count():
     """Nothing else pins the SPARQL text. Swapping in wdt:P249 (the 38-statement direct
-    path, vs. the 17,204-statement qualifier path this module depends on) or dropping an
-    EXCHANGES entry left every other test passing -- only this one would catch it."""
+    path, vs. the 17,204-statement qualifier path this module depends on) left every
+    other test passing -- only this one would catch it."""
     assert "pq:P249" in tm.QUERY and "wdt:P249" not in tm.QUERY
     assert "p:P414" in tm.QUERY and "pq:P582" in tm.QUERY
     assert tm._WHERE in tm.QUERY and tm._WHERE in tm.COUNT_QUERY
-    for q in tm.EXCHANGES:
+
+
+def test_exchanges_are_the_four_us_venues():
+    """Hardcoded on purpose. Deriving these from tm.EXCHANGES would make the
+    assertion tautological -- QUERY is built from EXCHANGES, so a dropped entry
+    would mutate both sides together and pass. Spec 2.2: scoping is a correctness
+    requirement; unscoped, ambiguity goes 3.6% -> 15.2% (BA -> Bangkok Airways)."""
+    assert tm.EXCHANGES == ("wd:Q13677", "wd:Q82059", "wd:Q1930860", "wd:Q846626")
+    for q in ("wd:Q13677", "wd:Q82059", "wd:Q1930860", "wd:Q846626"):
         assert q in tm.QUERY
 
 
