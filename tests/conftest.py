@@ -9,3 +9,20 @@ def _no_real_dotenv(monkeypatch):
     import radar.monitor
     monkeypatch.setattr(radar.run, "load_env", lambda *a, **k: None)
     monkeypatch.setattr(radar.monitor, "load_env", lambda *a, **k: None)
+
+
+@pytest.fixture(autouse=True)
+def _no_live_quotes_or_summaries(monkeypatch):
+    """Hermeticity guard: stub the two helpers that would otherwise open a socket during
+    a --dry-run test — yfinance quotes (radar/run.py's ungated `enrich(board + still)`)
+    and the Wikipedia summary lookup (`about.describe`, whose data/about.json cache is
+    gitignored and so is always empty locally, guaranteeing a live fetch).
+
+    Both are private helpers BELOW the public API, so the socket is suppressed while the
+    logic worth testing still runs: `enrich`'s miss-rate warn and `describe`'s cache
+    write. `_yf_quote` returning None makes `enrich_one` yield (None, None) — a state
+    the suite already exercises directly."""
+    import radar.enrich
+    import radar.about
+    monkeypatch.setattr(radar.enrich, "_yf_quote", lambda symbol: None)
+    monkeypatch.setattr(radar.about, "fetch_summary", lambda *a, **k: None)

@@ -7,9 +7,11 @@ def test_dry_run_writes_dashboard(tmp_path, monkeypatch):
         Aggregate(ticker="KEEL", name="Keel Infrastructure", mentions=80,
                   mentions_24h_ago=10, upvotes=400, subreddit="all-stocks"),
     ])
-    monkeypatch.setattr(run.tradestie, "fetch_wsb", lambda cfg: [])  # no live network in tests
+    monkeypatch.setattr(run.tradestie, "fetch_wsb", lambda cfg: [])  # stub live Tradestie
+    monkeypatch.setattr(run, "fetch_short_ratios", lambda cfg, run_day: ({}, ""))
+    monkeypatch.setattr(run, "option_stats", lambda ticker, cfg: None)
     monkeypatch.setenv("DEEPSEEK_API_KEY", "")    # skip LLM
-    monkeypatch.setattr(run.news, "headlines", lambda *a, **k: [])  # no live Google News in tests
+    monkeypatch.setattr(run.news, "headlines", lambda *a, **k: [])  # stub live Google News
     code = run.main(["--dry-run", "--out", str(tmp_path / "out"), "--no-email"])
     assert code == 0
     html = (tmp_path / "out" / "index.html").read_text()
