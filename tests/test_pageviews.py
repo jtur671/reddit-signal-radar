@@ -1,5 +1,6 @@
 import json
 import math
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -378,7 +379,194 @@ def test_only_transport_failures_are_reported_as_an_outage(monkeypatch):
     assert failed == 0, "a 404 is an answer, not an outage"
 
     monkeypatch.setattr(pv.requests, "get",
-                        lambda url, headers=None, timeout=None: _resp(418, {}))
+                        lambda url, headers=None, timeout=None: _resp(403, {}))
     _s, _r, failed = pv.fetch_attention(titles, list(titles), "2026-08-17", sleep_s=0)
     assert failed == pv.MAX_CONSECUTIVE_FAILURES, \
-        "a non-404 refusal from the transport IS an outage and must reach the LED"
+        "access refused IS an outage and must reach the LED"
+    # 403, not the 418 this test used to send. The rest of the 4xx range is now a MISS,
+    # because 400/404/414 are Wikimedia answering about OUR input (see
+    # test_our_own_bad_title_is_not_counted_as_a_wikimedia_outage) -- and 418 was only
+    # ever a stand-in for "some other refusal". 403 is the real one and the one this
+    # module's docstring already named: measured live 2026-08-18, an empty User-Agent
+    # gets 403 where a real one gets 200, so it means our ACCESS is gone, board-wide,
+    # which is exactly what the LED exists to say.
+
+
+# ======================================================================================
+# Chaos-gate and polarity-gate findings, 2026-08-18. Every one reproduced against the
+# real module before the fix; the mutation each test kills is named in its docstring.
+# ======================================================================================
+
+
+def test_parse_series_drops_non_finite_view_counts_instead_of_raising():
+    """`json.loads` accepts `Infinity`, `NaN` and `1e309` by default — verified in this
+    test, and simplejson is not installed, so `requests.Response.json` IS stdlib json.
+    So a 200 body can hand this function a float `inf`, and `int(inf)` raises
+    OverflowError — an ArithmeticError, caught by NEITHER this function's except tuple
+    NOR `_get_series`'. The docstring promises "Pure, never raises"; this is what makes
+    that promise true."""
+    body = json.loads('{"items": [{"timestamp": "2026081600", "views": 1e309},'
+                      ' {"timestamp": "2026081500", "views": Infinity},'
+                      ' {"timestamp": "2026081400", "views": NaN},'
+                      ' {"timestamp": "2026081300", "views": -5},'
+                      ' {"timestamp": "2026081200", "views": 12}]}')
+    assert math.isinf(body["items"][0]["views"]), "stdlib json really does yield inf"
+    assert pv.parse_series(body) == [("2026081200", 12)]
+
+
+def test_a_non_finite_view_count_is_a_miss_not_an_escaping_overflow(monkeypatch):
+    """The same body one layer up. `_get_series` catches (RequestException, ValueError)
+    and `fetch_attention` wraps nothing, so the OverflowError escaped both and killed
+    the 6:17 job outright — on a 200 response, from the source we treat as healthy."""
+    body = json.loads('{"items": [{"timestamp": "2026081600", "views": 1e309}]}')
+    monkeypatch.setattr(pv.requests, "get",
+                        lambda url, headers=None, timeout=None: _resp(200, body))
+    assert pv._get_series("Tesla, Inc.", "20260712", "20260816") == pv.MISS
+
+    scores, raw, failed = pv.fetch_attention({"T": "Title"}, ["T"], "2026-08-17", sleep_s=0)
+    assert (scores, raw, failed) == ({}, {}, 0), \
+        "a garbage body is a miss about one name, not an outage"
+
+
+def test_an_absurd_integer_never_reaches_the_arithmetic():
+    """A 400-digit integer passes `int()` cleanly and only detonates downstream:
+    `statistics.median` averages the two middle values of the 28-element prior window and
+    `current / baseline` is a float division — both raise "OverflowError: integer
+    division result too large for a float", uncaught, straight out of `fetch_attention`.
+    Refused at the parse boundary so it cannot reach `spike_score` at all, and refused
+    again inside `spike_score` for callers that hand it a list directly."""
+    huge = 10 ** 400
+    assert pv.parse_series({"items": [{"timestamp": "2026081600", "views": huge}]}) == []
+    assert pv.spike_score(_flat(28, 100) + [huge]) is None
+    assert pv.spike_score(_flat(28, huge) + [100]) is None
+
+
+def test_a_non_string_title_is_a_miss_not_an_AttributeError(monkeypatch):
+    """`title.replace(" ", "_")` sat OUTSIDE the retry try, so a non-string title raised
+    straight out of `fetch_attention`. Reachable: run.py builds pv_titles preferring the
+    cached canonical title from data/about.json, which rides the orphan data branch — so
+    the TYPE of a title is only as good as yesterday's JSON.
+
+    A malformed title is OUR input, so the answer is MISS. It must not become a REQUEST
+    either: `str(123)` would cheerfully fetch the article "123", which exists, and
+    publish a well-formed, entirely fictitious attention score — the exact failure this
+    module's own docstring is written against."""
+    calls = []
+    monkeypatch.setattr(pv.requests, "get",
+                        lambda url, headers=None, timeout=None: calls.append(url))
+    for bad in (123, None, ["Tesla"], b"Tesla", "", "   "):
+        assert pv._get_series(bad, "20260712", "20260816") == pv.MISS, f"{bad!r}"
+    assert calls == [], "a malformed title must never reach Wikimedia"
+
+    scores, raw, failed = pv.fetch_attention({"A": 123}, ["A"], "2026-08-17", sleep_s=0)
+    assert (scores, raw, failed) == ({}, {}, 0)
+
+
+def test_our_own_bad_title_is_not_counted_as_a_wikimedia_outage(monkeypatch):
+    """400 (malformed/over-long title) and 414 (URI too long) are Wikimedia ANSWERING,
+    about OUR input — the same class of fact as a 404, and the opposite of an outage.
+    Returning None for them charged the breaker: measured, 15 tickers all answering 400
+    stopped the walk at ticker three, dropped attention for the remaining 12 and lit
+    `wikimedia: down` while Wikimedia answered every single request. This is the exact
+    mistake the MISS sentinel was introduced to fix, one status class short."""
+    for code in (400, 414):
+        degrade.reset()
+        calls = []
+
+        def fake_get(url, headers=None, timeout=None):
+            calls.append(url)
+            return _resp(code, {})
+
+        monkeypatch.setattr(pv.requests, "get", fake_get)
+        titles = {f"T{i}": f"Title {i}" for i in range(15)}
+        scores, raw, failed = pv.fetch_attention(titles, list(titles), "2026-08-17",
+                                                 sleep_s=0)
+        assert len(calls) == 15, f"{code} tripped the breaker after {len(calls)} tickers"
+        assert (scores, raw) == ({}, {})
+        assert failed == 0, f"{code} is an answer about our input, not an outage"
+        assert not any("skipping remaining" in e["reason"] for e in degrade.events()), \
+            f"{code} must not read as a tripped breaker"
+
+
+def test_nan_or_infinity_never_scores_maximum_attention():
+    """Garbage in, MAXIMUM-confidence signal out — the worst shape a bug can take here.
+    `nan < min_baseline` is False, so the thin-baseline guard waved it through, and
+    `min(2.0, nan)` returns 2.0 (NaN loses every comparison), so the clamp resolved to
+    the TOP: 100.0, the strongest attention score on the board, from a series that means
+    nothing. The log2(0) guard was incomplete too — an infinite baseline gives
+    ratio 0.0 -> math.log2(0.0) -> ValueError: math domain error, without `current`
+    ever being 0."""
+    nan, inf = float("nan"), float("inf")
+    assert pv.spike_score(_flat(28, 100) + [nan]) is None
+    assert pv.spike_score(_flat(28, nan) + [200]) is None
+    assert pv.spike_score(_flat(28, 100) + [inf]) is None
+    assert pv.spike_score(_flat(28, inf) + [200]) is None
+    assert pv.spike_score(_flat(28, 100) + [-5]) is None
+
+
+def test_min_days_above_the_baseline_window_is_not_a_silent_dead_zone():
+    """`prior` is `series[-(BASELINE_DAYS + 1):-1]` — structurally capped at 28 elements
+    — so any min_days above 28 can NEVER be satisfied: every ticker scores None forever
+    and nothing anywhere says why. FETCH_DAYS (35) sits one identifier away as a
+    plausible-looking value to pass.
+
+    Clamped rather than asserted at import, because min_days is a per-CALL parameter that
+    import time cannot see; and clamped rather than raised, because raising would escape
+    `fetch_attention`'s fail-soft loop and take the whole walk down with it."""
+    series = _flat(28, 100) + [200]
+    assert pv.spike_score(series, min_days=pv.FETCH_DAYS) == 75.0
+    assert pv.spike_score(series, min_days=29) == 75.0
+    assert pv.spike_score(_flat(20, 100) + [200], min_days=pv.FETCH_DAYS) is None, \
+        "the clamp must not also disable the genuine too-few-days guard"
+
+
+def test_the_fetch_window_ends_at_D_minus_1_and_spans_FETCH_DAYS(monkeypatch):
+    """The window `fetch_attention` computes was pinned by NOTHING: every other test
+    either stubs `_get_series` away or passes literal date strings, so swapping start and
+    end, shrinking the span to 4 days, or dropping FETCH_DAYS to 3 all survived the whole
+    suite. Measured against the live API on 2026-08-18: a reversed window returns HTTP
+    400 (it is NOT order-agnostic) while the same window in order returns 200 — so a
+    flipped subtraction is board-wide attention loss, silently."""
+    seen = {}
+
+    def fake(title, start, end):
+        seen["start"], seen["end"] = start, end
+        return pv.MISS
+
+    monkeypatch.setattr(pv, "_get_series", fake)
+    pv.fetch_attention({"T": "Title"}, ["T"], "2026-08-17", sleep_s=0)
+
+    assert seen["end"] == "20260816", "the window ends at D-1, never at the run day"
+    assert seen["start"] == "20260712"
+    assert seen["start"] < seen["end"], "start after end is an HTTP 400 from Wikimedia"
+    span = date.fromisoformat(seen["end"]) - date.fromisoformat(seen["start"])
+    assert span.days == pv.FETCH_DAYS, "a shrunk window silently starves every baseline"
+
+
+def test_the_window_reaches_the_url_as_start_then_end(monkeypatch):
+    """The other half of the pin, one layer down: the AQS path is `/daily/{start}/{end}`,
+    and swapping the two in the template is invisible to every test that stubs
+    `_get_series` — including the one above."""
+    fixture = json.loads(Path("tests/fixtures/pageviews_tsla.json").read_text())
+    captured = {}
+
+    def fake_get(url, headers=None, timeout=None):
+        captured["url"] = url
+        return _resp(200, fixture)
+
+    monkeypatch.setattr(pv.requests, "get", fake_get)
+    pv._get_series("Tesla, Inc.", "20260712", "20260816")
+    assert captured["url"].endswith("/daily/20260712/20260816")
+
+
+def test_a_zero_baseline_is_refused_rather_than_divided_by():
+    """The thin-baseline guard is `baseline < min_baseline`, so a caller passing
+    min_baseline=0 — the natural way to say "score everything, I'll filter downstream" —
+    waved a zero median straight into `current / baseline`. ZeroDivisionError is not an
+    ArithmeticError this module catches anywhere: it escapes fetch_attention exactly like
+    the OverflowErrors above."""
+    assert pv.spike_score(_flat(28, 0) + [5], min_baseline=0) is None
+    # None rather than the real-zero 0.0 of test_zero_current_..., and deliberately so:
+    # a zero MEDIAN means the name has no Wikipedia traffic to speak of, which is "no
+    # signal" (the composite renormalizes around it), not the claim "attention collapsed".
+    assert pv.spike_score(_flat(28, 0) + [0], min_baseline=0) is None

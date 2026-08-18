@@ -39,26 +39,72 @@ MAX_CONSECUTIVE_FAILURES = 3   # circuit breaker; see fetch_attention
 # sentinel, which the cboe loop this breaker was modelled on already reads.
 MISS = "miss"
 
+# Ceiling on a plausible daily view count. Measured against the live AQS API on
+# 2026-08-18: all of en.wikipedia served 6.75e9 user pageviews in July 2026 (~2.2e8 a
+# day, ALL articles), and Main_Page -- the busiest single article there is -- runs ~6.9e6
+# a day. 1e12 is four orders of magnitude above the whole project's daily total, so it
+# is a shape check no real name can ever reach, not a cap on anything. See _usable.
+MAX_VIEWS = 10 ** 12
+
+
+def _usable(views) -> bool:
+    """True for a plain, finite, plausible daily view count.
+
+    Bounded by COMPARISON rather than by math.isfinite(), deliberately: isfinite()
+    converts its argument to a float first, so math.isfinite(10**400) raises
+    OverflowError itself and the guard becomes the crash. A chained comparison never
+    converts, and NaN loses every comparison, so this one expression rejects NaN, both
+    infinities, negatives and 400-digit integers alike.
+
+    The ceiling is what keeps the arithmetic downstream TOTAL: statistics.median averages
+    the two middle values of an even-length window and `current / baseline` is a float
+    division, and both raise "OverflowError: integer division result too large for a
+    float" on a big enough int -- which json.loads will happily hand us, since a JSON
+    number has no size limit."""
+    return isinstance(views, (int, float)) and 0 <= views <= MAX_VIEWS
+
 
 def spike_score(series, min_baseline: int = 10, min_days: int = 21) -> float | None:
     """0-100 from today's views against this ticker's own median. None when the signal
-    would be noise: too few baseline days, or a baseline too thin to be meaningful."""
+    would be noise: too few baseline days, a baseline too thin to be meaningful, or a
+    series carrying something that is not a real view count."""
+    # `prior` below is structurally capped at BASELINE_DAYS elements, so any min_days
+    # above that cap can NEVER be satisfied: every ticker scores None forever and nothing
+    # says why -- with FETCH_DAYS (35) sitting one identifier away as a plausible-looking
+    # value to pass. Clamped rather than asserted at import, because min_days is a
+    # per-CALL argument that import time cannot see; and clamped rather than raised,
+    # because a raise escapes fetch_attention's fail-soft loop and takes the walk down.
+    # Above the cap, "as many days as the window can hold" is the only satisfiable
+    # reading of the argument.
+    min_days = min(min_days, BASELINE_DAYS)
     if not series or len(series) < 2:
         return None
     current, prior = series[-1], series[-(BASELINE_DAYS + 1):-1]
     if len(prior) < min_days:
         return None
+    if not _usable(current) or not all(_usable(v) for v in prior):
+        # NaN is the dangerous member of this set, because it fails SILENTLY UPWARD:
+        # `nan < min_baseline` is False so the thin-baseline guard passed it, and
+        # `min(2.0, nan)` returns 2.0 because NaN loses every comparison, so the clamp
+        # resolved to the TOP -- garbage in, 100.0 out, the strongest attention signal on
+        # the board. This also subsumes the old `current < 0` check.
+        return None
     baseline = statistics.median(prior)
-    if baseline < min_baseline:
+    # `baseline <= 0` is redundant against the default min_baseline of 10 and is not:
+    # a caller passing min_baseline=0 would otherwise reach `current / 0`.
+    if baseline <= 0 or baseline < min_baseline:
         return None
     if current == 0:
         # A real zero: attention collapsed. That is a claim, not an absence of one --
         # None means no signal at all, which triggers the composite's renormalize-
         # around-absence path. Guarding here also keeps log2(0) from ever running.
         return 0.0
-    if current < 0:
-        return None
     ratio = current / baseline
+    if not math.isfinite(ratio) or ratio <= 0:
+        # Unreachable given the guards above, and kept because it was NOT unreachable
+        # without them: an infinite baseline gives ratio 0.0 -> math.log2(0.0) ->
+        # "ValueError: math domain error", with `current` never being 0.
+        return None
     return round(50.0 + 25.0 * max(-2.0, min(2.0, math.log2(ratio))), 2)
 
 
@@ -74,9 +120,21 @@ def parse_series(raw) -> list[tuple[str, int]]:
         if not isinstance(it, dict):
             continue
         try:
-            out.append((str(it["timestamp"]), int(it["views"])))
-        except (KeyError, TypeError, ValueError):
+            ts, views = str(it["timestamp"]), int(it["views"])
+        except (KeyError, TypeError, ValueError, OverflowError):
+            # OverflowError is the one that is easy to miss, and it was missed: json.loads
+            # accepts `Infinity`, `NaN` and `1e309` by default (stdlib json, and simplejson
+            # is not installed, so this is what requests.Response.json does), so a 200 body
+            # can hand us a float inf -- and int(inf) raises OverflowError, an
+            # ArithmeticError, which neither this tuple nor _get_series' own
+            # (RequestException, ValueError) caught. It escaped both and killed the run.
             continue
+        if not _usable(views):
+            # Refused HERE rather than downstream: a 400-digit integer survives int()
+            # perfectly intact and only detonates inside spike_score's median and
+            # division, by which point it is past every fail-soft boundary in this module.
+            continue
+        out.append((ts, views))
     out.sort(key=lambda pair: pair[0])
     return out
 
@@ -87,11 +145,14 @@ def _get_series(title: str, start: str, end: str,
 
     Three outcomes, and the caller must be able to tell them apart:
       list[int] -- the daily views, tail verified to be `end`
-      MISS      -- Wikimedia ANSWERED and there is nothing to score: a 404 (no such
-                   article) or a stale tail. Ordinary; not the breaker's business.
-      None      -- the TRANSPORT failed: retries exhausted on a timeout/5xx/429, or a
-                   non-retryable status that is not a 404 (a 403 from a bad UA is a
-                   real outage, not a missing article). This is what the breaker counts.
+      MISS      -- Wikimedia ANSWERED and there is nothing to score, or we never had a
+                   question worth asking: a 4xx about OUR INPUT (400 malformed title,
+                   404 no such article, 414 URI too long), a stale tail, or a title that
+                   is not a usable string. Ordinary; not the breaker's business.
+      None      -- the TRANSPORT failed: retries exhausted on a timeout/5xx/429, a 403
+                   (access refused -- a bad or blocked UA is a real outage that hits
+                   every ticker identically, not a missing article), or any other
+                   non-retryable status. This is what the breaker counts.
     Collapsing the last two into a bare None is what let a board-wide stale tail -- the
     documented D-1 publication risk, see docs/HANDOFF.md -- read as a Wikimedia outage
     and trip the breaker on the third ticker.
@@ -108,6 +169,16 @@ def _get_series(title: str, start: str, end: str,
     still produce a well-formed score -- computed against the wrong day, with nothing
     downstream able to tell. That is a REFUSAL, not an outage, so it returns immediately
     rather than retrying -- the next attempt would return the same short window."""
+    if not isinstance(title, str) or not title.strip():
+        # A malformed title is a fact about OUR input, so it is a MISS. Guarded here
+        # because `title.replace(...)` below sits OUTSIDE the retry try, so an
+        # AttributeError there escapes fetch_attention and kills the run -- and run.py
+        # builds pv_titles preferring the cached canonical title from data/about.json,
+        # so a title's TYPE is only as good as yesterday's cache on the data branch.
+        # Coerced with str() rather than refused, it would be worse than a crash:
+        # str(123) fetches the article "123", which exists, and publishes a well-formed,
+        # entirely fictitious attention score.
+        return MISS
     url = REST.format(title=urllib.parse.quote(title.replace(" ", "_"), safe=""),
                       start=start, end=end)
     for attempt in range(retries):
@@ -120,10 +191,22 @@ def _get_series(title: str, start: str, end: str,
                 return [views for _, views in pairs]
             if r.status_code in (429, 500, 502, 503):
                 time.sleep(sleep_s * (2 ** attempt)); continue
-            if r.status_code == 404:   # ordinary miss: the article does not exist
+            if r.status_code == 403:
+                # Access refused, not an article refused: measured live 2026-08-18, an
+                # empty User-Agent gets 403 where a real one gets 200. That is a fact
+                # about OUR ACCESS to the source, it hits every ticker identically, and
+                # the LED must report it -- so it is carved out of the range below.
+                return None
+            if 400 <= r.status_code < 500:
+                # Wikimedia ANSWERING, about our input: 400 malformed/over-long title,
+                # 404 no such article, 414 URI too long. Ordinary and per-name. Charging
+                # these to the breaker is the mistake the MISS sentinel was introduced to
+                # fix, one status class short: measured, 15 tickers all answering 400
+                # stopped the walk at ticker three, dropped attention for the remaining
+                # 12, and lit `wikimedia: down` while Wikimedia answered every request.
                 return MISS
             return None          # anything else non-retryable IS the transport failing
-        except (requests.RequestException, ValueError):
+        except (requests.RequestException, ValueError, OverflowError):
             time.sleep(sleep_s * (2 ** attempt))
     return None
 
