@@ -19,16 +19,28 @@ jobs:
     # learns the board did not ship. MEASURED (40 real daily-radar runs via `gh`): this
     # job typically takes 1-2 min (a recent one: 2m52s); the single worst in 40 runs was
     # 13 min, on a failing run (2026-08-06). That's ground truth, not a projection.
-    # ESTIMATE, not yet measured: once E2's three new sources (pageviews, short
-    # interest, tickermap refresh) are live in production, forward-looking napkin math
-    # puts this job at ~17 min ordinarily and ~23 min on a tickermap monthly-refresh
-    # day — re-measure via `gh` once E2 has run for real and replace this line.
+    # E2's three new sources cost SECONDS, not minutes. MEASURED 2026-08-18 against the
+    # real endpoints, not projected: FINRA settlement discovery 0.8s + the full 5-page
+    # 22,341-row walk 5.2s = 6.0s; Wikimedia 0.26s/name (n=10), so ~9s for a 20-name
+    # walk including its 0.2s courtesy sleep. **~15s added ordinarily.** On a tickermap
+    # monthly-refresh day, add the Wikidata COUNT+MAIN pair — worst observed 54s
+    # (13.7s COUNT + 40.3s MAIN) — for **~70s on a refresh day.** WDQS is the variable
+    # one and the only one worth re-checking: MAIN measured 4.2-40.3s across the same
+    # morning (n=7), swinging with its own result cache, so 40.3s is the WORST seen and
+    # not the typical. It has ~20s of headroom against WDQS's ~60s silent-truncation
+    # wall, and it fails CLOSED there (count mismatch -> refuse -> keep the snapshot,
+    # radar/tickermap.py), so overshooting costs a stale map, never a bad one.
+    # This replaces an ESTIMATE that read "~17 min ordinarily and ~23 min on a
+    # refresh day" — forward-looking napkin math, never measured, wrong by roughly two
+    # orders of magnitude. The number below did not move, which is the point: it was
+    # safe either way, and the estimate was load-bearing only for fleet-monitor.yml's
+    # derivation of its own timeout (corrected there too).
     # The deploy-pages step lives in this same job and waits on the `pages`
     # concurrency group it shares with trump-monitor (cancel-in-progress: false), so
     # the job clock above already covers that wait — that part held up.
-    # 45 gives ~2x the ESTIMATED post-E2 worst case and ~3.5x the MEASURED worst case,
-    # while still failing 8x sooner than the default; a false trip costs exactly the
-    # publish this backstop exists to protect.
+    # 45 gives ~3.5x the MEASURED worst real run (13 min) with E2 adding well under a
+    # minute on top, while still failing 8x sooner than the default; a false trip costs
+    # exactly the publish this backstop exists to protect.
     timeout-minutes: 45
     steps:
       # Actions pinned to commit SHAs, not tags: a tag is mutable, and this runner holds

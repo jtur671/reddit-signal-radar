@@ -19,8 +19,14 @@ jobs:
     # slow monitor run. daily.yml's own timeout comment explicitly leans on this wait
     # being short.
     # 20, derived from daily.yml's budget rather than picked: daily allows itself 45 min
-    # for its pipeline (~17 min ESTIMATED post-E2) PLUS the wait on this group, so 20
-    # here keeps 17 + 20 = 37 inside that 45. The only thing a trip can cost is the
+    # for its pipeline PLUS the wait on this group. That derivation used to cite daily's
+    # "~17 min ESTIMATED post-E2", which was napkin math and wrong by roughly two orders
+    # of magnitude. Re-derived from MEASUREMENTS: daily's worst real run is 13 min (40
+    # runs via `gh`) and E2's three sources add ~15s ordinarily / ~70s on a monthly
+    # Wikidata-refresh day (measured 2026-08-18, see daily.yml). So 20 here keeps
+    # 13 + 20 = 33 inside that 45, with more room than the estimate ever claimed.
+    # Unchanged at 20 because the measurement widened the margin, not narrowed it —
+    # shrinking it would only buy a faster trip on the one thing a trip can cost, the
     # OPTIONAL alert-triggered dashboard rebuild below — the fleet's alert email and its
     # dedup cursor are both already committed by the step above it — and delaying the
     # daily publish is strictly worse than skipping one dashboard redeploy.
