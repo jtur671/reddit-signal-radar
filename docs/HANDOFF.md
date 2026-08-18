@@ -26,10 +26,10 @@ of this document.
 |---|---|
 | Branch | `fix/test-hermeticity` (ahead of `main`). `harden/audit-fixes` merged to `main` as `3934e78` |
 | Prod | daily board + email 6:17 AM ET; 9-monitor fleet on a 30-min tick |
-| Tests | **353 passed in 45.24s** (measured 2026-08-17, `.venv`, after the audit-fixes wave). Re-run rather than quote: `source .venv/bin/activate && python -m pytest` |
+| Tests | **453 passed** (measured 2026-08-17 after E2a+E2; was 353/45.24s before this branch). Re-run rather than quote: `source .venv/bin/activate && python -m pytest` |
 | Data branch | `origin/data` — 654 tickers, 76 daily snapshots, 8,364 ticker-days (measured 2026-08-17) |
 | Backtest power gate | needs 150 days, has 76 → opens ≈ **2026-11-01** |
-| Current phase | **E2 — Non-social attention**, specs approved 2026-08-17. Build **E2a (mapping) first** — E2 consumes its map |
+| Current phase | **E2 — Non-social attention: BUILT 2026-08-17, never run live.** Next action is verifying the first 6:17 AM run, §2 |
 
 ### ~~Open defect found during research (blocks E1)~~ — RESOLVED `e602bce`, see §5.
 
@@ -320,6 +320,29 @@ session can tell "not done yet" from "done and reverted".
 ---
 
 ## 6. House rules a new session will otherwise violate
+
+- **Six production-state readers are still unguarded, and the guard is enumerated rather
+  than enforced.** `tests/conftest.py`'s `_no_production_state` names its readers one by
+  one. The same Critical has now landed **twice** on this branch — once for `about.json`,
+  once for the two new snapshots — so a seventh reader arriving uncovered is a demonstrated
+  risk, not a hypothetical one.
+  Measured 2026-08-17 by instrumenting `Path.read_text` and `open` across the whole suite
+  with CI-restored `data/`, the currently-unguarded reads are:
+  `data/history.json` (`run.py` `History.load`, 46 reads) and the five
+  `data/*_alert.json` files via `_load_alerts`' glob (23 reads each).
+  They do **not** break the gate today — 453 passed with all of it present — because alert
+  cards are age-gated by `alert_is_fresh` and nothing asserts on sparkline content. That is
+  a property of today's assertions, not a guarantee.
+  `data/cramer_snapshot.json` is a declared `snapshot_path` with no guard too; it escapes
+  only because `fetch_cramer` is skipped under `--dry-run`.
+  **↪ the fix, and why the obvious version is too weak:** a session-scoped plugin that wraps
+  `Path.read_text`/`open`, derives the production-state set from **`.gitignore`'s `data/`
+  entries** (the maintained source of truth for generated state), and asserts the observed
+  reads are within an explicit allowlist. Deriving from `config.yaml`'s `snapshot_path`
+  values instead is ~6 lines but strictly weaker — it would have missed `about.json`, the
+  *first* occurrence of this bug, because `run.py` hardcodes that path and config never
+  declares it. Measured against today's suite the interceptor gives zero false positives
+  and six true positives.
 
 - **Bot state lives on the orphan `data` branch, not `main`.** Local `data/` is stale.
   `git fetch origin data && git checkout origin/data -- data/` before reasoning about
