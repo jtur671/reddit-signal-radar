@@ -24,7 +24,7 @@ of this document.
 
 | | |
 |---|---|
-| Branch | `harden/audit-fixes` (ahead of `main`; security-audit fixes + this research) |
+| Branch | `fix/test-hermeticity` (ahead of `main`). `harden/audit-fixes` merged to `main` as `3934e78` |
 | Prod | daily board + email 6:17 AM ET; 9-monitor fleet on a 30-min tick |
 | Tests | **353 passed in 45.24s** (measured 2026-08-17, `.venv`, after the audit-fixes wave). Re-run rather than quote: `source .venv/bin/activate && python -m pytest` |
 | Data branch | `origin/data` — 654 tickers, 76 daily snapshots, 8,364 ticker-days (measured 2026-08-17) |
@@ -163,7 +163,7 @@ fact. Replace with a measurement when you can.
 | Board names/day (post-floor) | ~54 | history, 2026-08-08→17 | monthly |
 | Reddit RSS budget | 1 req / ~60s / IP | `x-ratelimit-*` headers | if RSS is ever used |
 | EFTS page cap | 100 hits | `len(hits)` vs `total` | if paging is added |
-| Test suite | 353 passed / 45.24s | measured 2026-08-17, after the audit-fixes wave | every branch |
+| Test suite | 353 passed / **0.95s** | measured 2026-08-17 on `fix/test-hermeticity` (`b6b90ad`); was 43.95s while the suite still made live calls | every branch |
 | `edgar8k` `"bankruptcy"` hits/day vs the 100-hit page cap | **127 / 188 / 197** over the monitor's real 2-day window (2026-08-11→12, 12→13, 13→14) | measured 2026-08-17 against `efts.sec.gov` | if EFTS paging is added or the phrase is narrowed |
 
 **`edgar8k`'s `"bankruptcy"` phrase already exceeds the EFTS page cap every day, and
@@ -182,6 +182,16 @@ Move completed checklist blocks here with the date and commit SHA. Keep it short
 decision log in [[ROADMAP]] is where *why* lives; this is just *what*, so a future
 session can tell "not done yet" from "done and reverted".
 
+- **2026-08-17** — **Test suite made hermetic** (`b6b90ad`, branch `fix/test-hermeticity`).
+  353 passed 43.95 s → 0.95 s; 0 DNS lookups under a socket blocker. Guarded
+  `radar.enrich._yf_quote` and `radar.about.fetch_summary` in a second autouse
+  `tests/conftest.py` fixture, and stubbed FINRA + CBOE in
+  `test_run_smoke.py::test_dry_run_writes_dashboard`. `tests/test_enrich.py` needed the
+  real `_yf_quote` restored in four tests (a `sys.modules` fake does not undo a
+  `setattr` on the module-level name); one of those four had been passing **vacuously**
+  — it asserts `(None, None)`, exactly what the stub returned for any input, so it had
+  silently stopped guarding the camelCase/snake_case distinction it exists for. See §6
+  for the three false claims this replaced.
 - **2026-08-17** — **E1 done.** Signed the `events` composite component (`bearish 0 /
   neutral 50 / bullish 100`, `None` when no fresh alert covers the ticker — was `100`/`0`
   with `0` doing double duty as both "bearish" and "no alert"), generalized the EDGAR
@@ -235,14 +245,31 @@ session can tell "not done yet" from "done and reverted".
 - **Never quote a test count, ticker count, or date you did not run a command for.**
   This project's docs have been wrong that way before; the tables above exist so the
   next session measures instead of remembering.
-- **The test suite makes live network calls, and it gates the daily publish.**
-  `tests/test_run_cboe.py`'s three tests call `run.main()` end-to-end. They stub
-  mentions, Tradestie, short ratios, DeepSeek, news and `option_stats` — but leave
-  **yfinance price enrichment and the Cramer feed live**. Measured 2026-08-17: those
-  three account for **~44 s of the suite's ~48 s**, and on one slow-network window the
-  whole suite took **786 s (13 min)** instead of 48 s while still passing 353/353.
-  Both `test.yml` and `daily.yml` run pytest as a gate, and five modules
-  (`apewisdom`, `fetch`, `shorts`, `cramer`, `news`) use real `time.sleep` exponential
-  backoff — so a slow upstream host slows or stalls the 6:17 AM publish. Not fixed:
-  stubbing those two calls would make the suite hermetic and ~45 s faster. Worth doing
-  before the suite grows.
+- ~~**The test suite makes live network calls, and it gates the daily publish.**~~
+  **FIXED 2026-08-17, `b6b90ad`** — and the entry that stood here was wrong in three
+  ways, which is worth recording because a future session would have built on it:
+  - It said the **Cramer feed** was live. It was not. `radar/run.py:138` reads
+    `fetch_cramer(cfg, run_day) if not args.dry_run else {}` and every test passes
+    `--dry-run`, so it was never reachable.
+  - It **missed Wikipedia entirely** — `run.py:79/81` → `about.describe` →
+    `en.wikipedia.org`, and `data/about.json` is gitignored so the cache is always
+    empty and every board ticker was a live fetch. This was the larger of the two
+    real callers.
+  - It named only `tests/test_run_cboe.py`. `tests/test_run_smoke.py::test_dry_run_writes_dashboard`
+    was worse, leaving **FINRA and CBOE** live too — while its own inline comment
+    claimed "no live network in tests".
+
+  Measured before/after: **353 passed 43.95 s → 353 passed 0.95 s**, and a socket
+  blocker now reports **0 DNS lookups** (validated against the pristine tree as a
+  control, where the same blocker fails the smoke test). The guard is a second autouse
+  fixture in `tests/conftest.py`.
+
+  **Still true, still unfixed** — these are production stall risks, not test ones, and
+  they are what could actually delay the 6:17 AM publish. `daily.yml` runs pytest as a
+  gate with no `timeout:`, so a hung suite hangs the job. **Nine** modules (not five)
+  use real `time.sleep` exponential backoff: `apewisdom`, `fetch`, `shorts`, `cramer`,
+  `news`, `tradestie`, `options`, `trump`, `monitors/edgar`. Of those, `shorts`,
+  `cramer`, `news` and `trump` **discard the `sleep_s`/`retries` knobs their own helpers
+  expose** (the callers never pass them), so they have no config-side brake at all. And
+  `radar/enrich.py:7` calls yfinance with **no timeout whatsoever** — that, not backoff,
+  is the likeliest cause of the 786 s window recorded earlier.
