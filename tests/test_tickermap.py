@@ -509,3 +509,93 @@ def test_fetch_ticker_map_never_raises(monkeypatch, tmp_path):
     monkeypatch.setattr(tm, "_get_json", boom)
     assert tm.fetch_ticker_map(_cfg(tmp_path), "2026-08-17") == {}
     assert any("upstream novelty" in e["reason"] for e in degrade.events())
+
+
+# --- E2a spec §4 test 9: the wrong-entity regression table --------------------
+# Required by the spec, dropped between spec and plan, and never written. ADBE, SDGR
+# and ID appeared in no test and no fixture. This IS the regression table for the exact
+# bug the whole phase exists to fix — the live cache on origin/data had AAPL as the
+# fruit, ADBE as the building material, HTZ as the SI unit, SDGR as the dead physicist
+# and ID as Mount Everest (spec §1, measured 2026-08-17: 249 resolved entries, 13.7%
+# wrong-entity).
+
+_NAME_TRAPS = {"Apple", "Adobe", "Hertz", "Erwin Schrödinger", "Mount Everest",
+               "MicroVision", "Microvision", "Oracle", "Snowflake"}
+
+# Every row here is a CONSTRUCTED fixture, not a claim about live Wikidata. The titles
+# on the left of the spec's table are asserted; the mechanism that omits ID and MVIS is
+# chosen to exercise both ways parse_rows can fail closed, one each:
+#   ID   -- two distinct live candidates, so the unresolved-ambiguity rule omits it
+#   MVIS -- no row at all (the spec measured "no article"), so there is nothing to omit
+# HTZ is modelled the way radar/ticker_overrides.yml's own `why` records it: ambiguous
+# in Wikidata ("same-family ambiguity vs Hertz Car Sales"), resolved by the curated file.
+_SPEC_ROWS = [
+    ("AAPL", "Apple Inc.", None),
+    ("ADBE", "Adobe Inc.", None),
+    ("SDGR", "Schrödinger, Inc.", None),
+    ("HTZ", "Hertz Global Holdings", None),      # two live candidates -> omitted here
+    ("HTZ", "The Hertz Corporation", None),      # and supplied by the override instead
+    ("ID", "Mount Everest", None),               # the wrong-entity trap itself, and
+    ("ID", "IdentifyID Inc.", None),             # a second candidate -> omitted
+]
+
+
+def _spec_response(run_day=RUN_DAY):
+    """The spec rows padded past MIN_ROWS with filler, so the floor and count guards
+    run for real instead of being monkeypatched out of the way."""
+    rows = [{"ticker": {"value": tk}, "enwiki": {"value": title},
+             "rank": {"value": _NORMAL},
+             **({"end": {"value": end}} if end else {})}
+            for tk, title, end in _SPEC_ROWS]
+    rows += [{"ticker": {"value": f"FILL{i}"}, "enwiki": {"value": f"Filler {i}"},
+              "rank": {"value": _NORMAL}} for i in range(tm.MIN_ROWS)]
+    count = {"results": {"bindings": [{"n": {"value": str(len(rows))}}]}}
+    return {"results": {"bindings": rows}}, count
+
+
+def test_the_wrong_entity_regression_table(monkeypatch, tmp_path):
+    """E2a spec §4 test 9, driven through the REAL resolution path: Wikidata rows ->
+    parse_rows -> the real radar/ticker_overrides.yml -> the merged map run.py uses.
+
+    A wrong title is not a cosmetic bug here. `SDGR` is the case that decided the whole
+    design: the old mapping fed ~988 physics-class pageviews/day into a biotech
+    attention score whose true magnitude is 41 — a 24x noise-to-signal inversion, in the
+    same direction every single day, well-formed and invisible to every consumer."""
+    raw, count = _spec_response()
+    monkeypatch.setattr(tm, "_get_json",
+                        lambda q, ua, **kw: count if "COUNT" in q else raw)
+    got = tm.fetch_ticker_map(_cfg(tmp_path, overrides="radar/ticker_overrides.yml"),
+                              RUN_DAY)
+
+    assert got["AAPL"] == "Apple Inc."               # not the fruit
+    assert got["ADBE"] == "Adobe Inc."               # not the building material
+    assert got["SDGR"] == "Schrödinger, Inc."        # not the 1887-1961 physicist
+    assert got["HTZ"] == "Hertz Global Holdings"     # not the SI unit — from the overrides
+    assert "ID" not in got, "Mount Everest must never be resolvable from a ticker"
+    assert "MVIS" not in got, "a 1979 games console must never be a meme-stock signal"
+
+
+def test_the_regression_table_fails_CLOSED_end_to_end(monkeypatch, tmp_path):
+    """The half that is the actual guarantee. `ID` and `MVIS` resolving to NOTHING is
+    not a gap to be filled later — it is the design: run.py sends no pageviews request
+    for a ticker with no title, so an omitted name costs one blank column while a wrong
+    one is a plausible, well-formed, permanently fictitious series.
+
+    Asserted as an absence of TRAPS rather than an absence of keys, because the failure
+    this catches is a resolution rule that starts guessing: no entity from the spec's
+    wrong-entity table may appear as a title for ANY ticker, curated or resolved."""
+    raw, count = _spec_response()
+    monkeypatch.setattr(tm, "_get_json",
+                        lambda q, ua, **kw: count if "COUNT" in q else raw)
+    got = tm.fetch_ticker_map(_cfg(tmp_path, overrides="radar/ticker_overrides.yml"),
+                              RUN_DAY)
+
+    assert _NAME_TRAPS.isdisjoint(set(got.values())), \
+        f"a wrong-entity title survived: {_NAME_TRAPS & set(got.values())}"
+    # The two omission mechanisms, each pinned at the pure layer so a future change to
+    # either rule cannot quietly start resolving one of these.
+    parsed = tm.parse_rows(raw, RUN_DAY)
+    assert "ID" not in parsed, "two live candidates must be OMITTED, never guessed between"
+    assert "MVIS" not in parsed, "a ticker with no row cannot acquire a title"
+    assert "HTZ" not in parsed, "the curated file, not the resolver, is what fixes HTZ"
+    assert parsed["AAPL"] == "Apple Inc." and parsed["ADBE"] == "Adobe Inc."
