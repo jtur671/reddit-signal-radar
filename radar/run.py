@@ -23,19 +23,24 @@ from radar.enrich import enrich
 from radar.render import render_html, write_outputs
 from radar.email_report import send_email
 from radar import trump, about, news
+from radar import tickermap
 from radar import backtest
 from radar.plays_log import append_picks, load_picks
 
-def _enrich_ticker(s, by_ticker, about_cache, about_ua, themes):
+def _enrich_ticker(s, by_ticker, about_cache, about_ua, themes, titles):
     """Attach themes, engagement, 'what it is', the news catalyst, and a DeepSeek
-    summary to one Signal. Shared by the board and the Still Running lane."""
+    summary to one Signal. Shared by the board and the Still Running lane.
+
+    `titles` is the ticker -> exact Wikipedia article title map. A ticker missing from
+    it gets no description and makes no request — never a name-based guess."""
     a = by_ticker.get(s.ticker)
     s.themes = themes.themes_for(s.ticker)
     if a is None:
         return
     s.upvotes = a.upvotes
     s.pct_bull = engagement_pct(a.upvotes, a.mentions)   # engagement proxy (not directional)
-    info = about.describe(s.ticker, a.name, about_cache, about_ua)  # 'what is this company'
+    info = about.describe(s.ticker, a.name, titles.get(s.ticker),
+                          about_cache, about_ua)          # 'what is this company'
     s.name, s.about_desc, s.about_extract = info["name"], info["desc"], info["extract"]
     theme = s.themes[0] if s.themes else "stocks"
     s.headlines = news.headlines(s.ticker, a.name, about_ua)   # the catalyst behind the chatter
@@ -75,10 +80,11 @@ def main(argv=None) -> int:
     by_ticker = {a.ticker: a for a in aggregates}
     about_cache = about.load_cache("data/about.json")
     about_ua = getattr(getattr(cfg, "apewisdom", None), "user_agent", "reddit-signal-radar/0.1")
+    ticker_titles = tickermap.fetch_ticker_map(cfg, run_day)   # exact article titles; fail-soft {}
     for s in board:
-        _enrich_ticker(s, by_ticker, about_cache, about_ua, themes)
+        _enrich_ticker(s, by_ticker, about_cache, about_ua, themes, ticker_titles)
     for s in still:
-        _enrich_ticker(s, by_ticker, about_cache, about_ua, themes)
+        _enrich_ticker(s, by_ticker, about_cache, about_ua, themes, ticker_titles)
     enrich(board + still)
     today_read = _today_read(board, themes)            # DeepSeek smart read (deterministic fallback)
     why_matters = _why_matters(board, today_read)      # DeepSeek 'why you should care' so-what
@@ -168,6 +174,7 @@ def main(argv=None) -> int:
         "finra": "ok" if short_ratios else "down",
         "cboe": "ok" if cboe_hits else ("down" if board else "unused"),
         "cramer": "ok" if cramer_by else "down",
+        "tickermap": "ok" if ticker_titles else "down",
     }
     html = render_html(**_build_context(board, signals, run_day, corpus, refreshed,
                                         refreshed_iso, today_read, chips, detail_json,

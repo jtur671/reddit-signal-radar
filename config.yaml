@@ -105,6 +105,13 @@ cramer:
   url: "https://raw.githubusercontent.com/jf-silverman/analyzing-stock-calls/main/data/stock_sentiments.json"
   max_age_days: 30
   snapshot_path: "data/cramer_snapshot.json"
+# Ticker -> exact Wikipedia article title, from Wikidata (p:P414/pq:P249, US exchanges).
+# Refreshed only when the vendored snapshot is older than max_age_days: US listing churn
+# is ~25/year against ~3,500 tickers (<1%/yr), so a monthly refresh is generous.
+tickermap:
+  snapshot_path: data/ticker_articles.json
+  overrides_path: radar/ticker_overrides.yml
+  max_age_days: 30
 # Transparent composite score: blends every phase-2 signal into one 0-100 number,
 # published alongside its components so the consuming bot can trust the parts over
 # the whole. Heuristic weights, intended to be recalibrated from measured ICs once
