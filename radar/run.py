@@ -81,6 +81,13 @@ def main(argv=None) -> int:
     about_cache = about.load_cache("data/about.json")
     about_ua = getattr(getattr(cfg, "apewisdom", None), "user_agent", "reddit-signal-radar/0.1")
     ticker_titles = tickermap.fetch_ticker_map(cfg, run_day)   # exact article titles; fail-soft {}
+    # The health floor for tickermap. fetch_ticker_map ALWAYS merges the curated
+    # overrides over whatever it resolved, so it never returns {} and a truthiness check
+    # on the merged map is an LED that can only ever read "ok" — which is worse than no
+    # LED, because it asserts health during a total outage. A map no larger than the
+    # override file means the live query and the vendored snapshot both produced nothing.
+    overrides_n = len(tickermap.load_overrides(
+        getattr(getattr(cfg, "tickermap", None), "overrides_path", "radar/ticker_overrides.yml")))
     for s in board:
         _enrich_ticker(s, by_ticker, about_cache, about_ua, themes, ticker_titles)
     for s in still:
@@ -174,7 +181,7 @@ def main(argv=None) -> int:
         "finra": "ok" if short_ratios else "down",
         "cboe": "ok" if cboe_hits else ("down" if board else "unused"),
         "cramer": "ok" if cramer_by else "down",
-        "tickermap": "ok" if ticker_titles else "down",
+        "tickermap": "ok" if len(ticker_titles) > overrides_n else "down",
     }
     html = render_html(**_build_context(board, signals, run_day, corpus, refreshed,
                                         refreshed_iso, today_read, chips, detail_json,
