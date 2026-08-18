@@ -44,3 +44,57 @@ def spike_score(series, min_baseline: int = 10, min_days: int = 21) -> float | N
         return None
     ratio = current / baseline
     return round(50.0 + 25.0 * max(-2.0, min(2.0, math.log2(ratio))), 2)
+
+
+def parse_series(raw) -> list[int]:
+    """Chronological daily views. Pure, never raises."""
+    items = raw.get("items") if isinstance(raw, dict) else None
+    if not isinstance(items, list):
+        return []
+    out = []
+    for it in items:
+        if not isinstance(it, dict):
+            continue
+        try:
+            out.append(int(it["views"]))
+        except (KeyError, TypeError, ValueError):
+            continue
+    return out
+
+
+def _get_series(title: str, start: str, end: str) -> list[int] | None:
+    """One request returns the whole window (measured: 34 datapoints in 0.22s)."""
+    url = REST.format(title=urllib.parse.quote(title.replace(" ", "_"), safe=""),
+                      start=start, end=end)
+    try:
+        r = requests.get(url, headers={"User-Agent": UA}, timeout=20)
+        if r.status_code != 200:
+            return None
+        return parse_series(r.json())
+    except (requests.RequestException, ValueError):
+        return None
+
+
+def fetch_attention(titles: dict, tickers: list, run_day: str, sleep_s: float = 0.2):
+    """({ticker: 0-100}, {ticker: latest views}) for mapped tickers. Fail-soft: a
+    ticker that errors or scores None is simply absent from the scores dict."""
+    end = date.fromisoformat(run_day) - timedelta(days=1)
+    start = end - timedelta(days=FETCH_DAYS)
+    s, e = start.strftime("%Y%m%d"), end.strftime("%Y%m%d")
+    scores, raw_views, failures = {}, {}, 0
+    for ticker in tickers:
+        title = titles.get(ticker)
+        if not title:
+            continue
+        series = _get_series(title, s, e)
+        if not series:
+            failures += 1
+            continue
+        raw_views[ticker] = series[-1]
+        score = spike_score(series)
+        if score is not None:
+            scores[ticker] = score
+        time.sleep(sleep_s)
+    if failures:
+        degrade.warn("wikimedia", f"{failures} ticker(s) returned no series")
+    return scores, raw_views

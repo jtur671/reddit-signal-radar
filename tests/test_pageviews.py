@@ -48,3 +48,54 @@ def test_live_probe_regression():
     """Measured 2026-08-17: TSLA current 2554 against a 2816.5 median -> 46.47."""
     series = _flat(14, 2816) + _flat(14, 2817) + [2554]
     assert pv.spike_score(series) == 46.47
+
+
+def test_unmapped_ticker_makes_no_request(monkeypatch):
+    """The E2a anti-fuzzy guarantee holding at the E2 boundary. Assert the CALL COUNT:
+    a missing entry could otherwise mean 'fetched and failed', which is different."""
+    calls = []
+    monkeypatch.setattr(pv, "_get_series", lambda *a, **k: calls.append(a))
+    scores, raw = pv.fetch_attention({}, ["MVIS"], "2026-08-17")
+    assert calls == []
+    assert scores == {} and raw == {}
+
+
+def test_maps_ticker_through_the_exact_title(monkeypatch):
+    seen = {}
+    def fake(title, start, end):
+        seen["title"] = title
+        return [100] * 28 + [200]
+    monkeypatch.setattr(pv, "_get_series", fake)
+    scores, raw = pv.fetch_attention({"TSLA": "Tesla, Inc."}, ["TSLA"], "2026-08-17")
+    assert seen["title"] == "Tesla, Inc."
+    assert scores["TSLA"] == 75.0
+    assert raw["TSLA"] == 200
+
+
+def test_one_ticker_failing_does_not_take_down_the_rest(monkeypatch):
+    def fake(title, start, end):
+        return None if title == "Bad" else [100] * 28 + [200]
+    monkeypatch.setattr(pv, "_get_series", fake)
+    scores, _ = pv.fetch_attention({"A": "Bad", "B": "Good"}, ["A", "B"], "2026-08-17")
+    assert "A" not in scores and scores["B"] == 75.0
+
+
+def test_thin_baseline_is_absent_not_zero(monkeypatch):
+    """None from spike_score must not become 0.0 -- a real zero says 'collapsed
+    attention', absence says 'no signal'. composite.py renormalizes around absence."""
+    monkeypatch.setattr(pv, "_get_series", lambda *a, **k: [2] * 28 + [12])
+    scores, raw = pv.fetch_attention({"T": "Title"}, ["T"], "2026-08-17")
+    assert "T" not in scores
+    assert raw["T"] == 12, "raw views still published even when unscored"
+
+
+def test_parse_series_reads_views_in_order():
+    raw = {"items": [{"timestamp": "2026081400", "views": 10},
+                     {"timestamp": "2026081500", "views": 20},
+                     {"timestamp": "2026081600", "views": 30}]}
+    assert pv.parse_series(raw) == [10, 20, 30]
+
+
+def test_parse_series_never_raises():
+    for junk in (None, {}, {"items": "nope"}, {"items": [{"views": "x"}]}):
+        assert pv.parse_series(junk) == []
