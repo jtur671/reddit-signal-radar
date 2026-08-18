@@ -2,6 +2,7 @@ from radar.composite import (blend, components_for, percentile_rank, CRAMER_INVE
                              EVENT_DIRECTION, DEFAULT_WEIGHTS)
 from radar.run import alert_direction_map
 from radar.models import Signal
+from radar.config import load_config
 
 def _sig(**k):
     base = dict(ticker="AAA")
@@ -144,3 +145,24 @@ def test_default_weights_has_exactly_seven_keys():
     """attention must NOT be here. Its absence is the mechanism."""
     assert len(DEFAULT_WEIGHTS) == 7
     assert "attention" not in DEFAULT_WEIGHTS
+
+
+def test_config_weights_are_the_seven_and_exclude_attention():
+    """Production reads config.yaml's composite.weights (run.py:155-157), not
+    DEFAULT_WEIGHTS -- that constant is only the fallback for a missing config
+    block. The prior test guarded the fallback path; this one guards the path
+    that actually runs. Someone can add `attention: 0.10` to config.yaml (and
+    shrink another weight to keep the sum at 1.0) without this failing unless
+    it asserts against the real file."""
+    w = vars(load_config("config.yaml").composite.weights)
+    assert set(w) == set(DEFAULT_WEIGHTS)
+    assert "attention" not in w
+
+
+def test_attention_zero_is_not_none():
+    # Same bug class as test_engagement_zero_is_not_none / test_events_is_none_when_no_
+    # fresh_alert above: pageviews.spike_score genuinely emits 0.0 when today's views
+    # collapse to <= 1/4 of the ticker's own 28-day median -- a real, meaningful
+    # measurement, not "no data". A truthiness check (`if s.attention else None`)
+    # would silently turn that into None and get it renormalized away.
+    assert components_for(_sig(attention=0.0), [_sig()], None, {})["attention"] == 0.0

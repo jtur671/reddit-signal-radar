@@ -57,10 +57,12 @@ upstream hobby repo disappearing), and Finnhub company headlines feeding the exi
 DeepSeek catalyst summaries when `FINNHUB_API_KEY` is set, falling back to the original
 Google News RSS search otherwise. `data.json` gains a `signals` array (per board row:
 ticker, `composite` 0–100, a `components` breakdown — velocity/direction/engagement/
-short_pressure/options/events/cramer_inverse, each 0–100 or `null` when a source doesn't
-cover that name (`events` is signed by the fleet monitor that fired — bearish 0 / neutral
-50 / bullish 100 — and `null` when no fresh alert covers the ticker, so a quiet name isn't
-punished with a real zero) — plus the raw `short_ratio`/`pc_ratio`/`uoa`/`cramer` values) and the raw
+short_pressure/options/events/cramer_inverse/attention, each 0–100 or `null` when a source
+doesn't cover that name (`events` is signed by the fleet monitor that fired — bearish 0 /
+neutral 50 / bullish 100 — and `null` when no fresh alert covers the ticker, so a quiet name
+isn't punished with a real zero; `attention` is a self-relative Wikimedia pageview spike,
+published for every ticker but deliberately carries no weight in `composite.weights`, so it
+never moves the blended number) — plus the raw `short_ratio`/`pc_ratio`/`uoa`/`cramer` values) and the raw
 `weights` config (`config.yaml`'s `composite.weights`, before per-row renormalization —
 `radar/composite.py`'s `blend()` drops null components and renormalizes over what's left
 per ticker, but that per-row renormalization isn't what's published here). Weights are

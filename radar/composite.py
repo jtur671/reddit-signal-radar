@@ -14,9 +14,13 @@ bullish share; engagement = upvotes-per-mention proxy; short_pressure = board-re
 short-ratio percentile; options = UOA flag (100) vs covered-but-quiet (50); events = signed
 fresh-alert direction (bearish 0 / neutral 50 / bullish 100), None when no fresh
 alert covers the ticker so a quiet name is not punished with a real zero; cramer_inverse =
-inverted Mad Money call (fade-the-call mapping); attention = Wikimedia pageview spike
-percentile, 0-100. attention is published in every signal's components block but carries
-no entry in DEFAULT_WEIGHTS or config.yaml's composite.weights, so blend()'s
+inverted Mad Money call (fade-the-call mapping); attention = self-relative pageview
+spike (today vs the ticker's own 28-day median, log2-ratio mapped 0-100, 50 = flat) --
+explicitly NOT a board-relative percentile like velocity/short_pressure, so two tickers
+both at 60 are each 60% up their OWN history and neither outranks the other.
+
+attention is published in every signal's components block but carries no entry in
+DEFAULT_WEIGHTS or config.yaml's composite.weights, so blend()'s
 weights.get(k, 0) > 0 filter drops it before the weighted mean -- it ships for the
 consuming bot to use on its own terms without moving the existing seven-component score."""
 from __future__ import annotations
