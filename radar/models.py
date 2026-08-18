@@ -48,6 +48,11 @@ class Signal:
     headlines: list[str] = field(default_factory=list)  # recent news headlines (the catalyst)
     days_running: int | None = None  # Still Running lane: days since the most recent breakout
     short_ratio: float | None = None  # FINRA daily ShortVolume/TotalVolume (0..1)
+    attention: float | None = None          # Wikimedia pageview spike, 0-100
+    pageviews: int | None = None            # raw daily views, context only
+    days_to_cover: float | None = None      # FINRA short interest, context only
+    short_interest_shares: int | None = None
+    short_interest_as_of: str | None = None # settlement date -- render it ALWAYS
     pc_ratio: float | None = None     # CBOE put/call volume ratio (top movers only)
     uoa: bool = False                 # unusual options activity flag (top movers only)
     cramer: str = ""                  # latest Mad Money sentiment enum ("" = no recent mention)

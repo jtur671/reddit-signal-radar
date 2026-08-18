@@ -1,17 +1,24 @@
 """Transparent composite score — every component published beside the blend.
 
 The consuming trading bot should trust the COMPONENTS more than the single number:
-weights start as documented heuristics (config.yaml `composite.weights`) and get
-recalibrated from measured ICs once backtest.json's power block turns sufficient
-(a config change, not a code change). None components (source down / name uncovered)
-are excluded with weight renormalization, and the weights actually used are published.
+weights start as documented heuristics (config.yaml `composite.weights`) and are
+intended to be recalibrated from measured ICs once backtest.json's power block turns
+sufficient. NOTE: per-component ICs are not computed anywhere yet -- backtest.py's
+_frames() emits the raw velocity score -- so changing a weight's number is config-only,
+but producing the measurement that justifies it is unbuilt work. See the E2 spec's
+follow-up. None components (source down / name uncovered) are excluded with weight
+renormalization, and the weights actually used are published.
 
 Component semantics: velocity = board-relative score percentile; direction = Tradestie
 bullish share; engagement = upvotes-per-mention proxy; short_pressure = board-relative
 short-ratio percentile; options = UOA flag (100) vs covered-but-quiet (50); events = signed
 fresh-alert direction (bearish 0 / neutral 50 / bullish 100), None when no fresh
 alert covers the ticker so a quiet name is not punished with a real zero; cramer_inverse =
-inverted Mad Money call (fade-the-call mapping)."""
+inverted Mad Money call (fade-the-call mapping); attention = Wikimedia pageview spike
+percentile, 0-100. attention is published in every signal's components block but carries
+no entry in DEFAULT_WEIGHTS or config.yaml's composite.weights, so blend()'s
+weights.get(k, 0) > 0 filter drops it before the weighted mean -- it ships for the
+consuming bot to use on its own terms without moving the existing seven-component score."""
 from __future__ import annotations
 
 CRAMER_INVERSE = {"sell_avoid": 100.0, "caution_concern": 80.0,
@@ -44,6 +51,7 @@ def components_for(s, board, ts_bull, alert_direction) -> dict:
                            if s.short_ratio is not None else None),
         "options": (100.0 if s.uoa else 50.0) if (s.uoa or s.pc_ratio is not None) else None,
         "events": EVENT_DIRECTION.get(alert_direction.get(s.ticker)),
+        "attention": (float(s.attention) if s.attention is not None else None),
         "cramer_inverse": CRAMER_INVERSE.get(s.cramer) if s.cramer else None,
     }
 
