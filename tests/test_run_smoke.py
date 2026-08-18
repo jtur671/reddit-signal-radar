@@ -894,3 +894,111 @@ def test_a_corrupt_history_still_publishes_a_board(monkeypatch, tmp_path):
     assert set(data["board"]) == {"IREN", "KEEL"}, "the board still ships"
     assert all(s["state"] == "new" for s in data["signals"]), \
         "an empty baseline is a cold start, and every name reads brand-new against it"
+
+
+# --- polarity: two different measurements that live one line apart -------------------
+
+def test_short_ratio_and_days_to_cover_land_in_their_own_fields(monkeypatch, tmp_path):
+    """These are DIFFERENT MEASUREMENTS and transposing them is silent.
+
+      short_ratio    — the share of a single day's volume that was sold short. A
+                       FRACTION, D-1 fresh, from FINRA's daily short-volume file.
+      days_to_cover  — the open short POSITION expressed as days of average volume.
+                       A COUNT, 11-24 days stale, from the twice-monthly settlement.
+
+    Neither number carries a unit through the payload, so swapping them produces a
+    perfectly well-formed board: the modal would print "0.6 days to cover" for a name
+    with a 6.7-day squeeze, and "670% short vol" for one with a 62% one.
+
+    Nothing caught that. Every fixture in this file stubbed `fetch_short_ratios` to
+    ({}, ""), so `s.short_ratio` was None in every end-to-end test, and feeding
+    `s.days_to_cover` into the payload's `short_ratio` (or `s.short_ratio` into
+    `_detail_blob`'s `days_to_cover`, which is what the modal prints as "days to
+    cover") survived the whole suite. Distinct non-None values on both, asserted in
+    both surfaces, is the only thing that can tell them apart."""
+    import json
+    import re
+    import radar.run as run
+    _offline(monkeypatch, run, _board(run))
+    monkeypatch.setattr(run, "fetch_short_ratios",
+                        lambda cfg, run_day: ({"IREN": 0.62}, "2026-08-16"))
+    monkeypatch.setattr(run.short_interest, "fetch_short_interest",
+                        lambda cfg, run_day, **k: ({"IREN": {"days_to_cover": 6.7,
+                                                             "shares": 12_000_000}},
+                                                   "2026-07-31"))
+
+    out = tmp_path / "out"
+    assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
+
+    row = next(s for s in json.loads((out / "data.json").read_text())["signals"]
+               if s["ticker"] == "IREN")
+    assert row["short_ratio"] == 0.62, "daily short VOLUME share, not the position"
+    assert row["days_to_cover"] == 6.7, "open POSITION in days, not the volume share"
+    assert row["short_interest_shares"] == 12_000_000
+    assert row["short_interest_as_of"] == "2026-07-31"
+
+    html = (out / "index.html").read_text()
+    blob = json.loads(re.search(r'id="radar-data">(.*?)</script>', html, re.S).group(1))
+    assert blob["IREN"]["short_ratio"] == 0.62, "the modal's 'short vol' metric"
+    assert blob["IREN"]["days_to_cover"] == 6.7, "the modal's 'days to cover' metric"
+    assert blob["IREN"]["short_interest_as_of"] == "2026-07-31"
+
+
+def test_the_modal_pairs_days_to_cover_with_its_date_by_CONJUNCTION():
+    """The line's own comment asserts "there is no code path here that can print a bare
+    days-to-cover number" — and nothing checked it. The existing same-line guard passes
+    on `&&` and on `||` alike, because both identifiers stay on the line either way, and
+    `||` renders exactly the bare undated number the pairing exists to forbid.
+
+    run.py's side of this invariant IS tested (a ticker FINRA never reported gets no
+    settlement date either). The template's side was not."""
+    import re
+    from pathlib import Path
+    tpl = Path("radar/templates/dashboard.html.j2").read_text()
+    lines = [ln for ln in tpl.splitlines() if "d.days_to_cover" in ln]
+    assert lines, "the detail modal must render days to cover somewhere"
+    for ln in lines:
+        compact = re.sub(r"\s+", "", ln)
+        assert re.search(r"d\.days_to_cover!=null&&d\.short_interest_as_of"
+                         r"|d\.short_interest_as_of&&d\.days_to_cover!=null", compact), \
+            f"days-to-cover is not CONJOINED with its settlement date: {ln.strip()}"
+
+
+def test_the_dna_cell_gets_brighter_as_the_component_gets_stronger():
+    """A visually BACKWARDS attention signal ships green otherwise. The DNA strip's only
+    encoding of magnitude is opacity, and inverting `0.15 + (c.val/100)*0.85` to
+    `1.0 - (c.val/100)*0.85` renders a maxed-out component as the DIMMEST cell on the
+    row — no test, no payload, no rendered string changes.
+
+    Checked by EVALUATING the template's own expression rather than matching its text,
+    so any rewrite that stays monotonic passes and any rewrite that flips fails."""
+    import re
+    from pathlib import Path
+    tpl = Path("radar/templates/dashboard.html.j2").read_text()
+    m = re.search(r'--a:\{\{\s*"%\.2f"\|format\((.+?)\)\s*\}\}', tpl)
+    assert m, "the DNA cell's alpha expression must be findable"
+    expr = m.group(1).replace("c.val", "v")          # valid Python as written
+
+    alpha = [eval(expr, {"__builtins__": {}}, {"v": v}) for v in (0, 25, 50, 75, 100)]
+    assert alpha == sorted(alpha), f"stronger components must not render dimmer: {alpha}"
+    assert alpha[0] < alpha[-1], "the strip encodes magnitude only as opacity"
+    assert all(0.0 <= a <= 1.0 for a in alpha), f"alpha outside the legal range: {alpha}"
+    assert alpha[0] > 0.0, \
+        "a real 0 must stay VISIBLE — an invisible cell is the `nul` (not covered) state"
+
+
+def test_the_modal_renders_short_ratio_as_a_percentage():
+    """`short_ratio` is a FRACTION on the wire (0.62 = 62% of the day's volume sold
+    short). Dropping the `*100` turns that into `Math.round(0.62)+'%'` = "1%" — a
+    hundredfold understatement of the single most bearish number on the row, rendered
+    without an error and asserted by nothing."""
+    import re
+    from pathlib import Path
+    tpl = Path("radar/templates/dashboard.html.j2").read_text()
+    lines = [ln for ln in tpl.splitlines()
+             if "d.short_ratio" in ln and "short vol" in ln]
+    assert lines, "the modal must render a short-volume metric"
+    for ln in lines:
+        compact = re.sub(r"\s+", "", ln)
+        assert "d.short_ratio*100" in compact, \
+            f"a fraction rendered as a percentage without scaling: {ln.strip()}"
