@@ -418,10 +418,17 @@ def test_new_sources_report_ok_when_they_answer(monkeypatch, tmp_path):
     """The green side of both LEDs. wikimedia keys off RAW VIEWS, not scores: a healthy
     Wikimedia whose tickers all fail spike_score's 21-day/10-view baseline floor has
     answered every request, and lighting that red would be a false alarm about a source
-    that is up."""
+    that is up.
+
+    Titles are mapped rather than left empty, because without them this test asserted
+    green against a state production cannot reach: fetch_attention returning raw views
+    for tickers it was never given a title for. It passed only because the old LED
+    checked `raw_views` before `pv_titles`, so an impossible input masked the ordering
+    bug that let a partial outage read green (see the degraded test below)."""
     import json
     import radar.run as run
     _offline(monkeypatch, run, _board(run))
+    _mapped_board(monkeypatch, run)
     monkeypatch.setattr(run.pageviews, "fetch_attention",
                         lambda titles, tickers, run_day, **k: ({}, {"IREN": 5000}, 0))
     monkeypatch.setattr(run.short_interest, "fetch_short_interest",
@@ -712,3 +719,115 @@ def test_a_dateless_snapshot_cannot_light_the_finra_led_green(monkeypatch, tmp_p
     assert rows["IREN"]["days_to_cover"] is None, "no settlement date, so no number ships"
     assert health["sources"]["finra_si"] == "down", "and the LED must report that, not ok"
     assert "finra_si · down" in (out / "index.html").read_text()
+
+
+# --- wikimedia LED: the partial outage --------------------------------------
+
+def _pv_body(url, views=1234):
+    """A well-formed pageviews body whose TAIL is the end day the URL asked for.
+
+    Built from the URL rather than hardcoded because `end` is run_day - 1 and run_day
+    comes from a real clock — a fixed date would make `_get_series` return MISS (its
+    stale-tail refusal) and the test would assert nothing about a healthy answer."""
+    import re
+    from datetime import date, timedelta
+    start, end = re.search(r"/daily/(\d{8})/(\d{8})$", url).groups()
+    d0 = date(int(start[:4]), int(start[4:6]), int(start[6:]))
+    d1 = date(int(end[:4]), int(end[4:6]), int(end[6:]))
+    return {"items": [{"timestamp": (d0 + timedelta(days=i)).strftime("%Y%m%d") + "00",
+                       "views": views}
+                      for i in range((d1 - d0).days + 1)]}
+
+
+class _PartialWikimedia:
+    """Wikimedia up for some titles and transport-dead for the rest — the shape of a
+    real partial outage (one edge cache, one datacentre, one rate-limited window)."""
+
+    RequestException = __import__("requests").RequestException
+
+    def __init__(self, ok_titles):
+        import urllib.parse
+        self.ok = [urllib.parse.quote(t.replace(" ", "_"), safe="") for t in ok_titles]
+        self.asked = []
+
+    def get(self, url, headers=None, timeout=None):
+        self.asked.append(url)
+        if any(t in url for t in self.ok):
+            body = _pv_body(url)
+            return type("R", (), {"status_code": 200, "json": lambda s: body})()
+        raise self.RequestException("partial Wikimedia outage")
+
+
+def _mapped_board(monkeypatch, run):
+    mapped = dict(run.tickermap.load_overrides("radar/ticker_overrides.yml"))
+    mapped.update({"IREN": "IREN Limited", "KEEL": "Keel Infrastructure"})
+    monkeypatch.setattr(run.tickermap, "fetch_ticker_map", lambda cfg, run_day, **k: mapped)
+
+
+def test_wikimedia_led_is_degraded_when_only_some_titles_answer(monkeypatch, tmp_path):
+    """The LED that could not tell the truth, third instance on this branch.
+
+    `"ok" if raw_views` was checked BEFORE the transport-failure count, so a genuine
+    partial outage — measured: 12 tickers, 2 answer, 3 consecutive transport failures
+    trip the breaker, 10 tickers get nothing — lit GREEN. The two degrade warns landed
+    in health["problems"], so it was discoverable; the glanceable surface lied.
+
+    Transport failures now WIN over partial success, and a partial outage is not
+    binary: some names really do have attention data, so "down" would be as wrong as
+    "ok". Three states, keyed only on things Wikimedia itself controls."""
+    import json
+    import radar.run as run
+    _offline(monkeypatch, run, _board(run))
+    _mapped_board(monkeypatch, run)
+    fake = _PartialWikimedia(["IREN Limited"])           # KEEL's transport dies
+    monkeypatch.setattr(run.pageviews, "requests", fake)
+
+    out = tmp_path / "out"
+    assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
+    assert fake.asked, "both titles must actually be requested"
+    data = json.loads((out / "data.json").read_text())
+    rows = {s["ticker"]: s for s in data["signals"]}
+    assert rows["IREN"]["pageviews"] == 1234, "the half that answered still ships"
+    assert rows["KEEL"]["pageviews"] is None, "and the half that did not, does not"
+
+    health = json.loads((out / "health.json").read_text())
+    assert health["sources"]["wikimedia"] == "degraded", \
+        "a transport failure alongside a success is a partial outage, not a clean run"
+    assert any("failed transport" in p for p in health["problems"]), \
+        "the LED is the glanceable surface; the warn is the detail — both, not either"
+    assert "wikimedia · degraded" in (out / "index.html").read_text()
+
+
+def test_a_transport_failure_can_never_light_wikimedia_green(monkeypatch, tmp_path):
+    """The direction the old ordering got wrong, pinned as a property rather than as
+    one scenario: whatever else happened, a run with `transport_failures > 0` must not
+    report "ok". Driven through the real LED expression at every raw_views shape."""
+    import json
+    import radar.run as run
+    for raw_views, expected in (({}, "down"), ({"IREN": 5000}, "degraded")):
+        _offline(monkeypatch, run, _board(run))
+        _mapped_board(monkeypatch, run)
+        monkeypatch.setattr(run.pageviews, "fetch_attention",
+                            lambda titles, tickers, run_day, _rv=raw_views, **k: ({}, _rv, 3))
+        out = tmp_path / ("out" + expected)
+        assert run.main(["--dry-run", "--no-email", "--out", str(out)]) == 0
+        health = json.loads((out / "health.json").read_text())
+        assert health["sources"]["wikimedia"] == expected
+
+
+def test_the_led_stylesheet_can_render_every_state_run_py_emits():
+    """A state with no CSS rule renders as the DEFAULT green dot with a text suffix
+    beside it — the exact "LED reads green during an outage" failure, moved one layer
+    down into the stylesheet. The template's LED span emits `class="led {{ st }}"` for
+    anything that is not "ok", so every non-ok state run.py can produce needs a rule."""
+    import re
+    from pathlib import Path
+    import radar.run as run
+    src = Path(run.__file__).read_text()
+    block = re.search(r"sources = \{(.*?)\n    \}", src, re.S).group(1)
+    emitted = set(re.findall(r'"(ok|down|degraded|unused|fallback)"', block))
+    assert {"degraded", "down", "unused", "fallback"} <= emitted, \
+        "this test must see the real LED states, not a refactored-away block"
+    tpl = Path("radar/templates/dashboard.html.j2").read_text()
+    for state in emitted - {"ok"}:
+        assert f".srcs .led.{state}{{" in tpl, f"no LED colour for state {state!r}"

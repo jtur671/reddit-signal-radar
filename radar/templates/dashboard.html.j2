@@ -202,6 +202,11 @@ tr[data-ticker]{cursor:pointer}
 .srcs .led.down{background:var(--down);box-shadow:0 0 5px var(--down)}
 .srcs .led.unused{background:#3a4049;box-shadow:none}
 .srcs .led.fallback{background:var(--gold);box-shadow:0 0 5px var(--gold)}
+/* partial outage — some names answered, some transports died. Amber, not green and
+   not red: the source is neither healthy nor gone. Every non-ok state run.py emits
+   needs a rule here or it renders as the default GREEN dot — see
+   tests/test_run_smoke.py::test_the_led_stylesheet_can_render_every_state_run_py_emits */
+.srcs .led.degraded{background:var(--gold);box-shadow:0 0 5px var(--gold)}
 </style>
 </head>
 <body>

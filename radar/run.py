@@ -228,22 +228,28 @@ def main(argv=None) -> int:
         "cboe": "ok" if cboe_hits else ("down" if board else "unused"),
         "cramer": "ok" if cramer_by else "down",
         "tickermap": "ok" if len(ticker_titles) > overrides_n else "down",
-        # Three states, like cboe above, because raw_views is empty in THREE different
-        # worlds and only one of them is an outage: Wikimedia failed; nothing was ever
-        # asked of it (tickermap down and a cold about cache — a real Tuesday, and
-        # "down" there asserts an outage that never happened); or every mapped title
+        # FOUR states, and the ORDER is the whole guard. raw_views is empty in three
+        # different worlds and only one of them is an outage: Wikimedia failed; nothing
+        # was ever asked of it (tickermap down and a cold about cache — a real Tuesday,
+        # and "down" there asserts an outage that never happened); or every mapped title
         # answered 404 / served a window that does not reach D-1. That last one is a
         # HEALTHY Wikimedia — a 404 is an answer — and it is not hypothetical: D-1
         # availability at board time is inferred from dump timestamps, never observed
-        # (docs/HANDOFF.md), so a whole board can legitimately come back empty.
-        # So the red state keys on TRANSPORT failures, the one thing only Wikimedia can
-        # cause; raw_views alone still lights it green, because anything answering with
-        # a series proves the source is up even when nothing clears spike_score's
-        # 21-day / 10-view baseline floor.
-        "wikimedia": ("ok" if raw_views              # something came back with a series
-                      else "unused" if not pv_titles  # nothing was ever asked of it
-                      else "down" if pv_failures      # asked, and the transport died
-                      else "ok"),                     # asked, and every answer was a miss
+        # (docs/HANDOFF.md), so a whole board can legitimately come back empty. So a
+        # miss NEVER darkens the LED, and only TRANSPORT failures can.
+        # But transport failures must be checked BEFORE raw_views, not after: a
+        # `"ok" if raw_views` first test made a genuine PARTIAL outage read green —
+        # measured, 12 tickers, 2 answered, then 3 consecutive transport failures tripped
+        # pageviews' breaker and 10 tickers got nothing, and the glanceable surface said
+        # the source was fine. Both degrade warns landed in health["problems"], which is
+        # discoverable, not visible.
+        # And partial is its own state rather than "down": some names genuinely do carry
+        # attention data on such a run, so claiming a dead source would be as wrong in
+        # the other direction. degraded = asked, some answered, some transports died.
+        "wikimedia": ("unused" if not pv_titles          # nothing was ever asked of it
+                      else "down" if pv_failures and not raw_views      # asked, all died
+                      else "degraded" if pv_failures     # asked, some died, some answered
+                      else "ok"),                        # asked, and nothing failed
         # Two states here, checked rather than assumed: unlike wikimedia, this source
         # takes no per-ticker input, so there is no "nothing was asked" world to confuse
         # with failure — fetch_short_interest always queries the settlement endpoint and
