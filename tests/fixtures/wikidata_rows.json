@@ -1,0 +1,24 @@
+{"results": {"bindings": [
+  {"ticker": {"value": "AAPL"}, "item": {"value": "http://www.wikidata.org/entity/Q312"},
+   "enwiki": {"value": "Apple Inc."}, "rank": {"value": "http://wikiba.se/ontology#NormalRank"}},
+
+  {"ticker": {"value": "AAL"}, "item": {"value": "http://www.wikidata.org/entity/Q1"},
+   "enwiki": {"value": "Anglo American plc"}, "rank": {"value": "http://wikiba.se/ontology#DeprecatedRank"}},
+  {"ticker": {"value": "AAL"}, "item": {"value": "http://www.wikidata.org/entity/Q2"},
+   "enwiki": {"value": "American Airlines Group"}, "rank": {"value": "http://wikiba.se/ontology#NormalRank"}},
+
+  {"ticker": {"value": "GOOG"}, "item": {"value": "http://www.wikidata.org/entity/Q95"},
+   "enwiki": {"value": "Google"}, "rank": {"value": "http://wikiba.se/ontology#NormalRank"},
+   "end": {"value": "2016-01-01T00:00:00Z"}},
+  {"ticker": {"value": "GOOG"}, "item": {"value": "http://www.wikidata.org/entity/Q20800404"},
+   "enwiki": {"value": "Alphabet Inc."}, "rank": {"value": "http://wikiba.se/ontology#NormalRank"}},
+
+  {"ticker": {"value": "BBBY"}, "item": {"value": "http://www.wikidata.org/entity/Q813782"},
+   "enwiki": {"value": "Bed Bath & Beyond"}, "rank": {"value": "http://wikiba.se/ontology#NormalRank"},
+   "end": {"value": "2023-09-29T00:00:00Z"}},
+
+  {"ticker": {"value": "DOW"}, "item": {"value": "http://www.wikidata.org/entity/Q3"},
+   "enwiki": {"value": "Dow Chemical Company"}, "rank": {"value": "http://wikiba.se/ontology#NormalRank"}},
+  {"ticker": {"value": "DOW"}, "item": {"value": "http://www.wikidata.org/entity/Q4"},
+   "enwiki": {"value": "Dow Inc."}, "rank": {"value": "http://wikiba.se/ontology#NormalRank"}}
+]}}
