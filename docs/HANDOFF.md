@@ -168,8 +168,10 @@ Two things it settled that were guesses before:
 
 ## 4. Numbers to check against reality later
 
-Every one of these is an estimate that a future session will be tempted to quote as
-fact. Replace with a measurement when you can.
+Every one of these is a number a future session will be tempted to quote as fact.
+Rows still marked *inferred*/*est.* are estimates — replace them with a measurement when
+you can. Rows marked **MEASURED** carry the date and the sample size; re-measure rather
+than trusting the label, and if a re-measurement disagrees, say so here.
 
 | Claim | Value | Basis | Replace when |
 |---|---|---|---|
@@ -179,13 +181,14 @@ fact. Replace with a measurement when you can.
 | Board names/day (post-floor) | ~54 | history, 2026-08-08→17 | monthly |
 | Reddit RSS budget | 1 req / ~60s / IP | `x-ratelimit-*` headers | if RSS is ever used |
 | EFTS page cap | 100 hits | `len(hits)` vs `total` | if paging is added |
-| Test suite | **465 passed / 3.7s** | measured 2026-08-17 on `fix/test-hermeticity` after the outsourced-review fix wave (was 446/2.36s after E2a+E2, 353/43.95s before the suite went hermetic, `b6b90ad`); 0 network violations under a socket blocker | every branch |
+| Test suite | **537 passed / 2.0s** | measured 2026-08-18 on `fix/test-hermeticity` after the GATE 7 loop-back (was 530/2.0s before it, 465/3.7s after the outsourced-review fix wave, 446/2.36s after E2a+E2, 353/43.95s before the suite went hermetic, `b6b90ad`); 0 network violations under a socket blocker. **Python 3.12.3 / requests 2.32.3 — NOT CI's pinned 3.11 / 2.33.0**, see §5 | every branch |
 | Ticker-map coverage | 80.3% of the 330-equity universe (est.) | Wikidata US-scoped + 30 overrides; **never run live** | first live run |
-| Catalyst/attention sources contacted live | **none yet** | the suite is hermetic by design, so no code path here has met the real APIs | first live run |
-| Wikimedia D-1 availability at board time | ~02:30 UTC on D+1 (7.5 h before publish) | **inferred** from `dumps.wikimedia.org` rollup timestamps, 13/13 days 02:14–02:49 — *not* observed on the AQS API at 10:17 UTC | one fetch of D-1 at board time closes it. **Blast radius now bounded**: a board-wide stale tail costs the attention signal for that day but no longer trips the breaker or reds the `wikimedia` LED (see §5, 2026-08-17 fix wave) |
+| Catalyst/attention sources contacted live | **E2's three, by hand — never by the workflow** | 2026-08-18, from a dev machine, driving the real module functions: `short_interest._latest_settlement` + `_fetch_all_pages` (22,341 rows, `complete=True`), `pageviews._get_series` (10 titles), `tickermap._get_json` (`COUNT` and `MAIN`, 4,015 rows both). The suite itself stays hermetic by design, so this is evidence about the ENDPOINTS, not about the job | first live run — nothing here proves the GitHub-hosted runner's IP gets the same answers |
+| Wikimedia D-1 availability at board time | D-1 present on the AQS API by **05:28 UTC**, ~4.8 h before the 10:17 UTC job | **MEASURED 2026-08-18** — the previous *inferred* value (~02:30 UTC on D+1, from `dumps.wikimedia.org` rollup timestamps, 13/13 days 02:14–02:49) is now superseded by direct observation: D-1 (2026-08-17) answered on the AQS API itself at 05:28 UTC, re-confirmed at 05:53 UTC with `_get_series`'s own tail check passing on 8 of 10 real board-shaped titles (the other 2 were `MISS` — no article, not a stale tail) | **ONE observation, not a pattern.** It closes "does D-1 ever exist by board time"; it does not establish a publication *schedule*. Re-check on a few more mornings before quoting a time. Blast radius stays bounded either way: a board-wide stale tail costs the attention signal for that day but no longer trips the breaker or reds the `wikimedia` LED (see §5, 2026-08-17 fix wave) |
 | Short-interest staleness | 11–24 days, sawtooth | measured 2026-08-17: latest settlement 2026-07-31, next (08-14) publishes 08-25 | every FINRA schedule change |
 | `about.py` ticker→article wrong-entity rate | **13.7%** (34 of 249 resolved) | measured 2026-08-17 against `origin/data` `about.json`, 420 tickers | after E2a lands — target 0.4% |
 | Ticker→article coverage | 59.3% of 420 → **80.3%** of the 330-equity universe | measured 2026-08-17; the other 90 are ETFs/crypto that cannot carry an exchange ticker statement | after E2a lands |
+| WDQS `MAIN` query vs its ~60 s silent-truncation wall | **4.2–40.3 s** across one morning; **40.3 s worst observed** → ~20 s of headroom | measured 2026-08-18, n=7 against the live endpoint (`COUNT` 3.3–13.7 s). The spread is WDQS's own result cache, not our query — a cache-busted cold run measured 4.2–13.9 s (n=5) and a warm one 0.4 s. The thinnest margin on the branch, and the only E2 number that could plausibly move | any WDQS schema/load change, or if `EXCHANGES`/`_WHERE` grows. It fails **CLOSED** — truncation makes `COUNT != len(bindings)`, which refuses the fetch and keeps the snapshot (`radar/tickermap.py`) — so this is a degradation (a stale map for a month), never a bad map |
 | `edgar8k` `"bankruptcy"` hits/day vs the 100-hit page cap | **127 / 188 / 197** over the monitor's real 2-day window (2026-08-11→12, 12→13, 13→14) | measured 2026-08-17 against `efts.sec.gov` | if EFTS paging is added or the phrase is narrowed |
 
 **`edgar8k`'s `"bankruptcy"` phrase already exceeds the EFTS page cap every day, and
