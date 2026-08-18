@@ -148,9 +148,11 @@ ticker→article mapping is 13.7% wrong-entity and must be fixed first.
 - [ ] **Verify the first live run** — none of this has contacted Wikimedia or FINRA yet.
       The suite is hermetic by design, so the 6:17 AM job is the first real exercise.
 - [ ] **Follow-up, blocks any future weighting:** build the per-component IC estimator in
-      `backtest.py`, and correct the "a config change, not a code change" claim in
-      `radar/composite.py:5`, `config.yaml:111` and `README.md:66` — it is false as
-      written.
+      `backtest.py`. `_frames()` emits the raw velocity score, so the measurement that
+      would justify any weight does not exist. The docs half of this is **done** — the
+      false "a config change, not a code change" claim was corrected in
+      `radar/composite.py`, `config.yaml` and `README.md` on 2026-08-18; only the
+      estimator itself remains.
 
 ### E3 — Second attention source  *(unblocked 2026-08-17)*
 - [ ] StockTwits ingest — an ApeWisdom-independent board source, directional bull/bear
