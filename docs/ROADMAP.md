@@ -120,13 +120,33 @@ chosen 90-day watch gate.
       cap. Paging is explicitly out of scope for this phase — this item is tracking it
       for later, not implementing it now.
 
-### E2 — Non-social attention
+### E2 — Non-social attention  *(specs approved 2026-08-17)*
+Measurement split this sub-phase in two. **These two sources are not peers** — pageviews
+are 7.5 h fresh, short interest is 11–24 days stale and twice-monthly — so they get
+different tiers, not one slot. A prerequisite the plan did not see also surfaced: the
+ticker→article mapping is 13.7% wrong-entity and must be fixed first.
+
+- [x] **Decided: published-but-unweighted.** Short interest permanently (a fortnightly
+      step function inside a daily composite would be misattributed by the backtest);
+      `attention` until the power gate. Decisive reason: `backtest.py` computes **no
+      per-component ICs**, so the "recalibrate from measured ICs" plan below has no
+      measurement behind it. Full reasoning in [[HANDOFF]] §5.
+- [ ] **E2a — ticker→article mapping first.** Wikidata `p:P414/pq:P249`, US-scoped;
+      precision 13.7% → 0.4% wrong, and it fails closed. Spec:
+      [[2026-08-17-ticker-article-mapping-design]].
 - [ ] Wikimedia pageviews (keyless, verified) — the discriminator between a real story
-      and a Reddit brigade, and the Google Trends replacement Phase D wanted.
-- [ ] Short **interest** + days-to-cover (Nasdaq and/or FINRA, both keyless, verified) —
-      distinct from the FINRA daily short *volume* already ingested.
-- [ ] Decide: new composite components (new heuristic weights, more recalibration debt)
-      or published-but-unweighted until the power gate opens.
+      and a Reddit brigade, and the Google Trends replacement Phase D wanted. Scored as a
+      **self-relative spike** (today vs the ticker's own 28d median), not a board-relative
+      percentile — a cross-sectional rank would mostly measure market cap.
+- [ ] Short **interest** + days-to-cover — **FINRA, not Nasdaq** (identical data, keyless,
+      batchable; Nasdaq returned HTTP 000 on a default curl UA and is a cloud-IP-block
+      risk). Distinct from the FINRA daily short *volume* already ingested: that is flow,
+      this is open position. Ships as an `as_of`-stamped context field, never a component.
+      Spec: [[2026-08-17-non-social-attention-design]].
+- [ ] **Follow-up, blocks any future weighting:** build the per-component IC estimator in
+      `backtest.py`, and correct the "a config change, not a code change" claim in
+      `radar/composite.py:5`, `config.yaml:111` and `README.md:66` — it is false as
+      written.
 
 ### E3 — Second attention source  *(unblocked 2026-08-17)*
 - [ ] StockTwits ingest — an ApeWisdom-independent board source, directional bull/bear
@@ -151,6 +171,38 @@ chosen 90-day watch gate.
 
 ## Decision log
 
+- **2026-08-17 (E2 specs + hermetic suite)** — Four measurements changed this phase from
+  what the plan assumed. **(1) Pageviews and short interest are not peers.** Pageviews'
+  D-1 data lands ~02:30 UTC against a 10:17 UTC publish (+7.5 h); short interest is
+  twice-monthly and settlement-based at **11–24 days stale**. Bundling them into one slot
+  — the plan's framing — would have put a fortnightly step function inside a daily
+  composite, which the backtest would then misattribute to whichever day the step landed
+  on. Specced as separate tiers: pageviews a published component, short interest an
+  `as_of`-stamped context field that is never a component.
+  **(2) Weighting decided: published-but-unweighted**, and the decisive reason is not the
+  power gate (76/150 days) but that **`backtest.py` computes no per-component ICs at
+  all** — `_frames()` emits the raw velocity score. The "recalibrate from measured ICs, a
+  config change not a code change" claim in `radar/composite.py:5`, `config.yaml:111` and
+  `README.md:66` is therefore false as written, and building that estimator is now a
+  named prerequisite for any future weighting. Unweighted costs nothing:
+  `composite.py:54` already drops keys with no weight, so there is no rebalance of the
+  existing seven and **no regime boundary**.
+  **(3) A prerequisite the plan did not see.** `radar/about.py` guesses the Wikipedia
+  article from ApeWisdom's company name; the live cache is 59.3% populated and **13.7%
+  wrong-entity** (`AAPL`→the fruit, `ADBE`→a building material, `HTZ`→the SI unit,
+  `SDGR`→a dead physicist). Harmless-looking on the About modal, fatal for pageviews:
+  `SDGR` would feed ~988 physics-class views/day into a biotech score whose true value is
+  41, every day, invisibly. Fixed first as E2a via a Wikidata exact-title map (13.7% →
+  0.4% wrong) whose key property is that it **fails closed** — `MVIS` resolves to nothing
+  rather than a 1979 Milton Bradley game console, which is what fuzzy search returns.
+  Scoring for pageviews is a **self-relative spike** (today vs the ticker's own 28d
+  median, log2-scaled); a board-relative percentile would mostly rank market cap.
+  **(4) The test suite was not hermetic and gates the publish.** 353 passed 43.95 s →
+  0.95 s, 0 DNS lookups. The prior handoff entry describing this was wrong in three ways
+  (named Cramer, which `run.py:138` gates behind `--dry-run`; missed Wikipedia, the larger
+  caller; and named only one of the two offending test files) — corrected in [[HANDOFF]]
+  §6 rather than silently replaced. Specs:
+  [[2026-08-17-ticker-article-mapping-design]], [[2026-08-17-non-social-attention-design]].
 - **2026-08-17 (E1 catalyst layer)** — Landed E1: signed the `events` composite
   component first (`radar/composite.py`) — `bearish 0 / neutral 50 / bullish 100`,
   `None` when no fresh alert covers the ticker — fixing the open defect where every

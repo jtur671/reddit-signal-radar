@@ -3,7 +3,7 @@ project: Reddit Signal Radar
 phase: E2a — Ticker→article mapping
 spec: design
 date: 2026-08-17
-status: draft (awaiting owner review)
+status: approved (owner, 2026-08-17)
 research: [[2026-08-17-community-mining]]
 ---
 

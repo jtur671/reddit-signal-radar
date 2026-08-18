@@ -29,7 +29,7 @@ of this document.
 | Tests | **353 passed in 45.24s** (measured 2026-08-17, `.venv`, after the audit-fixes wave). Re-run rather than quote: `source .venv/bin/activate && python -m pytest` |
 | Data branch | `origin/data` — 654 tickers, 76 daily snapshots, 8,364 ticker-days (measured 2026-08-17) |
 | Backtest power gate | needs 150 days, has 76 → opens ≈ **2026-11-01** |
-| Current phase | **E2 — Non-social attention**, spec not yet written |
+| Current phase | **E2 — Non-social attention**, specs approved 2026-08-17. Build **E2a (mapping) first** — E2 consumes its map |
 
 ### ~~Open defect found during research (blocks E1)~~ — RESOLVED `e602bce`, see §5.
 
@@ -86,14 +86,21 @@ An item is not done until its hook has been run.
       **↪ hook:** tick E1 in [[ROADMAP]], move this whole block to §5, set §1 phase to E2.
       Done.
 
-### E2 — Non-social attention · next
+### E2 — Non-social attention · specs approved 2026-08-17, implementation next
 
-- [ ] Decide: new weighted components, or published-but-unweighted until the power gate
+- [x] Decide: new weighted components, or published-but-unweighted until the power gate
       **↪ hook:** record the decision and its reason in §5 — this one will be re-litigated.
+      Done — **published-but-unweighted**, full reasoning in §5.
+- [x] Specs written and approved: [[2026-08-17-ticker-article-mapping-design]] (E2a,
+      the prerequisite) and [[2026-08-17-non-social-attention-design]] (E2).
+- [ ] **E2a first** — ticker→article mapping. E2 consumes its map, so this is a hard
+      ordering, not a preference.
 - [ ] Wikimedia pageviews ingest
 - [ ] Short interest + days-to-cover ingest
-      **↪ hook:** if these become composite components, add a `regime_notes` entry and
-      update `config.yaml`'s `composite.weights` comment.
+      ~~**↪ hook:** if these become composite components, add a `regime_notes` entry~~ —
+      **not triggered.** `attention` ships with no weight, so the composite value is
+      bit-for-bit unchanged and the backtest series stays comparable. Short interest is
+      not a component at all. If either is ever weighted, this hook comes back.
 
 ### E3 — Second attention source · ✅ unblocked 2026-08-17 (StockTwits answers CI)
 
@@ -164,6 +171,10 @@ fact. Replace with a measurement when you can.
 | Reddit RSS budget | 1 req / ~60s / IP | `x-ratelimit-*` headers | if RSS is ever used |
 | EFTS page cap | 100 hits | `len(hits)` vs `total` | if paging is added |
 | Test suite | 353 passed / **0.95s** | measured 2026-08-17 on `fix/test-hermeticity` (`b6b90ad`); was 43.95s while the suite still made live calls | every branch |
+| Wikimedia D-1 availability at board time | ~02:30 UTC on D+1 (7.5 h before publish) | **inferred** from `dumps.wikimedia.org` rollup timestamps, 13/13 days 02:14–02:49 — *not* observed on the AQS API at 10:17 UTC | one fetch of D-1 at board time closes it |
+| Short-interest staleness | 11–24 days, sawtooth | measured 2026-08-17: latest settlement 2026-07-31, next (08-14) publishes 08-25 | every FINRA schedule change |
+| `about.py` ticker→article wrong-entity rate | **13.7%** (34 of 249 resolved) | measured 2026-08-17 against `origin/data` `about.json`, 420 tickers | after E2a lands — target 0.4% |
+| Ticker→article coverage | 59.3% of 420 → **80.3%** of the 330-equity universe | measured 2026-08-17; the other 90 are ETFs/crypto that cannot carry an exchange ticker statement | after E2a lands |
 | `edgar8k` `"bankruptcy"` hits/day vs the 100-hit page cap | **127 / 188 / 197** over the monitor's real 2-day window (2026-08-11→12, 12→13, 13→14) | measured 2026-08-17 against `efts.sec.gov` | if EFTS paging is added or the phrase is narrowed |
 
 **`edgar8k`'s `"bankruptcy"` phrase already exceeds the EFTS page cap every day, and
@@ -182,6 +193,45 @@ Move completed checklist blocks here with the date and commit SHA. Keep it short
 decision log in [[ROADMAP]] is where *why* lives; this is just *what*, so a future
 session can tell "not done yet" from "done and reverted".
 
+- **2026-08-17** — **E2 weighting decided: published-but-unweighted.** Recording the
+  reasoning because the checklist warned this one gets re-litigated.
+  **Short interest is excluded permanently** — measured 11–24 days stale, twice monthly
+  (latest available on 2026-08-17 is the 2026-07-31 settlement; 2026-08-14 publishes
+  2026-08-25). Inside a daily composite that is a fortnightly step function, and the
+  backtest would misattribute each step to whichever day it landed on. It ships as an
+  `as_of`-stamped context field.
+  **`attention` (pageviews) is unweighted for now**, for two reasons — the second is the
+  one that actually decides it:
+  1. The power gate needs 150 days and has 76 (≈2026-11-01), so no measured weight exists.
+  2. **The recalibration story this project has assumed since 2026-08-07 is false.**
+     `radar/backtest.py`'s `_frames()` (`backtest.py:117`) emits the raw velocity engine
+     score, not composite components; grepping that module for `components`,
+     `short_ratio`, `cramer` or `composite` returns only the `REGIME_NOTES` strings.
+     **Per-component ICs are computed nowhere in this repo.** So "recalibrate from
+     measured ICs — a config change, not a code change" (stated in `radar/composite.py:5`,
+     `config.yaml:111`, `README.md:66`) is wrong as written: changing a weight's *number*
+     is config-only, but producing the measurement that justifies it does not exist and
+     is a code change nobody has scoped.
+  Mechanically this costs nothing: `composite.py:54` filters on `weights.get(k, 0) > 0`,
+  so a component with no weight publishes in `data.json` and is dropped from the blend —
+  no rebalance of the existing seven (`tests/test_run_smoke.py:51` pins the sum to 1.0),
+  and **no regime boundary**, since the composite value is unchanged.
+  **↪ follow-up:** building the per-component IC estimator is the prerequisite for ever
+  weighting `attention`, and should correct that claim in all three files. The inputs are
+  already persisted (`history.annotate` writes `ts_bull`, `short_ratio`, `pc_ratio`,
+  `uoa`, `cramer` per ticker-day) — this is an estimator, not an ingest.
+- **2026-08-17** — **E2 + E2a specs approved.** Research measured two things the roadmap
+  had wrong. (a) Pageviews and short interest are **not peers** — 7.5 h fresh vs 11–24
+  days stale — so they are specced as separate tiers, not one slot.
+  (b) A prerequisite the roadmap did not see: `radar/about.py` maps ticker→article by
+  guessing from ApeWisdom's company name, and the live cache on `origin/data` is 59.3%
+  populated and **13.7% wrong-entity** — `AAPL`→the fruit, `ADBE`→a building material,
+  `HTZ`→the SI unit, `SDGR`→a dead physicist, `ID`→Mount Everest. Cosmetic on the About
+  modal today; a silent permanent signal inversion the moment pageviews consume it
+  (`SDGR` would feed ~988 physics pageviews/day into a biotech score whose real value is
+  41). Fixed by a Wikidata-derived exact-title map: precision 13.7% → 0.4% wrong, and it
+  **fails closed** — `MVIS` resolves to nothing rather than a 1979 game console. Specs:
+  [[2026-08-17-ticker-article-mapping-design]], [[2026-08-17-non-social-attention-design]].
 - **2026-08-17** — **Test suite made hermetic** (`b6b90ad`, branch `fix/test-hermeticity`).
   353 passed 43.95 s → 0.95 s; 0 DNS lookups under a socket blocker. Guarded
   `radar.enrich._yf_quote` and `radar.about.fetch_summary` in a second autouse
