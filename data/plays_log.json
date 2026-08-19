@@ -428,6 +428,39 @@
 "vel": 15.7,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-08-19",
+"ticker": "PR",
+"thesis": "Permian Resources just beat Q2 expectations and raised guidance, yet the stock is still seen as undervalued despite hitting a 52-week high. The hot lifecycle and 5x mention growth suggest fresh momentum that could continue as the market digests the positive earnings surprise.",
+"risk": "Energy prices could reverse, undermining the earnings beat and sending the stock lower.",
+"conviction": "high",
+"mentions": 10,
+"vel": 5.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-19",
+"ticker": "UAE",
+"thesis": "The UAE ETF is surging on ImmunityBio's cancer drug approval, a concrete regulatory catalyst that could drive further gains as the market recognizes the broader implications for the region. The 5.5x mention growth and hot lifecycle indicate early-stage interest before the move becomes obvious.",
+"risk": "The approval is for a single drug and may not translate into sustained ETF performance if the broader UAE market remains weak.",
+"conviction": "medium",
+"mentions": 11,
+"vel": 5.5,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-19",
+"ticker": "XYZ",
+"thesis": "Block is riding the wave of Affirm's expanded Stripe partnership, a concrete product integration that could boost transaction volumes and revenue. With a new lifecycle and 5x mention growth, this is an early opportunity before the market fully prices in the collaboration's impact.",
+"risk": "The partnership's financial impact may be modest, and the stock could fail to sustain momentum if the market focuses on other headwinds.",
+"conviction": "medium",
+"mentions": 10,
+"vel": 5.0,
+"state": "new",
+"crypto": false
 }
 ]
 }
