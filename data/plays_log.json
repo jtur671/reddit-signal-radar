@@ -461,6 +461,39 @@
 "vel": 5.0,
 "state": "new",
 "crypto": false
+},
+{
+"date": "2026-08-20",
+"ticker": "BULL",
+"thesis": "BULL's mention count jumped 7.9x on a strong Q2 earnings beat, with EPS and sales exceeding estimates. The stock is still in the early stages of reacting to this fundamental catalyst, providing an opportunity to enter before the broader market fully prices in the positive results.",
+"risk": "The earnings beat is already public, so the stock may have already priced in much of the good news, limiting upside.",
+"conviction": "medium",
+"mentions": 118,
+"vel": 7.9,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-20",
+"ticker": "MRNA",
+"thesis": "MRNA is in a hot lifecycle with a 99.9x mention surge and a concrete catalyst: positive melanoma vaccine trial results that doubled the stock. The move is still early as the market digests the full implications of this breakthrough, offering a chance to ride the momentum before it becomes mainstream.",
+"risk": "The stock has already doubled, so a pullback is possible if the initial hype fades or if further trial data disappoints.",
+"conviction": "high",
+"mentions": 910,
+"vel": 182.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-20",
+"ticker": "SLS",
+"thesis": "SLS is in a sustained lifecycle with a 36.5x mention surge, driven by ImmunityBio's expansion of ANKTIVA into Saudi Arabia, a concrete international market deal. This expansion opens a new revenue stream and the stock is still in the early phase of this catalyst's impact.",
+"risk": "The catalyst is tied to a partner company's announcement, which may not directly translate to SLS's financials as expected.",
+"conviction": "medium",
+"mentions": 73,
+"vel": 36.5,
+"state": "sustained",
+"crypto": false
 }
 ]
 }
