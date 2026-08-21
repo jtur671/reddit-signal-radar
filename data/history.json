@@ -2035,6 +2035,21 @@
 "score": -3.85,
 "state": "cooling",
 "weighted": 5.0
+},
+"2026-08-21": {
+"attention": 46.52,
+"authors": 0,
+"pageviews": 74,
+"pc_ratio": 0.36,
+"pct_bull": 0.0,
+"raw": 40,
+"score": 72.4,
+"short_ratio": 0.6011,
+"state": "new",
+"ts_bull": 50.4,
+"ts_comments": 40,
+"uoa": false,
+"weighted": 40.0
 }
 },
 "ALAB": {
@@ -37246,6 +37261,22 @@
 "short_ratio": 0.2371,
 "state": "cooling",
 "weighted": 82.0
+},
+"2026-08-21": {
+"attention": 51.23,
+"authors": 0,
+"cramer": "wait_hold_neutral",
+"pageviews": 4087,
+"pc_ratio": 0.681,
+"pct_bull": 0.0,
+"raw": 10,
+"score": 2.1,
+"short_ratio": 0.2932,
+"state": "hot",
+"ts_bull": 50.6,
+"ts_comments": 10,
+"uoa": false,
+"weighted": 10.0
 }
 },
 "MEX": {

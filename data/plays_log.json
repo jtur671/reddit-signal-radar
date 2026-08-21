@@ -494,6 +494,28 @@
 "vel": 36.5,
 "state": "sustained",
 "crypto": false
+},
+{
+"date": "2026-08-21",
+"ticker": "AI",
+"thesis": "Tempus AI's new partnership with Moderna is a concrete, real-world catalyst that's just starting to drive mentions, offering an early entry before the broader market catches on.",
+"risk": "Partnership news may already be priced in, and the stock could pull back if the initial hype fades.",
+"conviction": "high",
+"mentions": 40,
+"vel": null,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-08-21",
+"ticker": "META",
+"thesis": "Meta's mention spike is fueled by a combination of a high-profile legal trial and a major AI hint from Zuckerberg, creating a fresh narrative that could drive volatility and opportunity.",
+"risk": "Legal overhang and regulatory scrutiny could cap upside or lead to sharp declines.",
+"conviction": "medium",
+"mentions": 10,
+"vel": null,
+"state": "hot",
+"crypto": false
 }
 ]
 }
