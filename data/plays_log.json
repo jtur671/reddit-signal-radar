@@ -516,6 +516,39 @@
 "vel": null,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-08-22",
+"ticker": "AAOI",
+"thesis": "AAOI's 24x surge in mentions with a concrete analyst catalyst (170% revenue growth, low valuation, AI summit participation) suggests early institutional interest before the broader market catches on.",
+"risk": "High volatility and potential profit-taking after a sharp move.",
+"conviction": "high",
+"mentions": 24,
+"vel": 24.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-22",
+"ticker": "IBKR",
+"thesis": "IBKR's plan to extend trading hours to nearly 23 hours is a concrete catalyst that could boost trading volumes and revenue, with mentions growing 3.5x.",
+"risk": "Regulatory or operational challenges could delay implementation.",
+"conviction": "medium",
+"mentions": 21,
+"vel": 3.5,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-08-22",
+"ticker": "IREN",
+"thesis": "IREN's 15% jump over five sessions, driven by outperforming CoreWeave on AI compute metrics and whale activity, indicates growing recognition of its AI infrastructure value.",
+"risk": "Crypto/AI sentiment could reverse quickly, impacting the stock.",
+"conviction": "medium",
+"mentions": 28,
+"vel": 2.5,
+"state": "hot",
+"crypto": false
 }
 ]
 }
