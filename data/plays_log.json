@@ -549,6 +549,39 @@
 "vel": 2.5,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-08-23",
+"ticker": "EU",
+"thesis": "The nuclear sector is heating up with X-Energy's strong IPO, and EU is riding that wave with a 3.4x mention increase, suggesting investors are rotating into related names before the theme peaks.",
+"risk": "Sector sentiment could reverse quickly if the IPO hype fades.",
+"conviction": "medium",
+"mentions": 27,
+"vel": 3.4,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-23",
+"ticker": "OI",
+"thesis": "Citigroup's upgrade to Buy with a raised target is a fresh, concrete catalyst, and the 4.3x mention growth indicates early momentum before the broader market fully prices in the new outlook.",
+"risk": "Glass container demand could remain weak, capping upside.",
+"conviction": "medium",
+"mentions": 13,
+"vel": 4.3,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-23",
+"ticker": "TDS",
+"thesis": "JP Morgan's reaffirmed Overweight with a lowered target still signals institutional confidence, and the 12x surge in mentions suggests retail is just catching on to a stock that may be oversold on the headline target cut.",
+"risk": "Price target cut could weigh on sentiment despite the rating.",
+"conviction": "high",
+"mentions": 12,
+"vel": 12.0,
+"state": "hot",
+"crypto": false
 }
 ]
 }
