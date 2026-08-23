@@ -1,11 +1,15 @@
 {
- "as_of": "2026-08-16",
+ "as_of": "2026-08-23",
  "power": {
-  "days": 75,
+  "days": 82,
   "sufficient": false,
   "target_days": 150
  },
  "regime_notes": [
+  {
+   "date": "2026-08-17",
+   "note": "E1 catalyst layer: composite `events` became signed (bearish 0 / neutral 50 / bullish 100) and None when no fresh alert covers the ticker, where it was previously 100/0 with 0 for 'no alert'. Every composite before and after this date is incomparable. Four new alert classes (dilution/shelf/activist/delisting) also feed `events`."
+  },
   {
    "date": "2026-08-07",
    "note": "PR #4 merged: history 'state' becomes board-relative for board names; noise floor min_mentions 5 -> 10."
@@ -14,381 +18,381 @@
  "quintiles": {
   "1": {
    "horizon": 1,
-   "n": 7593,
+   "n": 8171,
    "q1": {
-    "mean_excess": -0.002440457338241826,
-    "n": 1542
+    "mean_excess": -0.0025827022615752017,
+    "n": 1641
    },
    "q2": {
-    "mean_excess": -0.0013080697384540037,
-    "n": 1553
+    "mean_excess": -0.0014283356441798973,
+    "n": 1670
    },
    "q3": {
-    "mean_excess": -0.0028068618427553906,
-    "n": 1531
+    "mean_excess": -0.002721638660272491,
+    "n": 1639
    },
    "q4": {
-    "mean_excess": -0.003791054264928223,
-    "n": 1491
+    "mean_excess": 0.0279983473067234,
+    "n": 1620
    },
    "q5": {
-    "mean_excess": -0.003752881033195773,
-    "n": 1476
+    "mean_excess": 0.010370079376965139,
+    "n": 1601
    },
-   "spread": -0.0013124236949539469
+   "spread": 0.01295278163854034
   },
   "5": {
    "horizon": 5,
-   "n": 7238,
+   "n": 7813,
    "q1": {
-    "mean_excess": -0.014432616873952996,
-    "n": 1463
+    "mean_excess": -0.011139761640565307,
+    "n": 1570
    },
    "q2": {
-    "mean_excess": -0.013586164678843302,
-    "n": 1483
+    "mean_excess": -0.011509187574655291,
+    "n": 1598
    },
    "q3": {
-    "mean_excess": -0.00849972612081313,
-    "n": 1455
+    "mean_excess": -0.007223656395511798,
+    "n": 1565
    },
    "q4": {
-    "mean_excess": -0.01335296108614929,
-    "n": 1427
+    "mean_excess": 0.02529960944304127,
+    "n": 1550
    },
    "q5": {
-    "mean_excess": -0.014164068560092627,
-    "n": 1410
+    "mean_excess": 0.00205977814511052,
+    "n": 1530
    },
-   "spread": 0.00026854831386036865
+   "spread": 0.013199539785675826
   },
   "10": {
    "horizon": 10,
-   "n": 6524,
+   "n": 7352,
    "q1": {
-    "mean_excess": -0.029741400874904712,
-    "n": 1321
+    "mean_excess": 0.004996405717606376,
+    "n": 1477
    },
    "q2": {
-    "mean_excess": -0.03187173955777634,
-    "n": 1337
+    "mean_excess": -0.02523325545295466,
+    "n": 1505
    },
    "q3": {
-    "mean_excess": -0.02187599337151623,
-    "n": 1312
+    "mean_excess": 0.015127232945935482,
+    "n": 1473
    },
    "q4": {
-    "mean_excess": -0.026353918649878537,
-    "n": 1284
+    "mean_excess": 0.025278197454809827,
+    "n": 1461
    },
    "q5": {
-    "mean_excess": -0.029875362319710545,
-    "n": 1270
+    "mean_excess": 0.004884170245784871,
+    "n": 1436
    },
-   "spread": -0.00013396144480583294
+   "spread": -0.00011223547182150507
   }
  },
  "quintiles_iwm": {
   "1": {
    "horizon": 1,
-   "n": 7593,
+   "n": 8171,
    "q1": {
-    "mean_excess": -0.003334069913844058,
-    "n": 1542
+    "mean_excess": -0.0034975927571145415,
+    "n": 1641
    },
    "q2": {
-    "mean_excess": -0.002307385777123272,
-    "n": 1553
+    "mean_excess": -0.0023604975828656087,
+    "n": 1670
    },
    "q3": {
-    "mean_excess": -0.0038026196683205176,
-    "n": 1531
+    "mean_excess": -0.003682131051582138,
+    "n": 1639
    },
    "q4": {
-    "mean_excess": -0.004828343016086445,
-    "n": 1491
+    "mean_excess": 0.027069185616208365,
+    "n": 1620
    },
    "q5": {
-    "mean_excess": -0.004896517699753635,
-    "n": 1476
+    "mean_excess": 0.009346816519262724,
+    "n": 1601
    },
-   "spread": -0.0015624477859095768
+   "spread": 0.012844409276377266
   },
   "5": {
    "horizon": 5,
-   "n": 7238,
+   "n": 7813,
    "q1": {
-    "mean_excess": -0.018059156884941332,
-    "n": 1463
+    "mean_excess": -0.014844220965255872,
+    "n": 1570
    },
    "q2": {
-    "mean_excess": -0.017386955099624367,
-    "n": 1483
+    "mean_excess": -0.015336213165459162,
+    "n": 1598
    },
    "q3": {
-    "mean_excess": -0.012486741942209025,
-    "n": 1455
+    "mean_excess": -0.011165097148082352,
+    "n": 1565
    },
    "q4": {
-    "mean_excess": -0.017267278256233844,
-    "n": 1427
+    "mean_excess": 0.02146281164309436,
+    "n": 1550
    },
    "q5": {
-    "mean_excess": -0.018139508149311208,
-    "n": 1410
+    "mean_excess": -0.0018869154563230016,
+    "n": 1530
    },
-   "spread": -8.035126436987602e-05
+   "spread": 0.01295730550893287
   },
   "10": {
    "horizon": 10,
-   "n": 6524,
+   "n": 7352,
    "q1": {
-    "mean_excess": -0.033450392984644445,
-    "n": 1321
+    "mean_excess": 0.001317528706714504,
+    "n": 1477
    },
    "q2": {
-    "mean_excess": -0.03589843862821327,
-    "n": 1337
+    "mean_excess": -0.0291267888388796,
+    "n": 1505
    },
    "q3": {
-    "mean_excess": -0.026008177418496474,
-    "n": 1312
+    "mean_excess": 0.011139360153319088,
+    "n": 1473
    },
    "q4": {
-    "mean_excess": -0.030586540752583054,
-    "n": 1284
+    "mean_excess": 0.021357106893517844,
+    "n": 1461
    },
    "q5": {
-    "mean_excess": -0.03410060909463102,
-    "n": 1270
+    "mean_excess": 0.0009157170401749545,
+    "n": 1436
    },
-   "spread": -0.0006502161099865775
+   "spread": -0.00040181166653954954
   }
  },
  "rank_ic": {
   "1": {
-   "mean": -0.02248574371954513,
-   "t": -1.4120624663621033,
-   "days": 71
+   "mean": -0.021390035946979198,
+   "t": -1.3792083795460608,
+   "days": 78
   },
   "5": {
-   "mean": 0.004681768372723112,
-   "t": 0.3777763294525625,
-   "days": 65
+   "mean": -0.0024046270322691924,
+   "t": -0.17610018627778654,
+   "days": 72
   },
   "10": {
-   "mean": 0.019607872713114895,
-   "t": 1.1990858988317858,
-   "days": 58
+   "mean": 0.015224976066365303,
+   "t": 0.9525041499825078,
+   "days": 65
   }
  },
  "event_study": {
-  "n_events": 1226,
-  "n_used": 707,
+  "n_events": 1243,
+  "n_used": 929,
   "car": {
-   "-5": 0.010894752099173162,
-   "-4": 0.006598473069537915,
-   "-3": 0.0019307742902518676,
-   "-2": 0.007493979784286119,
+   "-5": 0.008470414490144709,
+   "-4": 0.005161433200439183,
+   "-3": 0.0019373494096305947,
+   "-2": 0.0053291164567754,
    "-1": 0.0,
-   "0": -0.004923274074396977,
-   "1": -0.012923650599522411,
-   "2": -0.013406604504918948,
-   "3": -0.018499604999658623,
-   "4": -0.020786014768880163,
-   "5": -0.02703311361605121,
-   "6": -0.03467239446117467,
-   "7": -0.040190245077421284,
-   "8": -0.044982851394776695,
-   "9": -0.04743236002617877,
-   "10": -0.04984142400916021,
-   "11": -0.053772642218642246,
-   "12": -0.056117734002182104,
-   "13": -0.05791074661631488,
-   "14": -0.06588425389074973,
-   "15": -0.07036964984279295,
-   "16": -0.07223083307975463,
-   "17": -0.0805111842538952,
-   "18": -0.08357481913868989,
-   "19": -0.08320601253579313,
-   "20": -0.0802815330549826
+   "0": -0.004145138180765197,
+   "1": -0.009990057098772528,
+   "2": -0.011400529782578753,
+   "3": -0.01588734783847066,
+   "4": -0.01927189797707652,
+   "5": -0.02445028009486251,
+   "6": -0.030738723427327815,
+   "7": -0.03507367446180001,
+   "8": -0.0367132783800069,
+   "9": -0.03964748937416416,
+   "10": -0.03691820411726695,
+   "11": -0.040068359852814824,
+   "12": -0.042512121085988355,
+   "13": -0.04811100257762065,
+   "14": -0.05397616598578257,
+   "15": -0.05299895115863718,
+   "16": -0.054030576116083404,
+   "17": -0.05942590321405892,
+   "18": -0.06752673684978008,
+   "19": -0.05800042163853235,
+   "20": -0.05586070397958103
   }
  },
  "vol_test": {
   "q1": {
-   "mean": 0.6186989320024269,
-   "n": 1531
+   "mean": 0.6252897126955884,
+   "n": 1616
   },
   "q2": {
-   "mean": 0.604564520183289,
-   "n": 1558
+   "mean": 0.6015710489463184,
+   "n": 1643
   },
   "q3": {
-   "mean": 0.6027626912505073,
-   "n": 1529
+   "mean": 0.6060684985322032,
+   "n": 1614
   },
   "q4": {
-   "mean": 0.5756853349977417,
-   "n": 1510
+   "mean": 0.6007102342369245,
+   "n": 1593
   },
   "q5": {
-   "mean": 0.5758125335409134,
-   "n": 1490
+   "mean": 0.601113632242495,
+   "n": 1575
   }
  },
  "scorecard": {
-  "n_picks": 30,
+  "n_picks": 52,
   "since": "2026-08-07",
-  "mean_excess_5d": null,
+  "mean_excess_5d": -0.01791757144191753,
   "mean_excess_10d": null,
-  "win_rate_5d": null,
+  "win_rate_5d": 0.47619047619047616,
   "win_rate_10d": null,
   "picks": [
    {
     "date": "2026-08-07",
     "ticker": "CAN",
     "conviction": "low",
-    "excess_5d": null,
+    "excess_5d": 0.04652902827437133,
     "excess_10d": null
    },
    {
     "date": "2026-08-07",
     "ticker": "MP",
     "conviction": "high",
-    "excess_5d": null,
+    "excess_5d": 0.09393644637797438,
     "excess_10d": null
    },
    {
     "date": "2026-08-07",
     "ticker": "OKLO",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": -0.07090518754424313,
     "excess_10d": null
    },
    {
     "date": "2026-08-08",
     "ticker": "LUNR",
     "conviction": "high",
-    "excess_5d": null,
+    "excess_5d": 0.22263900063155218,
     "excess_10d": null
    },
    {
     "date": "2026-08-08",
     "ticker": "MP",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": 0.09393644637797438,
     "excess_10d": null
    },
    {
     "date": "2026-08-08",
     "ticker": "OKLO",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": -0.07090518754424313,
     "excess_10d": null
    },
    {
     "date": "2026-08-09",
     "ticker": "IQ",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": 0.01040385251760001,
     "excess_10d": null
    },
    {
     "date": "2026-08-09",
     "ticker": "ONDS",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": -0.047882657781459836,
     "excess_10d": null
    },
    {
     "date": "2026-08-09",
     "ticker": "POET",
     "conviction": "high",
-    "excess_5d": null,
+    "excess_5d": 0.06687338090768669,
     "excess_10d": null
    },
    {
     "date": "2026-08-10",
     "ticker": "COHR",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": 0.009842982855330695,
     "excess_10d": null
    },
    {
     "date": "2026-08-10",
     "ticker": "INFQ",
     "conviction": "high",
-    "excess_5d": null,
+    "excess_5d": 0.07553727894514128,
     "excess_10d": null
    },
    {
     "date": "2026-08-10",
     "ticker": "ONDS",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": -0.08014550250663299,
     "excess_10d": null
    },
    {
     "date": "2026-08-11",
     "ticker": "FRMI",
     "conviction": "high",
-    "excess_5d": null,
+    "excess_5d": -0.21988828700058294,
     "excess_10d": null
    },
    {
     "date": "2026-08-11",
     "ticker": "HIMS",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": -0.0903652966462346,
     "excess_10d": null
    },
    {
     "date": "2026-08-11",
     "ticker": "USAR",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": -0.03257671672749163,
     "excess_10d": null
    },
    {
     "date": "2026-08-12",
     "ticker": "FLY",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": 0.011103558620506493,
     "excess_10d": null
    },
    {
     "date": "2026-08-12",
     "ticker": "LITE",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": -0.09370464950620616,
     "excess_10d": null
    },
    {
     "date": "2026-08-12",
     "ticker": "RXT",
     "conviction": "high",
-    "excess_5d": null,
+    "excess_5d": -0.253852220465588,
     "excess_10d": null
    },
    {
     "date": "2026-08-13",
     "ticker": "CSCO",
     "conviction": "high",
-    "excess_5d": null,
+    "excess_5d": -0.0012444368113504467,
     "excess_10d": null
    },
    {
     "date": "2026-08-13",
     "ticker": "INFQ",
     "conviction": "low",
-    "excess_5d": null,
+    "excess_5d": 0.048642642040357176,
     "excess_10d": null
    },
    {
     "date": "2026-08-13",
     "ticker": "ONDS",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": -0.09424347529472987,
     "excess_10d": null
    },
    {
@@ -453,14 +457,168 @@
     "conviction": "high",
     "excess_5d": null,
     "excess_10d": null
+   },
+   {
+    "date": "2026-08-17",
+    "ticker": "KEEL",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-08-17",
+    "ticker": "KLAR",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-08-18",
+    "ticker": "AGI",
+    "conviction": "high",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-08-18",
+    "ticker": "BK",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-08-18",
+    "ticker": "HIVE",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-08-18",
+    "ticker": "KLAR",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-08-18",
+    "ticker": "NKE",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-08-18",
+    "ticker": "TLT",
+    "conviction": "high",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-08-19",
+    "ticker": "PR",
+    "conviction": "high",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-08-19",
+    "ticker": "UAE",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-08-19",
+    "ticker": "XYZ",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-08-20",
+    "ticker": "BULL",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-08-20",
+    "ticker": "MRNA",
+    "conviction": "high",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-08-20",
+    "ticker": "SLS",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-08-21",
+    "ticker": "AI",
+    "conviction": "high",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-08-21",
+    "ticker": "META",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-08-22",
+    "ticker": "AAOI",
+    "conviction": "high",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-08-22",
+    "ticker": "IBKR",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-08-22",
+    "ticker": "IREN",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-08-23",
+    "ticker": "EU",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-08-23",
+    "ticker": "OI",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-08-23",
+    "ticker": "TDS",
+    "conviction": "high",
+    "excess_5d": null,
+    "excess_10d": null
    }
   ],
-  "excluded_crypto": 0,
+  "excluded_crypto": 1,
   "disclaimer": "Hypothetical, frictionless, benchmark-adjusted. Not investment advice."
  },
  "price_coverage": {
-  "requested": 654,
-  "priced": 600,
+  "requested": 660,
+  "priced": 606,
   "missing": [
    "AAVE",
    "ADA",
@@ -476,6 +634,6 @@
  },
  "universe": {
   "description": "all history tickers + logged picks + benchmarks",
-  "n_tickers": 654
+  "n_tickers": 660
  }
 }
