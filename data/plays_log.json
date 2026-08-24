@@ -582,6 +582,39 @@
 "vel": 12.0,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-08-24",
+"ticker": "AAOI",
+"thesis": "The $600M ATM offering triggered an overreaction sell-off, but the capital raise positions AAOI to meet AI-driven optical component demand, offering a contrarian entry before the market fully appreciates the growth.",
+"risk": "Further dilution and near-term share price pressure from the offering.",
+"conviction": "medium",
+"mentions": 19,
+"vel": 9.5,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-24",
+"ticker": "IREN",
+"thesis": "IREN's first hyperscaler deal with Google Cloud for a 1.2GW AI data center campus is a major validation of its AI pivot, and the stock is still early in repricing this transformative catalyst.",
+"risk": "Execution risk on the massive buildout and potential dilution from financing.",
+"conviction": "high",
+"mentions": 18,
+"vel": 2.2,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-24",
+"ticker": "SMCI",
+"thesis": "The internal investigation clearing CEO Liang removes a major overhang, and with AI compute demand still robust, SMCI is poised for a re-rating as sentiment improves.",
+"risk": "Potential lingering legal or regulatory issues and intense competition.",
+"conviction": "medium",
+"mentions": 10,
+"vel": 5.0,
+"state": "cooling",
+"crypto": false
 }
 ]
 }
