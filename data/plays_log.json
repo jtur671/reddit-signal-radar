@@ -615,6 +615,39 @@
 "vel": 5.0,
 "state": "cooling",
 "crypto": false
+},
+{
+"date": "2026-08-25",
+"ticker": "BE",
+"thesis": "Pelosi's $4.25M purchase is a strong signal, and the stock is hot with 8x mention growth, but the move may still be early as the market digests the implications for fuel cell demand in AI data centers.",
+"risk": "Political scrutiny or profit-taking after the initial pop.",
+"conviction": "medium",
+"mentions": 33,
+"vel": 8.2,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-25",
+"ticker": "BK",
+"thesis": "Fresh institutional buying disclosed by multiple major investors signals growing confidence, and the stock is new to the board with sustained momentum, offering an early entry before broader market recognition.",
+"risk": "Institutional moves may be slow to play out, and macro headwinds could pressure financials.",
+"conviction": "medium",
+"mentions": 10,
+"vel": null,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-08-25",
+"ticker": "RKLB",
+"thesis": "Trump's executive order mandating 1,000 space launches per year by 2030 is a massive catalyst for Rocket Lab, and the stock is still in early innings of pricing this in, with mentions up 25x but cooling suggesting a potential entry before the move accelerates.",
+"risk": "Execution risk on scaling launch cadence to meet the mandate.",
+"conviction": "high",
+"mentions": 25,
+"vel": 25.0,
+"state": "cooling",
+"crypto": false
 }
 ]
 }
