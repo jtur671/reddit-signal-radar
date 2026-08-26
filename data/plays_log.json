@@ -648,6 +648,39 @@
 "vel": 25.0,
 "state": "cooling",
 "crypto": false
+},
+{
+"date": "2026-08-26",
+"ticker": "CC",
+"thesis": "Insider purchases by multiple executives signal confidence, and the sustained 3.2x growth in mentions suggests accumulating interest.",
+"risk": "Chemical industry cyclicality and potential macro headwinds.",
+"conviction": "medium",
+"mentions": 19,
+"vel": 3.2,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-08-26",
+"ticker": "CIA",
+"thesis": "Fresh initiation by Freedom Broker with a Buy rating is a concrete catalyst, and the 19x mention surge suggests early momentum before the broader market catches on.",
+"risk": "Small-cap insurance stock with limited liquidity and potential for sharp reversals.",
+"conviction": "high",
+"mentions": 19,
+"vel": 19.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-26",
+"ticker": "DKS",
+"thesis": "Strong Q2 earnings beat and positive transcript release have sparked a 29.5x surge in mentions, indicating the market is still digesting the good news.",
+"risk": "Retail sector volatility and potential profit-taking after the initial pop.",
+"conviction": "medium",
+"mentions": 118,
+"vel": 29.5,
+"state": "new",
+"crypto": false
 }
 ]
 }
