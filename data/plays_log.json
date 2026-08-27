@@ -681,6 +681,39 @@
 "vel": 29.5,
 "state": "new",
 "crypto": false
+},
+{
+"date": "2026-08-27",
+"ticker": "MRVL",
+"thesis": "MRVL is accelerating sharply (13x mentions) ahead of earnings, with analysts revising forecasts and positioning for CEO commentary, making it a fresh, high-momentum entry before the report.",
+"risk": "Earnings could disappoint if guidance misses elevated expectations.",
+"conviction": "high",
+"mentions": 300,
+"vel": 13.0,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-08-27",
+"ticker": "OKTA",
+"thesis": "OKTA is a new lifecycle name with a 1.7x mention surge driven by multiple analyst price target hikes, signaling early institutional interest before the move becomes crowded.",
+"risk": "The stock may have already priced in the upgrades, limiting upside.",
+"conviction": "medium",
+"mentions": 17,
+"vel": 1.7,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-08-27",
+"ticker": "WULF",
+"thesis": "WULF's Kentucky PSC approval for 482 MW de-risks its AI data center expansion, a concrete catalyst that is just starting to gain traction (3.3x mentions) and offers early entry into a validated growth story.",
+"risk": "Execution delays or financing issues could stall the buildout.",
+"conviction": "medium",
+"mentions": 10,
+"vel": 3.3,
+"state": "hot",
+"crypto": false
 }
 ]
 }
