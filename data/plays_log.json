@@ -714,6 +714,39 @@
 "vel": 3.3,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-08-28",
+"ticker": "IONQ",
+"thesis": "IONQ's mentions surged 13x on a specific milestone: its Skyloom subsidiary deployed optical terminals for the Space Development Agency, validating its space-based quantum networking business and offering early entry before this news fully propagates.",
+"risk": "Quantum computing remains speculative and revenue impact may be years away.",
+"conviction": "medium",
+"mentions": 13,
+"vel": 13.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-28",
+"ticker": "PYPL",
+"thesis": "PYPL's mentions grew 35x on a catalyst mix: David Einhorn's new bet and a gap-up on unusual volume after Stripe's deal collapse, making it a high-momentum name with potential for continued short-term upside.",
+"risk": "The move may be driven by sentiment rather than fundamentals, leading to a sharp reversal.",
+"conviction": "medium",
+"mentions": 35,
+"vel": 35.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-28",
+"ticker": "RBRK",
+"thesis": "RBRK is fresh with 4.4x mention growth and a concrete catalyst: analysts raised its price target 12.98% to $109.67 following strong earnings and upbeat guidance, signaling potential upside before the broader market catches on.",
+"risk": "The stock may have already priced in the earnings beat, limiting further upside.",
+"conviction": "high",
+"mentions": 31,
+"vel": 4.4,
+"state": "new",
+"crypto": false
 }
 ]
 }
