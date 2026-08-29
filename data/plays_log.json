@@ -747,6 +747,39 @@
 "vel": 4.4,
 "state": "new",
 "crypto": false
+},
+{
+"date": "2026-08-29",
+"ticker": "APP",
+"thesis": "Needham's reaffirmed Buy with a price target cut still signals confidence, and the 2.7x acceleration in mentions indicates growing interest ahead of a potential breakout.",
+"risk": "The price target cut could weigh on sentiment, and the stock may face resistance at current levels.",
+"conviction": "medium",
+"mentions": 19,
+"vel": 2.7,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-08-29",
+"ticker": "GLD",
+"thesis": "Gold's record Q1 2026 prices outpacing mining costs strengthens the bull case for a continued rally, and the 9.5x surge in mentions signals fresh, fast-moving interest before the move is fully priced in.",
+"risk": "Gold prices are volatile and could reverse if the Fed signals tighter policy or inflation cools.",
+"conviction": "high",
+"mentions": 19,
+"vel": 9.5,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-29",
+"ticker": "NKE",
+"thesis": "The Air Jordan 41 launch in China with a global rollout ahead is a concrete product catalyst driving a 3.6x spike in mentions, suggesting early momentum before the full impact hits earnings.",
+"risk": "Consumer demand may not meet expectations, or the global launch could disappoint.",
+"conviction": "medium",
+"mentions": 25,
+"vel": 3.6,
+"state": "sustained",
+"crypto": false
 }
 ]
 }
