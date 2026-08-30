@@ -780,6 +780,39 @@
 "vel": 3.6,
 "state": "sustained",
 "crypto": false
+},
+{
+"date": "2026-08-30",
+"ticker": "BE",
+"thesis": "Nvidia's warning of an AI power bottleneck directly positions Bloom Energy's fuel cells as a solution for data-center electricity demand, a fresh and fast-accelerating narrative with a concrete catalyst.",
+"risk": "Fuel cell adoption may be slower than expected or competitors could offer cheaper alternatives.",
+"conviction": "high",
+"mentions": 18,
+"vel": 1.8,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-30",
+"ticker": "FA",
+"thesis": "The IREN announcement of $4 billion in AI cloud contracts is a major catalyst that has driven a sharp reaction, and FA's mentions are new, indicating early interest before the move becomes obvious.",
+"risk": "The deal's size may be questioned, or the connection to FA may be indirect, leading to a pullback.",
+"conviction": "medium",
+"mentions": 13,
+"vel": null,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-30",
+"ticker": "RR",
+"thesis": "Richtech Robotics' $12 million buyback plan is a fresh catalyst that has triggered a stock surge, with mentions growing 1.4x and the stock still in early stages of the move.",
+"risk": "Buyback may be seen as insufficient or the company's fundamentals may not support sustained gains.",
+"conviction": "medium",
+"mentions": 11,
+"vel": 1.4,
+"state": "hot",
+"crypto": false
 }
 ]
 }
