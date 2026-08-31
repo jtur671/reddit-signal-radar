@@ -813,6 +813,39 @@
 "vel": 1.4,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-08-31",
+"ticker": "INFQ",
+"thesis": "Fresh inclusion in WQTM ETF's August 2026 rebalance as a top holding, plus renewed focus on quantum sensing funding path, offers early entry before broader market catches on.",
+"risk": "Quantum technology commercialization may take longer than expected.",
+"conviction": "high",
+"mentions": 11,
+"vel": 11.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-08-31",
+"ticker": "SLS",
+"thesis": "FDA approval of a competitor's KRAS inhibitor creates positive read-through for SLS's similar pipeline, potentially sparking investor interest before clinical updates.",
+"risk": "Read-through may be speculative and not directly impact SLS's own approval odds.",
+"conviction": "medium",
+"mentions": 25,
+"vel": 12.5,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-08-31",
+"ticker": "TTWO",
+"thesis": "90% of GTA VI preorders are for the $100 edition, indicating strong monetization potential that could drive upside as the game's release approaches.",
+"risk": "Preorder data may not translate to final sales if reviews disappoint.",
+"conviction": "medium",
+"mentions": 21,
+"vel": 3.5,
+"state": "hot",
+"crypto": false
 }
 ]
 }
