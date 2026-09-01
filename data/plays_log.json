@@ -846,6 +846,39 @@
 "vel": 3.5,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-09-01",
+"ticker": "CRDO",
+"thesis": "Credo Technology's upcoming Q1 earnings report is generating a rapid spike in mentions (11x) with analysts revising expectations, suggesting the market hasn't fully priced in the potential surprise.",
+"risk": "Earnings could disappoint if guidance misses estimates.",
+"conviction": "high",
+"mentions": 11,
+"vel": 11.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-01",
+"ticker": "GPRO",
+"thesis": "GoPro's new catalyst of Markiplier becoming the largest shareholder is a fresh, attention-grabbing event that could drive retail interest and a short-term price surge.",
+"risk": "The catalyst is personality-driven and may not translate to sustained fundamental growth.",
+"conviction": "medium",
+"mentions": 30,
+"vel": null,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-09-01",
+"ticker": "TEM",
+"thesis": "Tempus AI's price target raise to $73 by Freedom Capital Markets, combined with its fresh appearance on the board, indicates early momentum that could continue as the stock gains broader attention.",
+"risk": "The stock may have already priced in the upgrade, leading to a pullback.",
+"conviction": "medium",
+"mentions": 16,
+"vel": null,
+"state": "hot",
+"crypto": false
 }
 ]
 }
