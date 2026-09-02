@@ -879,6 +879,39 @@
 "vel": null,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-09-02",
+"ticker": "DB",
+"thesis": "Deutsche Bank's involvement in the institutional stablecoin push is a fresh, under-the-radar catalyst that could drive fintech narrative and stock re-rating as crypto adoption grows.",
+"risk": "Regulatory pushback or slow adoption could stall the momentum.",
+"conviction": "low",
+"mentions": 13,
+"vel": 13.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-09-02",
+"ticker": "DELL",
+"thesis": "CEO Michael Dell's public callout of the memory chip shortage positions Dell as a key AI infrastructure player, with the stock still early in repricing this narrative despite high mention growth.",
+"risk": "Momentum could fade quickly if the AI trade cools or if the shortage narrative is seen as already priced in.",
+"conviction": "high",
+"mentions": 148,
+"vel": 29.6,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-02",
+"ticker": "HPE",
+"thesis": "HPE is riding Dell's AI backlog announcement and has its own earnings catalyst ahead, offering a fresh entry before the report as the AI server sector lifts all boats.",
+"risk": "Earnings could disappoint if guidance fails to match sector enthusiasm.",
+"conviction": "medium",
+"mentions": 26,
+"vel": 26.0,
+"state": "sustained",
+"crypto": false
 }
 ]
 }
