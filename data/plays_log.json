@@ -912,6 +912,39 @@
 "vel": 26.0,
 "state": "sustained",
 "crypto": false
+},
+{
+"date": "2026-09-03",
+"ticker": "CRDO",
+"thesis": "CRDO's mentions are steady but the stock surged post-earnings with analyst commentary, indicating the market hasn't fully absorbed the positive beat, offering a chance to get in before the broader trend catches on.",
+"risk": "A price target trim by JP Morgan could weigh on sentiment, and the stock may face profit-taking after its recent surge.",
+"conviction": "medium",
+"mentions": 46,
+"vel": 1.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-03",
+"ticker": "SNAP",
+"thesis": "SNAP's mentions exploded 19x with a concrete AI ad-tools catalyst, yet the stock hasn't fully priced in the potential of the Anthropic integration, offering an early entry before the move becomes obvious.",
+"risk": "The AI ad-tools may not translate into immediate revenue, and the stock could be volatile if the market remains skeptical.",
+"conviction": "high",
+"mentions": 19,
+"vel": 19.0,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-09-03",
+"ticker": "TTD",
+"thesis": "TTD is seeing a 5x surge in mentions tied to a new LoopMe partnership, a tangible product integration that could expand its ad-tech capabilities and drive adoption, but the stock is still early in the move.",
+"risk": "The partnership may not yield significant revenue in the near term, and the stock could pull back if the market doesn't see immediate impact.",
+"conviction": "medium",
+"mentions": 21,
+"vel": 5.2,
+"state": "hot",
+"crypto": false
 }
 ]
 }
