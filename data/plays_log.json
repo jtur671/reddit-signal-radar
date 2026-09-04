@@ -945,6 +945,39 @@
 "vel": 5.2,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-09-04",
+"ticker": "IOT",
+"thesis": "Samsara's earnings beat and raised guidance are fresh catalysts, and the stock's after-hours jump suggests institutional interest that could spill into regular trading.",
+"risk": "The stock may gap up and then consolidate, offering limited entry for latecomers.",
+"conviction": "medium",
+"mentions": 21,
+"vel": 21.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-09-04",
+"ticker": "PL",
+"thesis": "Planet Labs' beat and raised full-year guidance contrast with a weak Q3 outlook, creating a nuanced setup where the market may overreact to the near-term miss, offering a potential entry before the longer-term story is fully priced.",
+"risk": "The weak Q3 guidance could weigh on sentiment and cap upside in the short term.",
+"conviction": "low",
+"mentions": 59,
+"vel": 4.9,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-04",
+"ticker": "ZS",
+"thesis": "Zscaler's post-earnings surge is just beginning; the strong Q4 beat and upbeat guidance provide a fundamental catalyst that could drive sustained momentum as the market digests the news.",
+"risk": "Post-earnings rallies can fade quickly if the stock was already priced for perfection.",
+"conviction": "high",
+"mentions": 77,
+"vel": 12.8,
+"state": "new",
+"crypto": false
 }
 ]
 }
