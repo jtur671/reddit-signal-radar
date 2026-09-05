@@ -1,0 +1,49 @@
+name: daily-backstop
+on:
+  schedule:
+    - cron: "47 11 * * *"  # 11:47 UTC — 90 min after daily.yml's 10:17 cron.
+                           # By then any genuine cron run is done (measured worst: 13 min).
+                           # Fires only when GitHub dropped the 10:17 schedule entirely.
+# The effective token for the workflow_call job is the INTERSECTION of these
+# permissions and daily.yml's own permissions block — so declare everything
+# daily.yml needs here, or the called workflow will be under-privileged.
+permissions:
+  actions: read    # for the check job to list workflow runs
+  contents: write  # daily.yml commits state to the data branch
+  pages: write     # daily.yml deploys to GitHub Pages
+  id-token: write  # daily.yml needs OIDC for Pages deploy
+jobs:
+  check:
+    name: Was daily-radar dropped today?
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+    steps:
+      - name: Check for a qualifying run on today's UTC date
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TODAY=$(date -u +%F)
+          COUNT=$(gh api \
+            "repos/${{ github.repository }}/actions/workflows/daily.yml/runs?per_page=15" \
+            --jq "[.workflow_runs[] \
+                   | select(.created_at | startswith(\"$TODAY\")) \
+                   | select(.status == \"in_progress\" or .status == \"queued\" or .conclusion == \"success\")\
+                  ] | length")
+          echo "Qualifying runs today ($TODAY): $COUNT"
+          if [ "$COUNT" = "0" ]; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+            echo "→ No run found — will trigger daily-radar"
+          else
+            echo "should_run=false" >> $GITHUB_OUTPUT
+            echo "→ Already ran — nothing to do"
+          fi
+
+  run-daily:
+    name: Backstop — run daily-radar
+    needs: check
+    if: needs.check.outputs.should_run == 'true'
+    uses: ./.github/workflows/daily.yml
+    secrets: inherit

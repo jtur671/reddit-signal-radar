@@ -5,6 +5,7 @@ on:
                               # GitHub delays/drops cron runs scheduled at :00 under load.
                               # Use "17 11 * * *" for 06:17 EST in winter.
   workflow_dispatch: {}
+  workflow_call: {}           # callable by daily-backstop.yml when the cron is dropped
 permissions:
   contents: write             # to commit history.json back
   pages: write
@@ -15,6 +16,8 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
+    # Actions pinned to commit SHAs, not tags: a tag is mutable, and this runner holds
+    # every repo secret. Bump deliberately (`gh api repos/<a>/git/ref/tags/<v>`).
     # GitHub's default is 360 minutes — six hours of a hung transport before anyone
     # learns the board did not ship. MEASURED (40 real daily-radar runs via `gh`): this
     # job typically takes 1-2 min (a recent one: 2m52s); the single worst in 40 runs was
@@ -43,8 +46,6 @@ jobs:
     # exactly the publish this backstop exists to protect.
     timeout-minutes: 45
     steps:
-      # Actions pinned to commit SHAs, not tags: a tag is mutable, and this runner holds
-      # every repo secret. Bump deliberately (`gh api repos/<a>/git/ref/tags/<v>`).
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09   # v5
         with: { ref: main, fetch-depth: 1 }
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1   # v6
