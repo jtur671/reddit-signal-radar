@@ -978,6 +978,39 @@
 "vel": 12.8,
 "state": "new",
 "crypto": false
+},
+{
+"date": "2026-09-05",
+"ticker": "ALAB",
+"thesis": "Astera Labs' expected addition to the S&P 500 this Friday is a concrete, near-term catalyst that will trigger passive fund buying. The hot but not yet extreme mention growth suggests there's still room for the move to play out before the official announcement.",
+"risk": "If the index addition is delayed or fails to materialize, the stock could give back gains.",
+"conviction": "medium",
+"mentions": 13,
+"vel": 13.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-05",
+"ticker": "MP",
+"thesis": "China's reported block on rare earth shipments to the U.S. directly benefits MP Materials as the leading domestic producer, and the sustained yet not overheated discussion indicates the market hasn't fully priced in the supply disruption. Early entry could capture upside as the story develops.",
+"risk": "Geopolitical tensions could ease, or China could lift restrictions, reducing the catalyst's impact.",
+"conviction": "medium",
+"mentions": 11,
+"vel": 5.5,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-09-05",
+"ticker": "UUUU",
+"thesis": "Energy Fuels' $243M acquisition to add rare-earth alloy production is a concrete step in its mine-to-magnet strategy, positioning it as a key domestic player amid China's rare earth export restrictions. The fresh, fast-accelerating interest suggests the market is just beginning to price in this strategic expansion.",
+"risk": "Integration and financing risks associated with the acquisition could weigh on shares.",
+"conviction": "high",
+"mentions": 18,
+"vel": 18.0,
+"state": "hot",
+"crypto": false
 }
 ]
 }
