@@ -1011,6 +1011,39 @@
 "vel": 18.0,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-09-06",
+"ticker": "CC",
+"thesis": "Chemours' entry into AI cooling with new refrigerants is a fresh angle on the AI trade, offering early exposure to a niche but growing demand.",
+"risk": "The company's pivot may take time to show financial impact, and competition is intense.",
+"conviction": "medium",
+"mentions": 10,
+"vel": 3.3,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-06",
+"ticker": "GPT",
+"thesis": "OpenAI's GPT-6 Astra launch for enterprises is a concrete product catalyst that could drive sustained interest in related AI infrastructure names before the broader market catches on.",
+"risk": "The stock may already be pricing in the news, and the AI sector can be volatile.",
+"conviction": "high",
+"mentions": 10,
+"vel": 10.0,
+"state": "hot",
+"crypto": true
+},
+{
+"date": "2026-09-06",
+"ticker": "ZEC",
+"thesis": "Zcash's 8-year high and the first Zcash ETF launch are strong catalysts that could attract more attention as privacy coins gain momentum in a crypto bull run.",
+"risk": "Crypto assets are highly volatile and subject to regulatory changes.",
+"conviction": "medium",
+"mentions": 13,
+"vel": 0.9,
+"state": "hot",
+"crypto": true
 }
 ]
 }
