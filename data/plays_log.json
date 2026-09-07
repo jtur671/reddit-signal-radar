@@ -1044,6 +1044,39 @@
 "vel": 0.9,
 "state": "hot",
 "crypto": true
+},
+{
+"date": "2026-09-07",
+"ticker": "AGI",
+"thesis": "AGI's Reddit mentions exploded 22.7x overnight, signaling a fresh wave of retail attention right after a sharp after-hours drop. The catalyst is a likely earnings miss, which often creates a short-term oversold bounce opportunity for nimble traders before the broader market catches on.",
+"risk": "Earnings misses can lead to prolonged downtrends if fundamentals are truly broken.",
+"conviction": "medium",
+"mentions": 227,
+"vel": 22.7,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-07",
+"ticker": "FOR",
+"thesis": "FOR is a fresh pick with a 13x surge in mentions, driven by a 'value stock for decades' narrative that is just starting to gain traction. The stock hasn't had a major move yet, so early entry could capture the beginning of a value rotation.",
+"risk": "The catalyst is narrative-driven, not event-driven, so momentum could fade quickly without a concrete trigger.",
+"conviction": "low",
+"mentions": 13,
+"vel": 13.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-07",
+"ticker": "XMR",
+"thesis": "XMR's mentions are accelerating (3.2x) as it breaks above $500 with strong monthly performance, riding the privacy coin rally. Institutional interest in privacy coins is growing, and XMR is the leader, making this an early entry before the move becomes obvious to mainstream traders.",
+"risk": "Crypto is volatile, and regulatory crackdowns on privacy coins could reverse the trend suddenly.",
+"conviction": "medium",
+"mentions": 16,
+"vel": 3.2,
+"state": "hot",
+"crypto": true
 }
 ]
 }
