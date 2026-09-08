@@ -1077,6 +1077,39 @@
 "vel": 3.2,
 "state": "hot",
 "crypto": true
+},
+{
+"date": "2026-09-08",
+"ticker": "BE",
+"thesis": "Bloom Energy's inclusion in the S&P 500 is a major catalyst that triggered a surge and analyst upgrades, but with a 3.4x mention growth and hot state, there's still room for early entry before index fund buying fully plays out.",
+"risk": "Post-inclusion selling pressure from index funds could cap upside, and valuation may be stretched after the surge.",
+"conviction": "medium",
+"mentions": 51,
+"vel": 3.4,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-08",
+"ticker": "IREN",
+"thesis": "IREN's 23% jump on AI narrative overtaking Bitcoin mining, backed by a $2.6B contract base that could scale, is still in a cooling state but the acceleration in mentions (15x) suggests the market hasn't fully digested the AI pivot yet.",
+"risk": "Cooling lifecycle state may indicate momentum is fading, and AI revenue realization could be slower than expected.",
+"conviction": "medium",
+"mentions": 15,
+"vel": 15.0,
+"state": "cooling",
+"crypto": false
+},
+{
+"date": "2026-09-08",
+"ticker": "QCOM",
+"thesis": "Qualcomm's disclosed target to grow data center revenue to $15B within three years is a concrete strategic forecast that reframes its AI opportunity beyond mobile, and with a 13x surge in mentions it's still early before the broader market catches on.",
+"risk": "Execution risk on hitting the $15B data center revenue target is high, and the stock may already be pricing in some optimism.",
+"conviction": "high",
+"mentions": 13,
+"vel": 13.0,
+"state": "hot",
+"crypto": false
 }
 ]
 }
