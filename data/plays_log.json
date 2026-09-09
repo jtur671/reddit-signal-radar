@@ -1110,6 +1110,39 @@
 "vel": 13.0,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-09-09",
+"ticker": "CHWY",
+"thesis": "Q2 earnings beat with raised guidance is a concrete catalyst, and the 12x surge in mentions indicates growing interest that may precede a sustained move, especially if the broader market rotates into consumer discretionary.",
+"risk": "Post-earnings momentum could fade quickly if guidance proves too optimistic or consumer spending weakens.",
+"conviction": "medium",
+"mentions": 12,
+"vel": 12.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-09-09",
+"ticker": "PL",
+"thesis": "58% revenue growth plus a new seven-figure defense contract, despite a slight dip, suggests the market is overlooking near-term catalysts; this could be an early accumulation point before the defense and satellite momentum becomes obvious.",
+"risk": "Stock volatility and potential for continued dips if earnings momentum fades or contract details disappoint.",
+"conviction": "medium",
+"mentions": 17,
+"vel": 17.0,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-09-09",
+"ticker": "TTAN",
+"thesis": "Record free cash flow and revenue beat with AI-driven growth signal a strong fundamental inflection that the market hasn't fully priced in yet, offering an early entry before the broader crowd catches on.",
+"risk": "High valuation could lead to sharp pullback if growth decelerates or AI narrative cools.",
+"conviction": "high",
+"mentions": 19,
+"vel": 19.0,
+"state": "new",
+"crypto": false
 }
 ]
 }
