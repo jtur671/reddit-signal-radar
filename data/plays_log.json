@@ -1143,6 +1143,39 @@
 "vel": 19.0,
 "state": "new",
 "crypto": false
+},
+{
+"date": "2026-09-10",
+"ticker": "AEO",
+"thesis": "American Eagle is a genuinely new board entrant with a 64\u00d7 mention explosion driven by a real Q2 2026 earnings release and Aerie's 25% surge, giving the move a hard fundamental anchor before the broader market catches on.",
+"risk": "Retail earnings pops often reverse quickly once the initial headline fades.",
+"conviction": "medium",
+"mentions": 64,
+"vel": 64.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-09-10",
+"ticker": "AVAV",
+"thesis": "AeroVironment just posted its biggest earnings beat in years with unexpected revenue growth plus a first international LOCUST laser weapon order \u2014 a concrete fundamental catalyst, not just chatter, and mentions are accelerating 8.4\u00d7 while the name is still early in its move.",
+"risk": "Defense names can gap on earnings and then fade as the news is fully priced in.",
+"conviction": "high",
+"mentions": 67,
+"vel": 8.4,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-10",
+"ticker": "GO",
+"thesis": "A director's open-market purchase of 15,000 shares at $11.70 is a concrete insider-buying signal, and 6\u00d7 mention growth on a sustained-state name suggests early accumulation interest rather than a pure hype spike.",
+"risk": "A single insider buy is a weak catalyst if broader grocery-sector sentiment stays soft.",
+"conviction": "low",
+"mentions": 12,
+"vel": 6.0,
+"state": "sustained",
+"crypto": false
 }
 ]
 }
