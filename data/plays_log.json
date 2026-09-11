@@ -1176,6 +1176,39 @@
 "vel": 6.0,
 "state": "sustained",
 "crypto": false
+},
+{
+"date": "2026-09-11",
+"ticker": "ADBE",
+"thesis": "Adobe sits in the penalty box with a new CEO about to unveil strategy, and 4.4x mention acceleration suggests traders are positioning ahead of a potential turnaround narrative before it becomes consensus.",
+"risk": "New CEO's plan could underwhelm or fail to reverse growth deceleration.",
+"conviction": "medium",
+"mentions": 44,
+"vel": 4.4,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-11",
+"ticker": "ORCL",
+"thesis": "Oracle's $664B AI cloud backlog is a concrete, company-specific catalyst that reframes it as an AI infrastructure winner rather than a legacy database play, and 5.1x mention growth with 272 mentions shows the retail crowd is just starting to pile in.",
+"risk": "Backlog conversion timing and cloud margin execution could disappoint if AI demand slows.",
+"conviction": "high",
+"mentions": 272,
+"vel": 5.1,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-11",
+"ticker": "QCOM",
+"thesis": "Qualcomm's Samsung chip pricing snag is a specific, actionable catalyst that could resolve favorably, and 10x mention growth from a low base signals early discovery before the story broadens.",
+"risk": "Samsung deal could deteriorate further or pricing dispute could linger unresolved.",
+"conviction": "low",
+"mentions": 10,
+"vel": 10.0,
+"state": "cooling",
+"crypto": false
 }
 ]
 }
