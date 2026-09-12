@@ -1209,6 +1209,39 @@
 "vel": 10.0,
 "state": "cooling",
 "crypto": false
+},
+{
+"date": "2026-09-12",
+"ticker": "DELL",
+"thesis": "Dell's second upward revision of its AI server forecast this year is a hard fundamental catalyst, and the Cramer/Super Micro comparison is only beginning to pull retail attention toward Dell as an AI-server play.",
+"risk": "AI-server enthusiasm is already crowded, so the stock may be late in its move rather than early.",
+"conviction": "medium",
+"mentions": 34,
+"vel": 17.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-12",
+"ticker": "HPE",
+"thesis": "Strong AI infrastructure demand and a recent guidance raise give HPE a real earnings-backed catalyst, and its 19x mention spike with 'sustained' state suggests the AI-server rotation is broadening beyond Dell into a cheaper, less-crowded name.",
+"risk": "HPE's AI server margins are thinner than peers, so the narrative could fade if profitability disappoints.",
+"conviction": "low",
+"mentions": 19,
+"vel": 19.0,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-09-12",
+"ticker": "SLS",
+"thesis": "Manulife's venture unit raising its stake ahead of anticipated cancer trial catalysts is a concrete, informed-money signal that most retail traders haven't priced in yet, and 10.7x mention growth from a small base suggests the idea is just starting to surface.",
+"risk": "Micro-cap biotech with binary trial readouts that can gap down hard on any disappointment.",
+"conviction": "medium",
+"mentions": 32,
+"vel": 10.7,
+"state": "hot",
+"crypto": false
 }
 ]
 }
