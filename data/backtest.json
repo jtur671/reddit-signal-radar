@@ -1,5 +1,5 @@
 {
- "as_of": "2026-09-06",
+ "as_of": "2026-09-13",
  "power": {
   "days": 90,
   "sufficient": false,
@@ -18,235 +18,235 @@
  "quintiles": {
   "1": {
    "horizon": 1,
-   "n": 7732,
+   "n": 7174,
    "q1": {
-    "mean_excess": -0.0015465742880383412,
-    "n": 1548
+    "mean_excess": -0.0007901519142030677,
+    "n": 1437
    },
    "q2": {
-    "mean_excess": -0.0004757747230626342,
-    "n": 1580
+    "mean_excess": -0.0005261054567992982,
+    "n": 1467
    },
    "q3": {
-    "mean_excess": -0.0014066926202248278,
-    "n": 1553
+    "mean_excess": -0.0007673684874753518,
+    "n": 1445
    },
    "q4": {
-    "mean_excess": -0.0029759455470926123,
-    "n": 1532
-   },
-   "q5": {
-    "mean_excess": -0.0019074854546862062,
-    "n": 1519
-   },
-   "spread": -0.000360911166647865
-  },
-  "5": {
-   "horizon": 5,
-   "n": 7451,
-   "q1": {
-    "mean_excess": -0.007533103080410508,
-    "n": 1495
-   },
-   "q2": {
-    "mean_excess": -0.007233341691088825,
-    "n": 1523
-   },
-   "q3": {
-    "mean_excess": -0.0025519054748369963,
-    "n": 1497
-   },
-   "q4": {
-    "mean_excess": -0.010446421792888549,
-    "n": 1475
-   },
-   "q5": {
-    "mean_excess": -0.008879846887085088,
-    "n": 1461
-   },
-   "spread": -0.0013467438066745796
-  },
-  "10": {
-   "horizon": 10,
-   "n": 7159,
-   "q1": {
-    "mean_excess": -0.017040073623889207,
-    "n": 1438
-   },
-   "q2": {
-    "mean_excess": -0.017750669916063413,
-    "n": 1465
-   },
-   "q3": {
-    "mean_excess": -0.006841676734255598,
-    "n": 1436
-   },
-   "q4": {
-    "mean_excess": -0.01717701092717278,
+    "mean_excess": -0.002999954784617612,
     "n": 1418
    },
    "q5": {
-    "mean_excess": -0.019845180027550216,
-    "n": 1402
+    "mean_excess": -0.0010542458651113874,
+    "n": 1407
    },
-   "spread": -0.002805106403661009
+   "spread": -0.0002640939509083196
+  },
+  "5": {
+   "horizon": 5,
+   "n": 6854,
+   "q1": {
+    "mean_excess": -0.005935285738856166,
+    "n": 1375
+   },
+   "q2": {
+    "mean_excess": -0.006068499058340868,
+    "n": 1401
+   },
+   "q3": {
+    "mean_excess": -0.0015693015095327911,
+    "n": 1378
+   },
+   "q4": {
+    "mean_excess": -0.010058042128815867,
+    "n": 1354
+   },
+   "q5": {
+    "mean_excess": -0.006842783576422867,
+    "n": 1346
+   },
+   "spread": -0.0009074978375667011
+  },
+  "10": {
+   "horizon": 10,
+   "n": 6506,
+   "q1": {
+    "mean_excess": -0.011984185726361422,
+    "n": 1309
+   },
+   "q2": {
+    "mean_excess": -0.014345400896048792,
+    "n": 1331
+   },
+   "q3": {
+    "mean_excess": -0.0036386599403296655,
+    "n": 1308
+   },
+   "q4": {
+    "mean_excess": -0.01509981333618066,
+    "n": 1284
+   },
+   "q5": {
+    "mean_excess": -0.019217921767270846,
+    "n": 1274
+   },
+   "spread": -0.0072337360409094244
   }
  },
  "quintiles_iwm": {
   "1": {
    "horizon": 1,
-   "n": 7732,
+   "n": 7174,
    "q1": {
-    "mean_excess": -0.001829101668296662,
-    "n": 1548
+    "mean_excess": -0.0010369183597770037,
+    "n": 1437
    },
    "q2": {
-    "mean_excess": -0.000785120273406896,
-    "n": 1580
+    "mean_excess": -0.0007751640049897909,
+    "n": 1467
    },
    "q3": {
-    "mean_excess": -0.0017365606948079079,
-    "n": 1553
+    "mean_excess": -0.0010574528411782464,
+    "n": 1445
    },
    "q4": {
-    "mean_excess": -0.0032836303456289253,
-    "n": 1532
-   },
-   "q5": {
-    "mean_excess": -0.0022908263240425646,
-    "n": 1519
-   },
-   "spread": -0.0004617246557459026
-  },
-  "5": {
-   "horizon": 5,
-   "n": 7451,
-   "q1": {
-    "mean_excess": -0.007200167629341375,
-    "n": 1495
-   },
-   "q2": {
-    "mean_excess": -0.007091611377650624,
-    "n": 1523
-   },
-   "q3": {
-    "mean_excess": -0.0024285968356578132,
-    "n": 1497
-   },
-   "q4": {
-    "mean_excess": -0.010285189384816516,
-    "n": 1475
-   },
-   "q5": {
-    "mean_excess": -0.008738199616437207,
-    "n": 1461
-   },
-   "spread": -0.0015380319870958318
-  },
-  "10": {
-   "horizon": 10,
-   "n": 7159,
-   "q1": {
-    "mean_excess": -0.014844206825102563,
-    "n": 1438
-   },
-   "q2": {
-    "mean_excess": -0.01585743750184541,
-    "n": 1465
-   },
-   "q3": {
-    "mean_excess": -0.0049616285911422125,
-    "n": 1436
-   },
-   "q4": {
-    "mean_excess": -0.015263372210686885,
+    "mean_excess": -0.0032496492743058934,
     "n": 1418
    },
    "q5": {
-    "mean_excess": -0.017915558871689625,
-    "n": 1402
+    "mean_excess": -0.0013801900021963762,
+    "n": 1407
    },
-   "spread": -0.0030713520465870617
+   "spread": -0.0003432716424193725
+  },
+  "5": {
+   "horizon": 5,
+   "n": 6854,
+   "q1": {
+    "mean_excess": -0.004127906038844853,
+    "n": 1375
+   },
+   "q2": {
+    "mean_excess": -0.004440128033229105,
+    "n": 1401
+   },
+   "q3": {
+    "mean_excess": 2.9494751727749e-05,
+    "n": 1378
+   },
+   "q4": {
+    "mean_excess": -0.008378912978299792,
+    "n": 1354
+   },
+   "q5": {
+    "mean_excess": -0.0052070798021376895,
+    "n": 1346
+   },
+   "spread": -0.0010791737632928362
+  },
+  "10": {
+   "horizon": 10,
+   "n": 6506,
+   "q1": {
+    "mean_excess": -0.004814116389544557,
+    "n": 1309
+   },
+   "q2": {
+    "mean_excess": -0.007392216109698365,
+    "n": 1331
+   },
+   "q3": {
+    "mean_excess": 0.0032800521723311197,
+    "n": 1308
+   },
+   "q4": {
+    "mean_excess": -0.00804612094823864,
+    "n": 1284
+   },
+   "q5": {
+    "mean_excess": -0.012134229569917231,
+    "n": 1274
+   },
+   "spread": -0.007320113180372674
   }
  },
  "rank_ic": {
   "1": {
-   "mean": -0.026630497536458395,
-   "t": -1.7418271017777203,
+   "mean": -0.03057349532982211,
+   "t": -1.9695790673987763,
    "days": 85
   },
   "5": {
-   "mean": -0.004709347202802209,
-   "t": -0.36535852693978943,
-   "days": 79
+   "mean": -0.01510852228947189,
+   "t": -0.885258338161102,
+   "days": 78
   },
   "10": {
-   "mean": 0.004325211548393154,
-   "t": 0.32870680164364013,
-   "days": 73
+   "mean": -0.009431141751263954,
+   "t": -0.7108837168787153,
+   "days": 71
   }
  },
  "event_study": {
-  "n_events": 1024,
-  "n_used": 894,
+  "n_events": 890,
+  "n_used": 767,
   "car": {
-   "-5": 0.008668317403155748,
-   "-4": 0.007631106132211019,
-   "-3": 0.004480030571482648,
-   "-2": 0.005773141764656144,
+   "-5": 0.011032461207094078,
+   "-4": 0.010930707384573182,
+   "-3": 0.006730005647340507,
+   "-2": 0.005794066535159235,
    "-1": 0.0,
-   "0": -0.002512152467349681,
-   "1": -0.006521972854741658,
-   "2": -0.0060060364496566,
-   "3": -0.01132917669822294,
-   "4": -0.011854738071804065,
-   "5": -0.01712921875832386,
-   "6": -0.021761910832720686,
-   "7": -0.026440693328120567,
-   "8": -0.027365293070526046,
-   "9": -0.030293756842692133,
-   "10": -0.030342868013766906,
-   "11": -0.03171130851961443,
-   "12": -0.03392369174864456,
-   "13": -0.036242654380449164,
-   "14": -0.03968339594876742,
-   "15": -0.04403987512428668,
-   "16": -0.04470213559044308,
-   "17": -0.050307235984183116,
-   "18": -0.05295048552811011,
-   "19": -0.05180955933496687,
-   "20": -0.05016870627931339
+   "0": -0.002582326987828948,
+   "1": -0.005164123081731142,
+   "2": -0.006967963005788871,
+   "3": -0.012819182920535783,
+   "4": -0.012231814492586437,
+   "5": -0.015708416500486846,
+   "6": -0.01927242115086205,
+   "7": -0.02299743090329065,
+   "8": -0.02452352788008806,
+   "9": -0.027654108113165703,
+   "10": -0.028171810780551674,
+   "11": -0.028675470866667694,
+   "12": -0.030590795496501108,
+   "13": -0.03243016055026062,
+   "14": -0.035786356146835896,
+   "15": -0.04056985500070666,
+   "16": -0.04061743938096886,
+   "17": -0.044746967682693706,
+   "18": -0.04691101573137288,
+   "19": -0.045311589735465486,
+   "20": -0.04267081837578797
   }
  },
  "vol_test": {
   "q1": {
-   "mean": 0.5942775005120513,
-   "n": 1526
+   "mean": 0.5695097474042432,
+   "n": 1420
   },
   "q2": {
-   "mean": 0.576110876702993,
-   "n": 1556
+   "mean": 0.5504334941105178,
+   "n": 1448
   },
   "q3": {
-   "mean": 0.5686501341936339,
-   "n": 1531
+   "mean": 0.549973228914985,
+   "n": 1425
   },
   "q4": {
-   "mean": 0.5499660097252345,
-   "n": 1508
+   "mean": 0.539342382245359,
+   "n": 1399
   },
   "q5": {
-   "mean": 0.5647475604659138,
-   "n": 1496
+   "mean": 0.5582909939133288,
+   "n": 1389
   }
  },
  "scorecard": {
-  "n_picks": 92,
+  "n_picks": 111,
   "since": "2026-08-07",
-  "mean_excess_5d": -0.019549236993381396,
-  "mean_excess_10d": -0.02474566130635458,
-  "win_rate_5d": 0.45161290322580644,
-  "win_rate_10d": 0.4186046511627907,
+  "mean_excess_5d": -0.007055315821620528,
+  "mean_excess_10d": -0.006816967977148337,
+  "win_rate_5d": 0.4875,
+  "win_rate_10d": 0.4406779661016949,
   "picks": [
    {
     "date": "2026-08-07",
@@ -476,8 +476,8 @@
     "date": "2026-08-18",
     "ticker": "AGI",
     "conviction": "high",
-    "excess_5d": 0.10979816854556179,
-    "excess_10d": 0.04587876375023836
+    "excess_5d": 0.10979816068489834,
+    "excess_10d": 0.04587873488004146
    },
    {
     "date": "2026-08-18",
@@ -561,84 +561,84 @@
     "ticker": "AI",
     "conviction": "high",
     "excess_5d": 0.030979487405306427,
-    "excess_10d": null
+    "excess_10d": -0.005609427368661546
    },
    {
     "date": "2026-08-21",
     "ticker": "META",
     "conviction": "medium",
     "excess_5d": 0.04652030778432703,
-    "excess_10d": null
+    "excess_10d": 0.11436514242612517
    },
    {
     "date": "2026-08-22",
     "ticker": "AAOI",
     "conviction": "high",
     "excess_5d": -0.018042210667879366,
-    "excess_10d": null
+    "excess_10d": -0.012344828150806397
    },
    {
     "date": "2026-08-22",
     "ticker": "IBKR",
     "conviction": "medium",
     "excess_5d": 0.014138604540522959,
-    "excess_10d": null
+    "excess_10d": -0.02709805610303151
    },
    {
     "date": "2026-08-22",
     "ticker": "IREN",
     "conviction": "medium",
     "excess_5d": -0.12671242273728756,
-    "excess_10d": null
+    "excess_10d": 0.12388876389513048
    },
    {
     "date": "2026-08-23",
     "ticker": "EU",
     "conviction": "medium",
     "excess_5d": 0.04666567420393197,
-    "excess_10d": null
+    "excess_10d": 0.027723872850981657
    },
    {
     "date": "2026-08-23",
     "ticker": "OI",
     "conviction": "medium",
     "excess_5d": -0.01288402995265503,
-    "excess_10d": null
+    "excess_10d": -0.0479013708892837
    },
    {
     "date": "2026-08-23",
     "ticker": "TDS",
     "conviction": "high",
     "excess_5d": -0.003036770576804404,
-    "excess_10d": null
+    "excess_10d": 0.11723415381296642
    },
    {
     "date": "2026-08-24",
     "ticker": "AAOI",
     "conviction": "medium",
     "excess_5d": -0.06011690221781185,
-    "excess_10d": null
+    "excess_10d": -0.006187055757030602
    },
    {
     "date": "2026-08-24",
     "ticker": "IREN",
     "conviction": "high",
     "excess_5d": -0.09628886429332173,
-    "excess_10d": null
+    "excess_10d": 0.16940218338709023
    },
    {
     "date": "2026-08-24",
     "ticker": "SMCI",
     "conviction": "medium",
     "excess_5d": 0.013719903206739215,
-    "excess_10d": null
+    "excess_10d": 0.11010468180041455
    },
    {
     "date": "2026-08-25",
     "ticker": "BE",
     "conviction": "medium",
     "excess_5d": -0.015434986620420088,
-    "excess_10d": null
+    "excess_10d": 0.22736456786213477
    },
    {
     "date": "2026-08-25",
@@ -652,28 +652,28 @@
     "ticker": "RKLB",
     "conviction": "high",
     "excess_5d": -0.05801261745725772,
-    "excess_10d": null
+    "excess_10d": -0.06277494441598419
    },
    {
     "date": "2026-08-26",
     "ticker": "CC",
     "conviction": "medium",
     "excess_5d": 0.000780709936158086,
-    "excess_10d": null
+    "excess_10d": -0.030569215337646782
    },
    {
     "date": "2026-08-26",
     "ticker": "CIA",
     "conviction": "high",
     "excess_5d": 0.013634167768523886,
-    "excess_10d": null
+    "excess_10d": -0.07734354184612813
    },
    {
     "date": "2026-08-26",
     "ticker": "DKS",
     "conviction": "medium",
-    "excess_5d": 0.07885111609875084,
-    "excess_10d": null
+    "excess_5d": 0.07885103699691154,
+    "excess_10d": 0.041607428225421406
    },
    {
     "date": "2026-08-27",
@@ -700,126 +700,126 @@
     "date": "2026-08-28",
     "ticker": "IONQ",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": 0.08845407259610316,
     "excess_10d": null
    },
    {
     "date": "2026-08-28",
     "ticker": "PYPL",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": 0.01841555329346134,
     "excess_10d": null
    },
    {
     "date": "2026-08-28",
     "ticker": "RBRK",
     "conviction": "high",
-    "excess_5d": null,
+    "excess_5d": 0.002472200581377537,
     "excess_10d": null
    },
    {
     "date": "2026-08-29",
     "ticker": "APP",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": 0.010849222895979116,
     "excess_10d": null
    },
    {
     "date": "2026-08-29",
     "ticker": "GLD",
     "conviction": "high",
-    "excess_5d": null,
+    "excess_5d": -0.012567796734936576,
     "excess_10d": null
    },
    {
     "date": "2026-08-29",
     "ticker": "NKE",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": -0.014482221212656188,
     "excess_10d": null
    },
    {
     "date": "2026-08-30",
     "ticker": "BE",
     "conviction": "high",
-    "excess_5d": null,
+    "excess_5d": 0.27961676182006445,
     "excess_10d": null
    },
    {
     "date": "2026-08-30",
     "ticker": "FA",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": 0.012093402979827195,
     "excess_10d": null
    },
    {
     "date": "2026-08-30",
     "ticker": "RR",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": -0.035416731175526794,
     "excess_10d": null
    },
    {
     "date": "2026-08-31",
     "ticker": "INFQ",
     "conviction": "high",
-    "excess_5d": null,
+    "excess_5d": 0.07062728631145987,
     "excess_10d": null
    },
    {
     "date": "2026-08-31",
     "ticker": "SLS",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": 0.050278848252843567,
     "excess_10d": null
    },
    {
     "date": "2026-08-31",
     "ticker": "TTWO",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": -0.024005828903855275,
     "excess_10d": null
    },
    {
     "date": "2026-09-01",
     "ticker": "CRDO",
     "conviction": "high",
-    "excess_5d": null,
+    "excess_5d": -0.13354603961361944,
     "excess_10d": null
    },
    {
     "date": "2026-09-01",
     "ticker": "GPRO",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": 0.12874787618838757,
     "excess_10d": null
    },
    {
     "date": "2026-09-01",
     "ticker": "TEM",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": -0.04614278669117433,
     "excess_10d": null
    },
    {
     "date": "2026-09-02",
     "ticker": "DB",
     "conviction": "low",
-    "excess_5d": null,
+    "excess_5d": -0.005600644016685918,
     "excess_10d": null
    },
    {
     "date": "2026-09-02",
     "ticker": "DELL",
     "conviction": "high",
-    "excess_5d": null,
+    "excess_5d": 0.0694493912217633,
     "excess_10d": null
    },
    {
     "date": "2026-09-02",
     "ticker": "HPE",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": 0.18838494702969433,
     "excess_10d": null
    },
    {
@@ -891,14 +891,147 @@
     "conviction": "medium",
     "excess_5d": null,
     "excess_10d": null
+   },
+   {
+    "date": "2026-09-07",
+    "ticker": "AGI",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-09-07",
+    "ticker": "FOR",
+    "conviction": "low",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-09-08",
+    "ticker": "BE",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-09-08",
+    "ticker": "IREN",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-09-08",
+    "ticker": "QCOM",
+    "conviction": "high",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-09-09",
+    "ticker": "CHWY",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-09-09",
+    "ticker": "PL",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-09-09",
+    "ticker": "TTAN",
+    "conviction": "high",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-09-10",
+    "ticker": "AEO",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-09-10",
+    "ticker": "AVAV",
+    "conviction": "high",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-09-10",
+    "ticker": "GO",
+    "conviction": "low",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-09-11",
+    "ticker": "ADBE",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-09-11",
+    "ticker": "ORCL",
+    "conviction": "high",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-09-11",
+    "ticker": "QCOM",
+    "conviction": "low",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-09-12",
+    "ticker": "DELL",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-09-12",
+    "ticker": "HPE",
+    "conviction": "low",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-09-12",
+    "ticker": "SLS",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-09-13",
+    "ticker": "GME",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-09-13",
+    "ticker": "NBIS",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
    }
   ],
-  "excluded_crypto": 3,
+  "excluded_crypto": 4,
   "disclaimer": "Hypothetical, frictionless, benchmark-adjusted. Not investment advice."
  },
  "price_coverage": {
-  "requested": 606,
-  "priced": 556,
+  "requested": 578,
+  "priced": 528,
   "missing": [
    "AAVE",
    "ADA",
@@ -909,11 +1042,11 @@
    "BAT",
    "BK",
    "BNB",
-   "CRO"
+   "CGT"
   ]
  },
  "universe": {
   "description": "all history tickers + logged picks + benchmarks",
-  "n_tickers": 606
+  "n_tickers": 578
  }
 }
