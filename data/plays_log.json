@@ -1242,6 +1242,28 @@
 "vel": 10.7,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-09-13",
+"ticker": "GME",
+"thesis": "Fresh 12x mention spike backed by a concrete insider catalyst \u2014 Ryan Cohen's ~$20M purchase plus a director buy \u2014 signaling real conviction rather than a pure meme spike. Early-entry setup as retail re-engages before the move becomes obvious.",
+"risk": "Meme-driven flows can reverse violently once the insider-buy headline fades.",
+"conviction": "medium",
+"mentions": 12,
+"vel": 12.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-13",
+"ticker": "NBIS",
+"thesis": "Steady hot-state chatter with a genuine fundamental catalyst \u2014 the Palantir partnership, amplified by Oracle's $664B AI cloud backlog validating the neocloud demand story. Still under-the-radar versus peers like CoreWeave, offering early positioning on the AI compute theme.",
+"risk": "AI-compute names are crowded and any Palantir partnership execution slip could deflate the narrative.",
+"conviction": "medium",
+"mentions": 13,
+"vel": 1.1,
+"state": "hot",
+"crypto": false
 }
 ]
 }
