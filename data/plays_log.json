@@ -1264,6 +1264,39 @@
 "vel": 1.1,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-09-14",
+"ticker": "AVGO",
+"thesis": "Anthropic becoming a multibillion-dollar custom AI chip customer beyond Google is a major fundamental catalyst, and 35\u00d7 mention growth despite a 'cooling' state means the news may still be underappreciated amid the broader semi selloff.",
+"risk": "Broad semiconductor selloff and AI-slowdown narrative could keep pressuring the stock near-term.",
+"conviction": "medium",
+"mentions": 35,
+"vel": 35.0,
+"state": "cooling",
+"crypto": false
+},
+{
+"date": "2026-09-14",
+"ticker": "IQ",
+"thesis": "iQIYI's global AI Creator Challenge on its NadouPro platform with Alibaba's Wan3.0 model is a concrete product event, and 10.3\u00d7 mention growth with a 'hot' state suggests the story is just starting to surface.",
+"risk": "Chinese ADR regulatory and sentiment risk could cap upside regardless of product traction.",
+"conviction": "medium",
+"mentions": 72,
+"vel": 10.3,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-14",
+"ticker": "SO",
+"thesis": "Utilities-as-AI-power-provider theme is gaining traction, and Southern's PowerSecure unit building standby power for a data center campus gives it a tangible AI-infrastructure angle with 11\u00d7 mention acceleration.",
+"risk": "Utility stock moves are slow and rate-sensitive, so the AI narrative may not translate into fast price action.",
+"conviction": "low",
+"mentions": 11,
+"vel": 11.0,
+"state": "hot",
+"crypto": false
 }
 ]
 }
