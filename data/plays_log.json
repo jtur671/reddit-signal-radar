@@ -1297,6 +1297,39 @@
 "vel": 11.0,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-09-15",
+"ticker": "CRCL",
+"thesis": "Circle is a fresh, new-state name with a 10x mention spike tied to a concrete, binary catalyst \u2014 the Senate's CLARITY Act vote \u2014 that could re-rate crypto-linked equities before the outcome is priced in. Getting in ahead of the vote positions you before the move becomes obvious.",
+"risk": "The vote outcome is binary and could go against crypto, reversing the spike fast.",
+"conviction": "medium",
+"mentions": 10,
+"vel": 10.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-09-15",
+"ticker": "CRDO",
+"thesis": "Credo is in a sustained state with 3x mention growth and a concrete AI-infrastructure product showcase at AI Infra 2026, amplified by aggressive buying after a sharp crash \u2014 a setup where the catalyst is real and the crowd is still early.",
+"risk": "The stock's brutal prior crash signals fragile sentiment that could resume.",
+"conviction": "low",
+"mentions": 12,
+"vel": 3.0,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-09-15",
+"ticker": "IQ",
+"thesis": "iQIYI shows the strongest blend of freshness and acceleration (98 mentions, 8.9x, hot) backed by a real product event \u2014 its Global AI Creator Challenge powered by NadouPro and Alibaba's Wan3.0 \u2014 giving the AI-narrative a concrete hook before broader attention arrives.",
+"risk": "Chinese ADR regulatory and sentiment risk can overwhelm the catalyst.",
+"conviction": "medium",
+"mentions": 98,
+"vel": 8.9,
+"state": "hot",
+"crypto": false
 }
 ]
 }
