@@ -1330,6 +1330,39 @@
 "vel": 8.9,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-09-16",
+"ticker": "EU",
+"thesis": "enCore Energy has a hard, dated catalyst \u2014 record date and SEC-effective Form F-1 for a special dividend of Verdera Energy shares \u2014 which is a concrete value-unlock event rather than a vague narrative. Mentions are accelerating 3.2x with the stock still in a 'hot' (not yet saturated) lifecycle state, suggesting the distribution story is still being discovered.",
+"risk": "Special-dividend plays often see 'sell the news' reversals once the record date passes and the distribution is priced in.",
+"conviction": "medium",
+"mentions": 29,
+"vel": 3.2,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-16",
+"ticker": "IBM",
+"thesis": "IBM finalizing a $1B CHIPS Act award to build America's first pure-play quantum computing foundry is a substantive, government-backed catalyst with long-tail narrative potential around quantum leadership. Mentions spiked 12x while the state is still 'cooling,' meaning attention may be re-igniting from a low base rather than chasing an already-extended move.",
+"risk": "The stock is 'cooling' with only 12 mentions, so momentum may fade if the quantum foundry story doesn't get follow-through coverage.",
+"conviction": "low",
+"mentions": 12,
+"vel": 12.0,
+"state": "cooling",
+"crypto": false
+},
+{
+"date": "2026-09-16",
+"ticker": "RIG",
+"thesis": "Fresh NEW name with a concrete company-specific catalyst \u2014 an ~$80M ultra-deepwater drillship contract \u2014 that is also lifting the broader offshore oil complex, so the move has a real fundamental anchor rather than pure sentiment. Being brand new to the board means retail attention is just starting, giving an early-entry window before the theme becomes obvious.",
+"risk": "Offshore oil is highly correlated to crude prices, so a Middle East de-escalation or oil pullback could quickly reverse the sector-wide bid.",
+"conviction": "medium",
+"mentions": 13,
+"vel": null,
+"state": "new",
+"crypto": false
 }
 ]
 }
