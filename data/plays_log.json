@@ -1363,6 +1363,39 @@
 "vel": null,
 "state": "new",
 "crypto": false
+},
+{
+"date": "2026-09-17",
+"ticker": "FOR",
+"thesis": "5.7x acceleration tied to a specific regulatory catalyst (SEC five-year tokenized-stock trading exemption) that directly benefits its blockchain securities infrastructure. Tokenization is a nascent narrative, so this is early relative to the theme's potential.",
+"risk": "Catalyst interpretation may be a stretch versus the company's actual revenue exposure.",
+"conviction": "low",
+"mentions": 17,
+"vel": 5.7,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-17",
+"ticker": "LAC",
+"thesis": "Fresh 'new' lifecycle name with a 12x mention spike backed by a concrete JPMorgan bullish initiation arguing the stock could double \u2014 a real analyst catalyst rather than a pure momentum spike. Early-stage chatter plus sell-side validation is the classic setup before a move becomes obvious.",
+"risk": "Single-analyst thesis can fade fast if lithium prices or financing sentiment sour.",
+"conviction": "medium",
+"mentions": 12,
+"vel": 12.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-09-17",
+"ticker": "NBIS",
+"thesis": "Highest absolute mention count (82) with 6.3x growth and a hard catalyst \u2014 raising GPU cloud rates and a ~9% stock move \u2014 showing real pricing power in AI compute. Still labeled 'cooling,' which can mark a pause before renewed attention.",
+"risk": "Already up sharply on the news, so entry may be late rather than early.",
+"conviction": "low",
+"mentions": 82,
+"vel": 6.3,
+"state": "cooling",
+"crypto": false
 }
 ]
 }
