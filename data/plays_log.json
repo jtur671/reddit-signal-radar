@@ -1396,6 +1396,39 @@
 "vel": 6.3,
 "state": "cooling",
 "crypto": false
+},
+{
+"date": "2026-09-18",
+"ticker": "GM",
+"thesis": "First deliveries of components for U.S. interceptor missiles give GM a concrete new defense revenue stream, and 16.5x mention acceleration with a 'hot' state suggests retail is just starting to connect the dots on a non-consensus earnings driver. Defense diversification is a structural narrative the market has historically underappreciated in GM.",
+"risk": "Defense revenue is likely small near-term and could be dismissed as immaterial versus GM's core auto business.",
+"conviction": "medium",
+"mentions": 33,
+"vel": 16.5,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-18",
+"ticker": "ICE",
+"thesis": "SEC's five-year exemption letting crypto venues trade tokenized U.S. stocks onchain is a direct, structural tailwind for exchange operators like ICE, and 4.7x mention growth with a 'hot' state suggests early recognition of a multi-year infrastructure opportunity. Tokenized equities could expand ICE's addressable trading volume meaningfully.",
+"risk": "Regulatory exemption is temporary and tokenized-equity adoption could remain niche for years.",
+"conviction": "medium",
+"mentions": 14,
+"vel": 4.7,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-18",
+"ticker": "RARE",
+"thesis": "FDA approval of FAYUVI (UX111), the first gene therapy for Sanfilippo syndrome type A, is a hard, company-specific catalyst that just hit a 'new' lifecycle state with 31x mention growth \u2014 early enough that the broader market may not have fully priced the franchise value. This is a genuine binary-to-commercial inflection, not a sympathy spike.",
+"risk": "Gene-therapy launch economics and payer/reimbursement uncertainty could cap the re-rating.",
+"conviction": "high",
+"mentions": 31,
+"vel": 31.0,
+"state": "new",
+"crypto": false
 }
 ]
 }
