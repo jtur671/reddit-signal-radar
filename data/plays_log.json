@@ -1429,6 +1429,39 @@
 "vel": 31.0,
 "state": "new",
 "crypto": false
+},
+{
+"date": "2026-09-19",
+"ticker": "CC",
+"thesis": "The $455M PFAS settlement is a real, hard catalyst that removes a major overhang on Chemours' liability profile, and at 4.2x mention growth the retail crowd is only starting to re-rate the name.",
+"risk": "Core chemical demand remains weak, so the settlement may not translate into near-term earnings upside.",
+"conviction": "medium",
+"mentions": 21,
+"vel": 4.2,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-19",
+"ticker": "KEEL",
+"thesis": "Explosive 12x mention growth on a specific CoinShares report flagging Keel as a candidate to exit Bitcoin mining \u2014 a concrete strategic pivot story that most traders haven't noticed yet.",
+"risk": "The catalyst is a third-party report, not a company announcement, so the pivot may never materialize.",
+"conviction": "low",
+"mentions": 12,
+"vel": 12.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-19",
+"ticker": "ON",
+"thesis": "Fresh 4.1x mention acceleration tied to a concrete new Subaru EV power-architecture partnership, and the stock's recent 9% plunge means the catalyst is not yet priced in \u2014 an early setup before the deal narrative broadens.",
+"risk": "Ongoing $30B shortfall and weak auto demand could keep the stock under pressure despite the deal.",
+"conviction": "medium",
+"mentions": 29,
+"vel": 4.1,
+"state": "hot",
+"crypto": false
 }
 ]
 }
