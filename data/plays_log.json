@@ -1462,6 +1462,28 @@
 "vel": 4.1,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-09-20",
+"ticker": "API",
+"thesis": "Mentions up 2.2\u00d7 on a Truist Buy reiteration, and the data-center selloff backdrop means the bull case is being reinforced while sentiment is still washed out. Early accumulation window before the narrative re-rates.",
+"risk": "Analyst reiterations are soft catalysts and can be fully priced within a session.",
+"conviction": "low",
+"mentions": 13,
+"vel": 2.2,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-20",
+"ticker": "OG",
+"thesis": "Mentions exploded 5.0\u00d7 on a genuine regulatory catalyst \u2014 SEC clearance for Crypto.com's Nadex to offer single-stock futures via OG.com \u2014 a hard, verifiable event that most traders haven't priced yet. This is the freshest, fastest-accelerating name on the board with a real structural story behind it.",
+"risk": "Regulatory approval headlines can fade fast if no follow-through volume or revenue materializes.",
+"conviction": "medium",
+"mentions": 10,
+"vel": 5.0,
+"state": "hot",
+"crypto": false
 }
 ]
 }
