@@ -1484,6 +1484,39 @@
 "vel": 5.0,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-09-21",
+"ticker": "KEEL",
+"thesis": "Fresh 11x mention spike on a specific, real event \u2014 an upsized $350M debt offering that crushed the stock \u2014 with retail already framing it as a buy-the-dip, which is the classic early-entry setup before the bounce becomes obvious.",
+"risk": "Debt raises can signal balance-sheet stress and the dip may not be done.",
+"conviction": "medium",
+"mentions": 11,
+"vel": 11.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-21",
+"ticker": "NVO",
+"thesis": "Brand-new to the board with a hot state after a 6% slide on a disappointing 2030 strategy update, but the same day's REIMAGINE 5 data showing CagriSema beating tirzepatide on weight loss is a concrete, underappreciated positive catalyst that retail hasn't fully priced in yet.",
+"risk": "Sentiment could stay anchored to the guidance disappointment and keep the stock drifting lower.",
+"conviction": "medium",
+"mentions": 11,
+"vel": null,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-21",
+"ticker": "RKLB",
+"thesis": "Sustained 18x acceleration backed by a concrete analyst catalyst (Cantor reiterating a $122 target on launch record, Neutron, and Iridium acquisition funding), giving a fundamental anchor to the momentum rather than a pure spike.",
+"risk": "Defense/space names are volatile and the move may already be partly priced in.",
+"conviction": "low",
+"mentions": 36,
+"vel": 18.0,
+"state": "sustained",
+"crypto": false
 }
 ]
 }
