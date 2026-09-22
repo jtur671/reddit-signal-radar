@@ -1517,6 +1517,39 @@
 "vel": 18.0,
 "state": "sustained",
 "crypto": false
+},
+{
+"date": "2026-09-22",
+"ticker": "BB",
+"thesis": "15x acceleration into a sustained state ahead of an earnings print, with Cramer's buy call and analyst beat projections providing a concrete near-term catalyst.",
+"risk": "Meme-driven momentum can reverse sharply if the earnings beat fails to materialize.",
+"conviction": "medium",
+"mentions": 30,
+"vel": 15.0,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-09-22",
+"ticker": "GRAB",
+"thesis": "Fresh 'new' state with 12x mention growth and a concrete $1.49B deal to acquire 60% of Atome plus raised 2028 targets \u2014 a real fundamental catalyst that most traders haven't priced in yet.",
+"risk": "Integration and regulatory risk on the Atome acquisition could delay any near-term re-rating.",
+"conviction": "high",
+"mentions": 12,
+"vel": 12.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-09-22",
+"ticker": "SOFI",
+"thesis": "17x mention spike backed by a tangible product launch (SoFiUSD stablecoin settlement on Mastercard's network), giving a real fundamental hook before the crowd fully piles in.",
+"risk": "Stablecoin revenue contribution may be immaterial near-term, so the move could fade if hype outpaces substance.",
+"conviction": "medium",
+"mentions": 17,
+"vel": 17.0,
+"state": "hot",
+"crypto": false
 }
 ]
 }
