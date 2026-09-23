@@ -1550,6 +1550,39 @@
 "vel": 17.0,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-09-23",
+"ticker": "IONQ",
+"thesis": "IonQ's first on-premise quantum deployment at an NVIDIA research center plus a successful real-time quantum error correction decoder test is a concrete, substantive catalyst that lifts the whole quantum sector, and 19x mention growth suggests the retail crowd is only just waking up to it. The NVIDIA association gives it real credibility beyond a typical speculative spike.",
+"risk": "Quantum computing remains a long-dated, hype-prone theme where a single day's surge can fully price in the news.",
+"conviction": "high",
+"mentions": 38,
+"vel": 19.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-23",
+"ticker": "ONON",
+"thesis": "A $1 billion buyback plus new 2029 financial targets is a hard fundamental catalyst, and 10x mention growth from a low base means the name is still under the radar relative to mega-cap peers. Buybacks of this size often support sustained re-rating rather than a one-day pop.",
+"risk": "Consumer discretionary apparel names are exposed to tariff and demand headwinds that could cap follow-through.",
+"conviction": "medium",
+"mentions": 10,
+"vel": 10.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-23",
+"ticker": "RSG",
+"thesis": "A guidance raise plus dividend increase alongside a Q2 earnings beat is a clean, concrete catalyst, and appearing as a brand-new name on the board with only 10 mentions means it is genuinely early rather than crowded. Defensive waste-hauling names tend to trend steadily once guidance is raised.",
+"risk": "Low mention volume means thin retail interest and limited momentum fuel.",
+"conviction": "medium",
+"mentions": 10,
+"vel": null,
+"state": "new",
+"crypto": false
 }
 ]
 }
