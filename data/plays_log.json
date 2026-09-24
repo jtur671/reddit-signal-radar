@@ -1583,6 +1583,39 @@
 "vel": null,
 "state": "new",
 "crypto": false
+},
+{
+"date": "2026-09-24",
+"ticker": "EU",
+"thesis": "enCore Energy's Verdera share distribution plus Verdera's buyback and conference call is a concrete domestic fuel-cycle value-unlock catalyst, and the 5.3x mention growth in a 'cooling' state suggests the story is being rediscovered while uranium names broadly sell off. That divergence can create an early entry before the value unlock is widely recognized.",
+"risk": "Uranium sector-wide selling pressure could overwhelm the company-specific catalyst and keep the stock depressed.",
+"conviction": "low",
+"mentions": 16,
+"vel": 5.3,
+"state": "cooling",
+"crypto": false
+},
+{
+"date": "2026-09-24",
+"ticker": "INFQ",
+"thesis": "Infleqtion's 30 entangled logical qubits on just 80 physical qubits is a concrete technical milestone in quantum computing, and the 1.8x mention growth from a 'sustained' state suggests early accumulation rather than a one-day spike. This is a specific, verifiable catalyst that could attract broader quantum-theme attention before it becomes obvious.",
+"risk": "Quantum computing is a long-horizon, speculative theme where commercial payoff is years away and the stock can stay illiquid/volatile.",
+"conviction": "medium",
+"mentions": 11,
+"vel": 1.8,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-09-24",
+"ticker": "ORCL",
+"thesis": "Oracle's force majeure at its New Mexico AI data center is a hard, company-specific negative catalyst that the market may still be digesting; with 16x mention growth in a 'cooling' state, the news is fresh and the reaction may not be fully priced. Early traders can position around the AI-infrastructure delay narrative before consensus forms.",
+"risk": "The force majeure could prove temporary or immaterial to Oracle's broader cloud backlog, making the selloff a headfake.",
+"conviction": "medium",
+"mentions": 16,
+"vel": 16.0,
+"state": "cooling",
+"crypto": false
 }
 ]
 }
