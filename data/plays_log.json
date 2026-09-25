@@ -1616,6 +1616,39 @@
 "vel": 16.0,
 "state": "cooling",
 "crypto": false
+},
+{
+"date": "2026-09-25",
+"ticker": "MRNA",
+"thesis": "Mentions exploded 8x while the stock sits in a cooling state, meaning the crowd hasn't fully piled in yet \u2014 and there's a hard catalyst (UAE investment talks plus an October 24 ESMO readout) that gives the move a real fundamental leg. Getting in before the ESMO data drop is the classic early-entry window.",
+"risk": "Binary ESMO readout could disappoint and reverse the move fast.",
+"conviction": "medium",
+"mentions": 16,
+"vel": 8.0,
+"state": "cooling",
+"crypto": false
+},
+{
+"date": "2026-09-25",
+"ticker": "ON",
+"thesis": "Only 10 mentions and 1.1x growth means this is under the radar, yet Jefferies' concrete bull call on onsemi's data-center power positioning tied to a $213B AI power opportunity gives it a legitimate catalyst. Low crowd attention plus a real analyst-driven thesis is exactly the early setup.",
+"risk": "Slow mention growth means the move may take time to materialize or stall.",
+"conviction": "medium",
+"mentions": 10,
+"vel": 1.1,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-09-25",
+"ticker": "RKLB",
+"thesis": "Mentions grew 3.8x with a specific, verifiable catalyst \u2014 IRDM shareholders approving the $54/share Iridium acquisition \u2014 and the 'cooling' state suggests the initial hype faded before the deal-close narrative fully plays out. That gap between fading chatter and a concrete M&A milestone is where early entries live.",
+"risk": "Deal close is years out (mid-2027), so near-term price action may lack urgency.",
+"conviction": "low",
+"mentions": 30,
+"vel": 3.8,
+"state": "cooling",
+"crypto": false
 }
 ]
 }
