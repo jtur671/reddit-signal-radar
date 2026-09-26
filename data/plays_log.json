@@ -1649,6 +1649,39 @@
 "vel": 3.8,
 "state": "cooling",
 "crypto": false
+},
+{
+"date": "2026-09-26",
+"ticker": "AKAM",
+"thesis": "The $11.6B Anthropic cloud deal is a genuine, company-specific catalyst that validates Akamai's AI-cloud pivot, and at only 1.4\u00d7 mention growth it's still under the radar.",
+"risk": "Deal economics and revenue timing are unproven, so the market could second-guess the headline.",
+"conviction": "medium",
+"mentions": 10,
+"vel": 1.4,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-09-26",
+"ticker": "MX",
+"thesis": "Brand-new name with a concrete hard catalyst \u2014 a $5M strategic investment from Navitas Semiconductor \u2014 that the broader market hasn't priced in yet, giving early entrants a jump on the news.",
+"risk": "Tiny $5M investment may not justify a sustained re-rating once the initial pop fades.",
+"conviction": "medium",
+"mentions": 10,
+"vel": null,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-09-26",
+"ticker": "RR",
+"thesis": "A signed 5-year deployment deal with a national retailer is a real revenue catalyst for a small-cap robotics name, and modest 1.4\u00d7 growth suggests the story is still early.",
+"risk": "Small-cap execution risk \u2014 one contract may not translate into durable revenue.",
+"conviction": "low",
+"mentions": 10,
+"vel": 1.4,
+"state": "hot",
+"crypto": false
 }
 ]
 }
