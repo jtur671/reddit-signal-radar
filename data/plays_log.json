@@ -1682,6 +1682,28 @@
 "vel": 1.4,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-09-27",
+"ticker": "BE",
+"thesis": "Bloom Energy is the freshest accelerating name on the board (1.2\u00d7 mentions) with a concrete, verifiable catalyst \u2014 Oracle reaffirming a 2.4 GW AI fuel cell deal ties it directly to the AI data-center power buildout, a theme still early in its re-rating.",
+"risk": "Heavy dependence on a single large customer's continued commitment to the deal.",
+"conviction": "medium",
+"mentions": 11,
+"vel": 1.2,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-27",
+"ticker": "MSFT",
+"thesis": "Mentions are cooling (0.4\u00d7) but the catalyst is concrete \u2014 the 'Muse' product moment plus an analyst upgrade \u2014 meaning the story is under-discussed relative to its substance, an early-entry setup before broader coverage catches up.",
+"risk": "Product buzz may fade without hard monetization details.",
+"conviction": "low",
+"mentions": 18,
+"vel": 0.4,
+"state": "hot",
+"crypto": false
 }
 ]
 }
