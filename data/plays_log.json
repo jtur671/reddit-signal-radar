@@ -1704,6 +1704,39 @@
 "vel": 0.4,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-09-28",
+"ticker": "ALL",
+"thesis": "Post-earnings catastrophe-loss selloff has the stock trading at ~5x earnings, sparking genuine valuation debate \u2014 a setup where sentiment is washed out and any normalization in loss trends could drive a sharp re-rating.",
+"risk": "If catastrophe losses signal a peaked profitability cycle, the cheap multiple is a value trap.",
+"conviction": "low",
+"mentions": 16,
+"vel": 5.3,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-28",
+"ticker": "MDB",
+"thesis": "Abrupt CEO change with reaffirmed above-consensus guidance has created a sharp, sentiment-driven selloff in a high-quality name \u2014 a classic early-entry dislocation where the fundamental story is intact but the headline is spooking holders.",
+"risk": "Interim leadership uncertainty could linger and cap any near-term rebound.",
+"conviction": "medium",
+"mentions": 31,
+"vel": null,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-09-28",
+"ticker": "TD",
+"thesis": "Record earnings plus a perceived ~19% undervaluation gives a concrete fundamental anchor to a fresh, fast-accelerating mention spike, suggesting the market is only starting to re-rate the name.",
+"risk": "Bank earnings reactions can fade quickly if rate/margin outlook sours.",
+"conviction": "medium",
+"mentions": 10,
+"vel": 10.0,
+"state": "new",
+"crypto": false
 }
 ]
 }
