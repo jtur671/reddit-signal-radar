@@ -1737,6 +1737,39 @@
 "vel": 10.0,
 "state": "new",
 "crypto": false
+},
+{
+"date": "2026-09-29",
+"ticker": "AGI",
+"thesis": "Concrete company-specific catalyst \u2014 a stated target of 1M oz annual production by 2030 via Island Gold expansion \u2014 giving a fundamental growth narrative while gold miners remain a quieter, less-crowded theme.",
+"risk": "Gold price and cost inflation could undercut the production-growth story.",
+"conviction": "low",
+"mentions": 19,
+"vel": 9.5,
+"state": "cooling",
+"crypto": false
+},
+{
+"date": "2026-09-29",
+"ticker": "BB",
+"thesis": "Sustained (not a one-day spike) with a real fundamental catalyst: QNX record revenue, raised full-year outlook, and a new design-win with a major German automaker \u2014 a genuine turnaround signal rather than pure meme froth.",
+"risk": "Heavy meme-stock baggage means price action can detach from fundamentals.",
+"conviction": "medium",
+"mentions": 23,
+"vel": 7.7,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-09-29",
+"ticker": "IOVA",
+"thesis": "Fresh NEW spike with a hard, company-specific catalyst \u2014 Goldman Sachs reinstating Buy with a $15 PT \u2014 which is exactly the kind of analyst-initiated re-rating that can precede a sustained move before the crowd piles in.",
+"risk": "Biotech sentiment and pipeline/clinical execution can reverse a single-analyst pop quickly.",
+"conviction": "medium",
+"mentions": 23,
+"vel": null,
+"state": "hot",
+"crypto": false
 }
 ]
 }
