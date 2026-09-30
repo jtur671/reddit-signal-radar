@@ -1770,6 +1770,39 @@
 "vel": null,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-09-30",
+"ticker": "APLD",
+"thesis": "Applied Digital's $36B AI data center leases plus a billionaire new stake are hard catalysts validating the AI compute buildout, and 1.9\u00d7 growth at 13 mentions keeps it early relative to the crowded AI trade.",
+"risk": "Complex capital stack and financing concerns could cap upside if funding terms disappoint.",
+"conviction": "low",
+"mentions": 13,
+"vel": 1.9,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-09-30",
+"ticker": "CBRS",
+"thesis": "Cerebras is accelerating 16\u00d7 on a concrete AI backlog/revenue catalyst plus a high-profile Trump/Cathie Wood basket inclusion, and at only 16 mentions it's still under the radar versus crowded AI names. The combination of real fundamental headlines and a fresh narrative makes it the freshest early-entry setup on the board.",
+"risk": "Very low mention base means thin liquidity and headline-driven volatility.",
+"conviction": "medium",
+"mentions": 16,
+"vel": 16.0,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-09-30",
+"ticker": "HOOD",
+"thesis": "Robinhood's 24/7 trading and AI agentic automation announcement is a genuine product catalyst, and 6\u00d7 mention growth at 36 mentions suggests the move is still building rather than fully priced. Product-driven retail momentum names often trend for days after such launches.",
+"risk": "Crypto-linked beta and regulatory sensitivity could reverse sentiment quickly.",
+"conviction": "medium",
+"mentions": 36,
+"vel": 6.0,
+"state": "hot",
+"crypto": false
 }
 ]
 }
