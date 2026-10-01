@@ -1806,6 +1806,39 @@
 },
 {
 "date": "2026-10-01",
+"ticker": "ACN",
+"thesis": "Fresh 24x spike on a genuine beat-and-raise with fiscal 2027 guidance, and the read-through to IT-services peers suggests the move has legs beyond a one-day pop.",
+"risk": "Guidance-driven pops can fade fast if broader tech sentiment sours.",
+"conviction": "medium",
+"mentions": 24,
+"vel": 24.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-10-01",
+"ticker": "CEG",
+"thesis": "Amazon nuclear power deal is a concrete, high-signal catalyst for the AI-datacenter power theme, and 5x mention growth with only 10 mentions means the crowd hasn't fully piled in yet.",
+"risk": "Deal details and revenue impact may already be largely priced after the initial surge.",
+"conviction": "medium",
+"mentions": 10,
+"vel": 5.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-01",
+"ticker": "DC",
+"thesis": "Richmond Hill assay results plus a reiterated Buy and $10.75 target give a real fundamental catalyst behind the modest mention uptick, making it an under-the-radar early gold name.",
+"risk": "Junior miner moves are volatile and can reverse hard on any drill-result disappointment.",
+"conviction": "low",
+"mentions": 10,
+"vel": 1.7,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-10-01",
 "ticker": "HOOD",
 "thesis": "The HOOD Summit product unveil (24/7 trading, AI agents, private markets) is a concrete, forward-looking catalyst that expands the platform's addressable market, and 2.1\u00d7 growth off 44 mentions suggests early-stage buzz rather than a blow-off top.",
 "risk": "New product announcements often fade without near-term revenue impact.",
