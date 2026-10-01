@@ -1803,6 +1803,39 @@
 "vel": 6.0,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-10-01",
+"ticker": "HOOD",
+"thesis": "The HOOD Summit product unveil (24/7 trading, AI agents, private markets) is a concrete, forward-looking catalyst that expands the platform's addressable market, and 2.1\u00d7 growth off 44 mentions suggests early-stage buzz rather than a blow-off top.",
+"risk": "New product announcements often fade without near-term revenue impact.",
+"conviction": "medium",
+"mentions": 44,
+"vel": 2.1,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-01",
+"ticker": "LINK",
+"thesis": "Swift's integration of Chainlink for tokenized deposits is a real institutional partnership with long-tail implications, and 1.4\u00d7 growth at only 14 mentions means the story is still under the radar.",
+"risk": "Tokenized deposit adoption could be slow and the ticker confusion with Interlink Electronics muddies the signal.",
+"conviction": "medium",
+"mentions": 14,
+"vel": 1.4,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-10-01",
+"ticker": "MU",
+"thesis": "Micron's blowout Q4 with sales nearly quintupling YoY is a hard fundamental catalyst, and 1259 mentions at 4.1\u00d7 growth shows the retail crowd is just now piling in while the name is still in 'hot' rather than fully saturated state.",
+"risk": "Memory pricing is cyclical and the stock may already have priced in much of the earnings beat.",
+"conviction": "high",
+"mentions": 1259,
+"vel": 4.1,
+"state": "hot",
+"crypto": false
 }
 ]
 }
