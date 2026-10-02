@@ -1869,6 +1869,39 @@
 "vel": 4.1,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-10-02",
+"ticker": "ALAB",
+"thesis": "Astera Labs is riding a fresh Mizuho note arguing memory upside has room to run plus a billionaire buy from Israel Englander, giving a real analyst-plus-insider catalyst while mentions remain tiny at 10.",
+"risk": "Sustained-state chip names are prone to sharp profit-taking after analyst-driven pops.",
+"conviction": "medium",
+"mentions": 10,
+"vel": 10.0,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-10-02",
+"ticker": "COHR",
+"thesis": "Coherent's new data-optics platform for AI infrastructure is a concrete product catalyst that lifted the stock ~11% and pulled the whole AI optical group higher, yet mentions are still only 11 with 11x growth in the sustained phase \u2014 early enough that the theme hasn't fully crowded.",
+"risk": "AI-optics momentum can reverse fast if the product announcement fails to translate into orders.",
+"conviction": "medium",
+"mentions": 11,
+"vel": 11.0,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-10-02",
+"ticker": "ON",
+"thesis": "ON Semiconductor's revised all-cash $123/share bid for Synaptics is a hard, verifiable M&A catalyst with 24 mentions and 3.4x growth \u2014 a deal-driven move that can keep repricing as terms develop.",
+"risk": "Deal could be repriced, rejected, or face regulatory delay, collapsing the premium.",
+"conviction": "medium",
+"mentions": 24,
+"vel": 3.4,
+"state": "sustained",
+"crypto": false
 }
 ]
 }
