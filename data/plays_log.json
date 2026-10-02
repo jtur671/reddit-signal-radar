@@ -1894,6 +1894,17 @@
 },
 {
 "date": "2026-10-02",
+"ticker": "GME",
+"thesis": "GameStop is showing a 3.3x mention increase on CEO Ryan Cohen's $10.6 million insider purchase, part of a broader buying streak that signals confidence. Insider buying is a classic early signal, and the meme-stock community is quick to amplify such moves.",
+"risk": "Insider buying alone may not sustain a rally if broader retail sentiment or fundamentals remain weak.",
+"conviction": "low",
+"mentions": 20,
+"vel": 3.3,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-02",
 "ticker": "ON",
 "thesis": "ON Semiconductor's revised all-cash $123/share bid for Synaptics is a hard, verifiable M&A catalyst with 24 mentions and 3.4x growth \u2014 a deal-driven move that can keep repricing as terms develop.",
 "risk": "Deal could be repriced, rejected, or face regulatory delay, collapsing the premium.",
