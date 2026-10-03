@@ -1927,6 +1927,28 @@
 },
 {
 "date": "2026-10-03",
+"ticker": "CRDO",
+"thesis": "Credo is a smaller-cap AI connectivity name with a real macro catalyst (cooling jobs data boosting rate-cut odds) and only 12 mentions at 1.2x growth, suggesting the move hasn't been broadly discovered yet.",
+"risk": "The catalyst is macro-driven and indirect, so the pop could fade without company-specific follow-through.",
+"conviction": "low",
+"mentions": 12,
+"vel": 1.2,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-10-03",
+"ticker": "DELL",
+"thesis": "Dell's disclosed AI server backlog plus participation in a $15B Japan AI data center project is a tangible catalyst, and with mentions up only 1.7x and state already cooling, the story is early rather than crowded.",
+"risk": "AI server backlog headlines are recurring and may already be priced in, capping upside.",
+"conviction": "low",
+"mentions": 10,
+"vel": 1.7,
+"state": "cooling",
+"crypto": false
+},
+{
+"date": "2026-10-03",
 "ticker": "SO",
 "thesis": "Southern Company is a fresh hot name (6.0\u00d7 mentions) tied to a real, specific catalyst \u2014 Google's nuclear power deal in Georgia via subsidiary Georgia Power's Vogtle plant \u2014 giving it a tangible AI-power-demand narrative before it becomes a crowded trade.",
 "risk": "Utility moves are slow and the Google deal's earnings impact may be marginal.",
