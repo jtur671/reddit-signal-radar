@@ -1913,6 +1913,39 @@
 "vel": 3.4,
 "state": "sustained",
 "crypto": false
+},
+{
+"date": "2026-10-03",
+"ticker": "APLD",
+"thesis": "Applied Digital has a concrete, company-specific catalyst \u2014 adding 75 MW of AI capacity at its North Dakota campus \u2014 and is still in a cooling state, meaning the crowd may have moved on before the capacity story plays out, offering an early re-entry.",
+"risk": "Cooling mention trend suggests fading retail interest and the stock is highly speculative.",
+"conviction": "low",
+"mentions": 13,
+"vel": 4.3,
+"state": "cooling",
+"crypto": false
+},
+{
+"date": "2026-10-03",
+"ticker": "SO",
+"thesis": "Southern Company is a fresh hot name (6.0\u00d7 mentions) tied to a real, specific catalyst \u2014 Google's nuclear power deal in Georgia via subsidiary Georgia Power's Vogtle plant \u2014 giving it a tangible AI-power-demand narrative before it becomes a crowded trade.",
+"risk": "Utility moves are slow and the Google deal's earnings impact may be marginal.",
+"conviction": "medium",
+"mentions": 12,
+"vel": 6.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-03",
+"ticker": "VST",
+"thesis": "Vistra is a hot, accelerating name (4.2\u00d7 mentions) with a concrete, hard catalyst \u2014 a reported $4B federal loan to expand nuclear capacity \u2014 that most retail traders haven't fully priced into a utility-scale power play. Nuclear/AI-power demand is a durable theme, so early positioning ahead of broader recognition could pay off.",
+"risk": "The loan is only 'reported' and could be denied, delayed, or politically reversed.",
+"conviction": "medium",
+"mentions": 21,
+"vel": 4.2,
+"state": "hot",
+"crypto": false
 }
 ]
 }
