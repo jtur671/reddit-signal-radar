@@ -1968,6 +1968,28 @@
 "vel": 4.2,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-10-04",
+"ticker": "EU",
+"thesis": "enCore Energy's completed Verdera Energy spin-off creates a newly tradable entity, a concrete structural catalyst that most traders haven't priced in yet despite the modest mention count.",
+"risk": "Mentions are actually declining (0.5\u00d7 yesterday), so attention may already be fading.",
+"conviction": "low",
+"mentions": 11,
+"vel": 0.5,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-10-04",
+"ticker": "WULF",
+"thesis": "TeraWulf is the freshest name on the board with a 15\u00d7 mention spike and a real sector catalyst (digital power/AI compute stocks rebounding), so the crowd is just starting to notice before the move becomes obvious.",
+"risk": "The catalyst is sector-wide rather than company-specific, so the pop could fade if the digital-power rebound stalls.",
+"conviction": "medium",
+"mentions": 15,
+"vel": 15.0,
+"state": "hot",
+"crypto": false
 }
 ]
 }
