@@ -1990,6 +1990,39 @@
 "vel": 15.0,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-10-05",
+"ticker": "DRTS",
+"thesis": "Brand-new to the board with a concrete clinical milestone \u2014 full enrollment of a 48-patient Alpha DaRT trial plus early results \u2014 gives a real fundamental trigger behind the sudden attention. New-state tickers with hard catalysts often precede broader discovery by momentum traders.",
+"risk": "Micro-cap clinical-stage biotech with binary trial data and thin liquidity.",
+"conviction": "medium",
+"mentions": 18,
+"vel": null,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-10-05",
+"ticker": "ES",
+"thesis": "A utility surfacing with over $1B in expected cash recovery and a new Connecticut growth path is an unusual, specific fundamental catalyst, and 3.7x mention growth suggests retail is just starting to notice a regulated-infrastructure story.",
+"risk": "Utility moves are slow and rate-sensitive, so the pop may fade without follow-through news.",
+"conviction": "low",
+"mentions": 11,
+"vel": 3.7,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-05",
+"ticker": "VST",
+"thesis": "A reported ~$4B federal loan to expand nuclear output is a hard, specific catalyst that directly feeds the data-center power-demand narrative, and 35 mentions at 35x growth signals the idea is only now breaking out of niche threads. Getting in before mainstream coverage of a government-backed nuclear buildout could capture the early leg of a re-rating.",
+"risk": "The loan is still reported, not confirmed, so a denial or delay could instantly deflate the move.",
+"conviction": "high",
+"mentions": 35,
+"vel": 35.0,
+"state": "hot",
+"crypto": false
 }
 ]
 }
