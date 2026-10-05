@@ -1993,6 +1993,17 @@
 },
 {
 "date": "2026-10-05",
+"ticker": "CBRS",
+"thesis": "Cerebras is an early-stage name with a real, specific catalyst \u2014 Sam Altman publicly calling it a 'close partner' with 'deep engagement' \u2014 which is exactly the kind of credible endorsement that can precede broader AI-infrastructure attention.",
+"risk": "The move hinges on a single social-media comment rather than a signed deal or revenue event, making it fragile.",
+"conviction": "medium",
+"mentions": 12,
+"vel": 12.0,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-10-05",
 "ticker": "DRTS",
 "thesis": "Brand-new to the board with a concrete clinical milestone \u2014 full enrollment of a 48-patient Alpha DaRT trial plus early results \u2014 gives a real fundamental trigger behind the sudden attention. New-state tickers with hard catalysts often precede broader discovery by momentum traders.",
 "risk": "Micro-cap clinical-stage biotech with binary trial data and thin liquidity.",
@@ -2011,6 +2022,17 @@
 "mentions": 11,
 "vel": 3.7,
 "state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-05",
+"ticker": "TSM",
+"thesis": "TSMC's 52-week high on confirmed Musk/Terafab talks gives it a genuine deal catalyst, and at only 11 mentions it's still under the radar relative to its strategic importance in the AI chip supply chain.",
+"risk": "Talks are preliminary and could fall through, and TSM is a mega-cap where the news may already be priced in.",
+"conviction": "medium",
+"mentions": 11,
+"vel": 11.0,
+"state": "sustained",
 "crypto": false
 },
 {
