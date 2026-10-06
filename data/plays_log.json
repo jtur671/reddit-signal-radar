@@ -2045,6 +2045,39 @@
 "vel": 35.0,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-10-06",
+"ticker": "ARM",
+"thesis": "The Qualcomm licensing dispute escalating into a high-stakes trial over withheld chip tools and billions in royalties is a concrete, dated catalyst, and 16x mention growth from a low base suggests the story is only starting to circulate. A legal outcome could reprice Arm's royalty economics sharply.",
+"risk": "Trial headlines are binary and can reverse violently on any settlement or adverse ruling.",
+"conviction": "medium",
+"mentions": 16,
+"vel": 16.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-06",
+"ticker": "BEAT",
+"thesis": "HeartBeam just received FDA breakthrough device designation for its heart-attack detection technology \u2014 a hard regulatory catalyst on a brand-new, 17x-accelerating name that most traders haven't priced in yet. Being 'new' in lifecycle with a binary-positive FDA event is exactly the pre-obvious setup.",
+"risk": "Breakthrough designation is not approval, so the stock can round-trip if commercialization or trial timelines slip.",
+"conviction": "medium",
+"mentions": 17,
+"vel": 17.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-10-06",
+"ticker": "SPCX",
+"thesis": "Reports of SpaceX-TSMC 'Terafab' foundry talks plus merger speculation give a real, specific catalyst behind a 16.5x mention surge, and the sustained state implies the theme is building rather than spiking. Early positioning ahead of any confirmation could capture a large move.",
+"risk": "SPCX is a private-company proxy trade, so liquidity and headline-reversal risk are high.",
+"conviction": "low",
+"mentions": 198,
+"vel": 16.5,
+"state": "sustained",
+"crypto": false
 }
 ]
 }
