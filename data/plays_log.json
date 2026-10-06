@@ -2048,6 +2048,17 @@
 },
 {
 "date": "2026-10-06",
+"ticker": "APLD",
+"thesis": "Securing up to 1 GW of power capacity in Finland is a tangible expansion of its AI-datacenter pipeline beyond the U.S., and with 21% of float short into earnings, a positive print could force a squeeze.",
+"risk": "Heavy short interest cuts both ways, and an earnings miss or financing concerns could trigger a sharp reversal.",
+"conviction": "medium",
+"mentions": 34,
+"vel": 1.8,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-06",
 "ticker": "ARM",
 "thesis": "The Qualcomm licensing dispute escalating into a high-stakes trial over withheld chip tools and billions in royalties is a concrete, dated catalyst, and 16x mention growth from a low base suggests the story is only starting to circulate. A legal outcome could reprice Arm's royalty economics sharply.",
 "risk": "Trial headlines are binary and can reverse violently on any settlement or adverse ruling.",
@@ -2066,6 +2077,28 @@
 "mentions": 17,
 "vel": 17.0,
 "state": "new",
+"crypto": false
+},
+{
+"date": "2026-10-06",
+"ticker": "CEG",
+"thesis": "Google's 20-year, 3.59-GW nuclear PPA is a hard, multi-decade revenue catalyst that validates Constellation's nuclear fleet as AI-datacenter power supply, and at 12 mentions it's still under the radar versus the broader AI trade.",
+"risk": "Deal terms and regulatory approvals could take time, and the stock may already be pricing in a sector-wide nuclear re-rating.",
+"conviction": "high",
+"mentions": 12,
+"vel": 12.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-06",
+"ticker": "INFQ",
+"thesis": "The Honeywell Aerospace partnership gives Infleqtion a credible industrial partner to commercialize its quantum sensors, a concrete step toward defense/aerospace revenue rather than a pure hype spike.",
+"risk": "Quantum sensing commercialization timelines are long and the partnership may not translate into near-term contracts.",
+"conviction": "medium",
+"mentions": 17,
+"vel": 17.0,
+"state": "sustained",
 "crypto": false
 },
 {
