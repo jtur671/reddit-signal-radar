@@ -2111,6 +2111,39 @@
 "vel": 16.5,
 "state": "sustained",
 "crypto": false
+},
+{
+"date": "2026-10-07",
+"ticker": "BULL",
+"thesis": "Explosive 33.3\u00d7 mention growth on a concrete, market-moving catalyst (congressional national-security finding on China ties) \u2014 a binary regulatory headline that tends to reprice before the broader crowd fully digests it.",
+"risk": "Headline is negative/regulatory, so direction is uncertain and could resolve as a sharp downside gap.",
+"conviction": "medium",
+"mentions": 100,
+"vel": 33.3,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-07",
+"ticker": "PENG",
+"thesis": "Fresh 'new' lifecycle name with 8.8\u00d7 mention acceleration and a hard fundamental catalyst \u2014 upbeat Q4 results, analyst PT hikes, and a reported $10B Anthropic AI GPU deal via Volta \u2014 that most retail traders haven't connected yet.",
+"risk": "The Norway/Anthropic deal is still unconfirmed, so a denial or ambiguity could unwind the move fast.",
+"conviction": "high",
+"mentions": 35,
+"vel": 8.8,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-10-07",
+"ticker": "TP",
+"thesis": "Low-profile, sustained name with a real 13D-style catalyst \u2014 a single shareholder disclosing a 2.24M-share passive stake \u2014 which often precedes follow-on accumulation and is easy to miss at only 10 mentions.",
+"risk": "Thin liquidity and a passive (not activist) stake mean limited follow-through if no further buying emerges.",
+"conviction": "low",
+"mentions": 10,
+"vel": 3.3,
+"state": "sustained",
+"crypto": false
 }
 ]
 }
