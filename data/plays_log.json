@@ -2144,6 +2144,39 @@
 "vel": 3.3,
 "state": "sustained",
 "crypto": false
+},
+{
+"date": "2026-10-08",
+"ticker": "APLD",
+"thesis": "Applied Digital is the freshest high-conviction name here: 161 mentions at 5.2\u00d7 growth with a concrete Q1 revenue beat driven by data center growth, and it's still in 'hot' state rather than a late-stage blowoff. The AI compute buildout narrative gives it real fundamental backing, so the crowd is early to a story with actual numbers behind it.",
+"risk": "Data center revenue can be lumpy and the stock is volatile around AI-infrastructure sentiment.",
+"conviction": "high",
+"mentions": 161,
+"vel": 5.2,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-08",
+"ticker": "LLY",
+"thesis": "Eli Lilly's InnoCare licensing deal is a concrete catalyst behind an 11\u00d7 jump in mentions, and the pharma giant's pipeline news tends to be under-discussed on Reddit relative to meme names. This looks like early attention on a real deal rather than a pure spike.",
+"risk": "Deal is small relative to Lilly's size, so the move may fade quickly.",
+"conviction": "low",
+"mentions": 11,
+"vel": 11.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-08",
+"ticker": "WULF",
+"thesis": "TeraWulf's plan to double its Muskie site to 1 GW is a hard, specific catalyst that explains the 10\u00d7 mention spike, and the AI/hosting power-capacity theme is still early relative to peers. Low absolute mention count means it hasn't been fully crowded yet.",
+"risk": "Execution and financing risk on a large capacity expansion.",
+"conviction": "medium",
+"mentions": 10,
+"vel": 10.0,
+"state": "hot",
+"crypto": false
 }
 ]
 }
