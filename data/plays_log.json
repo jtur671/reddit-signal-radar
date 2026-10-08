@@ -2147,6 +2147,17 @@
 },
 {
 "date": "2026-10-08",
+"ticker": "AGI",
+"thesis": "Alamos Gold's 1-million-ounce-by-2030 production target, backed by Island Gold and Lynn Lake, is a multi-year growth catalyst that the market has not yet priced in, and 7x mention growth shows early retail discovery. The 'cooling' state suggests the initial chatter is fading, which can precede a quieter accumulation phase.",
+"risk": "Gold price weakness or project execution delays at Island Gold/Lynn Lake would undercut the production target.",
+"conviction": "medium",
+"mentions": 35,
+"vel": 7.0,
+"state": "cooling",
+"crypto": false
+},
+{
+"date": "2026-10-08",
 "ticker": "APLD",
 "thesis": "Applied Digital is the freshest high-conviction name here: 161 mentions at 5.2\u00d7 growth with a concrete Q1 revenue beat driven by data center growth, and it's still in 'hot' state rather than a late-stage blowoff. The AI compute buildout narrative gives it real fundamental backing, so the crowd is early to a story with actual numbers behind it.",
 "risk": "Data center revenue can be lumpy and the stock is volatile around AI-infrastructure sentiment.",
