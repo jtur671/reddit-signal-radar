@@ -2188,6 +2188,39 @@
 "vel": 10.0,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-10-09",
+"ticker": "AAOI",
+"thesis": "Applied Optoelectronics is seeing a 15x explosion in mentions after Lumentum's CEO said optical components are 'completely sold out' through early 2029 \u2014 a hard, verifiable supply-demand signal that lifts the entire optical-parts sector and suggests AAOI's order book could be similarly tight. The 'cooling' state means the crowd is rotating out just as the fundamental catalyst is still propagating, which is exactly the early-entry window.",
+"risk": "AAOI is a low-margin, historically volatile name that could fail to convert sector tightness into its own bookings.",
+"conviction": "high",
+"mentions": 15,
+"vel": 15.0,
+"state": "cooling",
+"crypto": false
+},
+{
+"date": "2026-10-09",
+"ticker": "CIFR",
+"thesis": "Cipher Mining is a fresh 'new' name with 5x mention growth tied to a sector-wide AI/HPC selloff, not a company-specific problem \u2014 Wells Fargo is maintaining Overweight on AI/HPC operators ahead of anticipated debt raises, meaning the dip is being driven by macro bond yields rather than deteriorating fundamentals. Buying a quality AI-compute name into a rates-driven flush before the debt-raise catalyst is a classic early-entry setup.",
+"risk": "Rising bond yields could keep pressuring capital-intensive data-center names and delay or cheapen the anticipated debt raise.",
+"conviction": "medium",
+"mentions": 10,
+"vel": 5.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-10-09",
+"ticker": "TSM",
+"thesis": "TSMC's $46.7B quarterly revenue beat is a concrete, hard-number catalyst, yet mentions are 12x with the stock 'cooling' and declining more than the broader market \u2014 a disconnect that often precedes a re-rating once the earnings beat is digested. As the AI supply-chain linchpin, TSM offers early exposure to confirmed demand strength at a temporarily depressed price.",
+"risk": "Broader market weakness and geopolitical Taiwan risk could keep the stock under pressure despite the beat.",
+"conviction": "medium",
+"mentions": 12,
+"vel": 12.0,
+"state": "cooling",
+"crypto": false
 }
 ]
 }
