@@ -2202,12 +2202,45 @@
 },
 {
 "date": "2026-10-09",
+"ticker": "ARR",
+"thesis": "Mention growth of 6.0\u00d7 is backed by a concrete earnings report that keeps the name in focus while shares trade below estimated fair value, giving a value-plus-attention setup that hasn't yet become a mainstream momentum trade.",
+"risk": "Mortgage REITs are highly rate-sensitive, so a move in yields could quickly erase the value thesis.",
+"conviction": "low",
+"mentions": 30,
+"vel": 6.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-09",
+"ticker": "ASTS",
+"thesis": "A 16.2\u00d7 mention spike on a real, sector-wide catalyst \u2014 SpaceX's spectrum acquisition triggering a satellite-connectivity selloff \u2014 means the fear-driven repricing is fresh and the crowd is just now reacting; if the competitive threat proves overstated, the oversold bounce could come before consensus turns.",
+"risk": "The catalyst is a genuine competitive threat from Starlink direct-to-cell, so the selloff may be fundamentally justified rather than a mispricing.",
+"conviction": "medium",
+"mentions": 307,
+"vel": 16.2,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-09",
 "ticker": "CIFR",
 "thesis": "Cipher Mining is a fresh 'new' name with 5x mention growth tied to a sector-wide AI/HPC selloff, not a company-specific problem \u2014 Wells Fargo is maintaining Overweight on AI/HPC operators ahead of anticipated debt raises, meaning the dip is being driven by macro bond yields rather than deteriorating fundamentals. Buying a quality AI-compute name into a rates-driven flush before the debt-raise catalyst is a classic early-entry setup.",
 "risk": "Rising bond yields could keep pressuring capital-intensive data-center names and delay or cheapen the anticipated debt raise.",
 "conviction": "medium",
 "mentions": 10,
 "vel": 5.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-10-09",
+"ticker": "HUM",
+"thesis": "A 10\u00d7 mention jump on a real fundamental catalyst \u2014 improved Medicare Advantage quality ratings driving analyst target revisions \u2014 is an early signal that the earnings/ratings narrative is just starting to get retail attention.",
+"risk": "Medicare Advantage cost trends remain a major overhang that could offset the ratings benefit.",
+"conviction": "low",
+"mentions": 10,
+"vel": 10.0,
 "state": "new",
 "crypto": false
 },
