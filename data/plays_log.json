@@ -2254,6 +2254,39 @@
 "vel": 12.0,
 "state": "cooling",
 "crypto": false
+},
+{
+"date": "2026-10-10",
+"ticker": "IQ",
+"thesis": "IQ is quietly accelerating at 1.7x with a specific, verifiable catalyst \u2014 National Day holiday data showing daily viewing time up over 12% and big screens taking nearly 60% share. It's a sustained, data-backed move rather than a hype spike, giving an early edge before the numbers get widely circulated.",
+"risk": "Chinese ADR regulatory and macro headlines can overwhelm company-specific fundamentals.",
+"conviction": "low",
+"mentions": 12,
+"vel": 1.7,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-10-10",
+"ticker": "MRNA",
+"thesis": "MRNA mentions exploded 26x overnight on a real dual catalyst \u2014 a reported NIH push into cancer vaccines plus Nasdaq-100 reentry \u2014 yet the board still flags it as 'cooling,' meaning the crowd hasn't fully piled in. That mismatch between fast-accelerating chatter and a cooling lifecycle state is exactly the early-entry window before momentum traders arrive.",
+"risk": "The move is already at a 52-week high, so chasing it risks buying the top if the NIH headline fades.",
+"conviction": "medium",
+"mentions": 26,
+"vel": 26.0,
+"state": "cooling",
+"crypto": false
+},
+{
+"date": "2026-10-10",
+"ticker": "TMUS",
+"thesis": "TMUS is a brand-new name on the board with 4x mention growth, driven by a concrete catalyst: SpaceX's spectrum deal has investors picking T-Mobile as the relative wireless winner versus AT&T and Verizon. Being 'new' with a clear fundamental angle means the thesis is still forming and not yet consensus.",
+"risk": "The SpaceX competition narrative could reverse and hit T-Mobile as a loser rather than winner.",
+"conviction": "medium",
+"mentions": 12,
+"vel": 4.0,
+"state": "new",
+"crypto": false
 }
 ]
 }
