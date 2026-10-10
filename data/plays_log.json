@@ -2268,6 +2268,17 @@
 },
 {
 "date": "2026-10-10",
+"ticker": "LA",
+"thesis": "LATOKEN is a brand-new name with a concrete corporate governance event\u2014La Rosa Holdings shareholders approving share issuances\u2014that directly alters capital structure and could trigger a re-rating. New tickers with real catalysts often see early asymmetric moves.",
+"risk": "Microcap liquidity and dilution overhang could cap upside.",
+"conviction": "low",
+"mentions": 10,
+"vel": null,
+"state": "new",
+"crypto": true
+},
+{
+"date": "2026-10-10",
 "ticker": "MRNA",
 "thesis": "MRNA mentions exploded 26x overnight on a real dual catalyst \u2014 a reported NIH push into cancer vaccines plus Nasdaq-100 reentry \u2014 yet the board still flags it as 'cooling,' meaning the crowd hasn't fully piled in. That mismatch between fast-accelerating chatter and a cooling lifecycle state is exactly the early-entry window before momentum traders arrive.",
 "risk": "The move is already at a 52-week high, so chasing it risks buying the top if the NIH headline fades.",
@@ -2275,6 +2286,17 @@
 "mentions": 26,
 "vel": 26.0,
 "state": "cooling",
+"crypto": false
+},
+{
+"date": "2026-10-10",
+"ticker": "OR",
+"thesis": "Osisko Gold Royalties is accelerating on a concrete Q3 2026 gold-equivalent delivery announcement, a real fundamental catalyst that most traders haven't priced in yet. With gold-sector Q4 positioning heating up, this early mention surge could precede broader discovery.",
+"risk": "Gold price reversal or delivery miss could quickly deflate the momentum.",
+"conviction": "medium",
+"mentions": 11,
+"vel": 2.8,
+"state": "hot",
 "crypto": false
 },
 {
