@@ -2309,6 +2309,39 @@
 "vel": 4.0,
 "state": "new",
 "crypto": false
+},
+{
+"date": "2026-10-11",
+"ticker": "ARR",
+"thesis": "ARMOUR pairs the fastest acceleration on the board (7.0\u00d7) with a concrete fundamental hook \u2014 post-earnings reassessment of a mortgage REIT trading below fair value \u2014 giving the valuation-rebound thesis room to develop.",
+"risk": "Rate-sensitive mREIT where book value can erode if yields keep climbing.",
+"conviction": "medium",
+"mentions": 21,
+"vel": 7.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-11",
+"ticker": "NFLX",
+"thesis": "Netflix's ~5% staff cut is a hard, margin-oriented catalyst being compared to the 2022 layoffs that marked a bottom, and with mentions flat vs yesterday it is not yet crowded \u2014 an early read on a cost-cutting narrative.",
+"risk": "Layoff-driven margin optimism can fade if subscriber or content-spend concerns resurface.",
+"conviction": "low",
+"mentions": 11,
+"vel": 1.0,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-10-11",
+"ticker": "TP",
+"thesis": "Ticketplus is the freshest name with a real, company-specific catalyst \u2014 a bank chairman advising on acquisitions and LatAm growth plus a new 2.24M-share passive stake \u2014 and 4.6\u00d7 mention growth signals early retail discovery before the story broadens.",
+"risk": "Thin microcap liquidity and deal talk that may not convert into a signed transaction.",
+"conviction": "medium",
+"mentions": 23,
+"vel": 4.6,
+"state": "hot",
+"crypto": false
 }
 ]
 }
