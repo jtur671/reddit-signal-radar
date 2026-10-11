@@ -2312,6 +2312,17 @@
 },
 {
 "date": "2026-10-11",
+"ticker": "AMD",
+"thesis": "AMD is in a sustained, still-accelerating discussion (1.5\u00d7) after a 6% three-session pullback tied to concrete concerns over OpenAI's revenue gap and supply-chain constraints from Lisa Su's Asia trip. Buying a quality AI name into a known, specific overhang is an early-entry setup if those worries prove transitory.",
+"risk": "Supply-chain and OpenAI-related demand fears could deepen, extending the drawdown.",
+"conviction": "low",
+"mentions": 22,
+"vel": 1.5,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-10-11",
 "ticker": "ARR",
 "thesis": "ARMOUR pairs the fastest acceleration on the board (7.0\u00d7) with a concrete fundamental hook \u2014 post-earnings reassessment of a mortgage REIT trading below fair value \u2014 giving the valuation-rebound thesis room to develop.",
 "risk": "Rate-sensitive mREIT where book value can erode if yields keep climbing.",
@@ -2329,6 +2340,17 @@
 "conviction": "low",
 "mentions": 11,
 "vel": 1.0,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-10-11",
+"ticker": "TLT",
+"thesis": "TLT is accelerating (2.2\u00d7) on a real macro catalyst\u2014the 10-year real yield hitting 3% while the S&P forward earnings yield sits at 5.3%\u2014a narrowing spread that could pull capital toward long bonds if AI valuations wobble. This is an early rotation signal rather than a crowded momentum chase.",
+"risk": "A hot CPI print or renewed yield spike could quickly reverse the bond bid.",
+"conviction": "medium",
+"mentions": 11,
+"vel": 2.2,
 "state": "sustained",
 "crypto": false
 },
