@@ -2397,6 +2397,28 @@
 "vel": 31.0,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-10-12",
+"ticker": "ON",
+"thesis": "Renegotiated Synaptics acquisition terms are a specific, verifiable catalyst that resets the valuation debate, and with only 15 mentions the story hasn't gone mainstream yet.",
+"risk": "Deals can still be repriced or rejected, and Cramer-driven interest fades fast.",
+"conviction": "medium",
+"mentions": 15,
+"vel": 15.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-12",
+"ticker": "ONDS",
+"thesis": "Two concrete catalysts \u2014 a Regna AI partnership with Palantir and an order book topping $270M \u2014 give real fundamental backing to a still-small 12-mention name, suggesting the autonomous defense revenue story is underfollowed.",
+"risk": "Tiny-cap defense names are volatile and the Palantir tie-up may be more branding than revenue.",
+"conviction": "medium",
+"mentions": 12,
+"vel": 12.0,
+"state": "hot",
+"crypto": false
 }
 ]
 }
