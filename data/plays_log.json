@@ -2364,6 +2364,39 @@
 "vel": 4.6,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-10-12",
+"ticker": "AVGO",
+"thesis": "10\u00d7 mention growth backed by two real catalysts \u2014 an AI networking platform launch at OCP Global Summit and the $42B Anthropic loan commitment \u2014 giving the move fundamental substance rather than pure momentum.",
+"risk": "CEO's capital-constraint warning could cap upside if investors read it as a growth ceiling.",
+"conviction": "medium",
+"mentions": 20,
+"vel": 10.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-12",
+"ticker": "ET",
+"thesis": "Steady 2.8\u00d7 acceleration with a hard catalyst \u2014 the $5.3B WTG Midstream acquisition plus a Q1 earnings beat \u2014 making it a less crowded, fundamentals-backed early entry versus the AI-hype names.",
+"risk": "Midstream M&A often gets a muted market reaction, so the mention spike may not translate into price follow-through.",
+"conviction": "low",
+"mentions": 14,
+"vel": 2.8,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-12",
+"ticker": "IREN",
+"thesis": "Fastest-accelerating name on the board at 31\u00d7 with a concrete, verifiable catalyst \u2014 NVIDIA AI validation for its infrastructure \u2014 and the SemiAnalysis rebuttal creates a contested narrative that early traders can position around before consensus forms.",
+"risk": "The NVIDIA validation claim is publicly disputed, so the catalyst could evaporate if SemiAnalysis is proven right.",
+"conviction": "medium",
+"mentions": 31,
+"vel": 31.0,
+"state": "hot",
+"crypto": false
 }
 ]
 }
