@@ -2419,6 +2419,39 @@
 "vel": 12.0,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-10-13",
+"ticker": "CBRS",
+"thesis": "Cerebras is showing the classic early-entry setup: high mention volume (40) with strong 6.7\u00d7 acceleration, and the catalyst is a real two-sided news event (OpenAI chip report selloff followed by a 9% reversal after Altman's comment) that has revived the bull case. The stock's sharp intraday reversal plus changing earnings trajectory suggests the narrative is still forming, not yet consensus.",
+"risk": "Sentiment is heavily tied to a single OpenAI-related headline, so a negative follow-up report could reverse the move fast.",
+"conviction": "medium",
+"mentions": 40,
+"vel": 6.7,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-13",
+"ticker": "OKLO",
+"thesis": "Oklo's 19\u00d7 mention spike is backed by a concrete, sector-defining catalyst \u2014 Google and Constellation's 3.6 GW nuclear deal \u2014 which reignited interest in nuclear names even as OKLO fell 6% that session. That divergence between rising attention and a down price is often where early entries appear before the theme broadens.",
+"risk": "The stock already fell on the same news, so the catalyst may be priced or the selloff could continue.",
+"conviction": "medium",
+"mentions": 19,
+"vel": 19.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-13",
+"ticker": "ON",
+"thesis": "ON Semiconductor's 8.5\u00d7 mention growth is tied to a specific, under-the-radar catalyst \u2014 revised terms for its Synaptics deal \u2014 that investors are debating as a potential bargain after the pullback. This is a concrete corporate action rather than a pure momentum spike, and the 'sustained' state suggests the story has legs.",
+"risk": "Deal terms could be viewed negatively on closer inspection, and the stock is in a broader chip-sector downdraft.",
+"conviction": "low",
+"mentions": 17,
+"vel": 8.5,
+"state": "sustained",
+"crypto": false
 }
 ]
 }
