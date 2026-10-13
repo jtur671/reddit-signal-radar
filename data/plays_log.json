@@ -2422,6 +2422,17 @@
 },
 {
 "date": "2026-10-13",
+"ticker": "API",
+"thesis": "Agora's Q3 beat with strong conversational AI growth is a genuine earnings catalyst, and at 3.5\u00d7 growth with a sustained state it's still under the radar versus the mega-cap AI names.",
+"risk": "Small-cap AI names can give back gains fast if the earnings pop fades.",
+"conviction": "medium",
+"mentions": 28,
+"vel": 3.5,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-10-13",
 "ticker": "CBRS",
 "thesis": "Cerebras is showing the classic early-entry setup: high mention volume (40) with strong 6.7\u00d7 acceleration, and the catalyst is a real two-sided news event (OpenAI chip report selloff followed by a 9% reversal after Altman's comment) that has revived the bull case. The stock's sharp intraday reversal plus changing earnings trajectory suggests the narrative is still forming, not yet consensus.",
 "risk": "Sentiment is heavily tied to a single OpenAI-related headline, so a negative follow-up report could reverse the move fast.",
@@ -2429,6 +2440,17 @@
 "mentions": 40,
 "vel": 6.7,
 "state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-13",
+"ticker": "EU",
+"thesis": "Uranium spot breaking above its 2007 record is a hard macro catalyst lifting enCore, and the 6.5\u00d7 mention growth in a cooling state suggests early positioning rather than a blow-off top.",
+"risk": "Uranium equities are sliding even as spot rises, signaling sector divergence.",
+"conviction": "medium",
+"mentions": 13,
+"vel": 6.5,
+"state": "cooling",
 "crypto": false
 },
 {
