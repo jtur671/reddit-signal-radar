@@ -6962,17 +6962,19 @@
 "weighted": 75.0
 },
 "2026-10-14": {
-"attention": null,
+"attention": 67.41,
 "authors": 0,
-"pageviews": null,
+"pageviews": 393,
+"pc_ratio": 0.441,
 "pct_bull": 18.0,
-"raw": 53,
-"score": 2.71,
+"raw": 17,
+"score": -7.42,
 "short_ratio": 0.6148,
-"state": "cooling",
-"ts_bull": 50.7,
-"ts_comments": 12,
-"weighted": 53.0
+"state": "sustained",
+"ts_bull": 57.6,
+"ts_comments": 18,
+"uoa": false,
+"weighted": 17.0
 }
 },
 "ATAI": {
@@ -32151,16 +32153,16 @@
 "authors": 0,
 "cramer": "buy",
 "pageviews": 1462,
-"pc_ratio": 0.595,
-"pct_bull": 22.0,
-"raw": 198,
-"score": 3.44,
+"pc_ratio": 0.557,
+"pct_bull": 21.0,
+"raw": 44,
+"score": -6.04,
 "short_ratio": 0.3432,
-"state": "cooling",
-"ts_bull": 50.7,
-"ts_comments": 11,
+"state": "sustained",
+"ts_bull": 50.5,
+"ts_comments": 25,
 "uoa": false,
-"weighted": 198.0
+"weighted": 44.0
 }
 },
 "MX": {
@@ -33019,16 +33021,16 @@
 "authors": 0,
 "cramer": "caution_concern",
 "pageviews": 1161,
-"pc_ratio": 0.74,
-"pct_bull": 20.0,
-"raw": 35,
-"score": 5.67,
+"pc_ratio": 0.803,
+"pct_bull": 18.0,
+"raw": 16,
+"score": 0.63,
 "short_ratio": 0.5791,
-"state": "sustained",
-"ts_bull": 48.1,
-"ts_comments": 6,
+"state": "hot",
+"ts_bull": 46.9,
+"ts_comments": 10,
 "uoa": false,
-"weighted": 35.0
+"weighted": 16.0
 }
 },
 "NET": {
@@ -40372,15 +40374,19 @@
 "weighted": 100.0
 },
 "2026-10-14": {
+"attention": 60.44,
 "authors": 0,
-"pct_bull": 0.0,
-"raw": 46,
-"score": 0.07,
+"pageviews": 199,
+"pc_ratio": 1.092,
+"pct_bull": 21.0,
+"raw": 21,
+"score": -6.04,
 "short_ratio": 0.6415,
-"state": "cooling",
-"ts_bull": 45.1,
-"ts_comments": 4,
-"weighted": 46.0
+"state": "hot",
+"ts_bull": 46.8,
+"ts_comments": 6,
+"uoa": false,
+"weighted": 21.0
 }
 },
 "QQQM": {
@@ -49107,15 +49113,19 @@
 "weighted": 259.0
 },
 "2026-10-14": {
+"attention": null,
 "authors": 0,
-"pct_bull": 0.0,
-"raw": 112,
-"score": -1.31,
+"pageviews": null,
+"pc_ratio": 1.414,
+"pct_bull": 22.0,
+"raw": 38,
+"score": -7.95,
 "short_ratio": 0.5587,
 "state": "cooling",
-"ts_bull": 54.5,
-"ts_comments": 13,
-"weighted": 112.0
+"ts_bull": 51.6,
+"ts_comments": 19,
+"uoa": false,
+"weighted": 38.0
 }
 },
 "SQQQ": {

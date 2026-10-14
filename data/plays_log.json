@@ -2499,6 +2499,28 @@
 },
 {
 "date": "2026-10-14",
+"ticker": "MU",
+"thesis": "Micron's China competitive threat being dismissed as a 'paper tiger' removes a key overhang on pricing power and market share, and with mentions still elevated but decelerating, the fear-driven discount may be unwinding before the market fully reprices the stock higher.",
+"risk": "The 'paper tiger' narrative could reverse if Chinese memory makers show real capacity gains, reigniting pricing-power fears.",
+"conviction": "low",
+"mentions": 44,
+"vel": 0.1,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-10-14",
+"ticker": "NBIS",
+"thesis": "Nebius is being sold off purely as collateral damage from the CoreWeave bond-yield blowup and Musk's 'yikes' comment, not from any Nebius-specific bad news \u2014 a sector-wide AI-compute panic that could mean the baby is being thrown out with the bathwater before the market re-differentiates quality names.",
+"risk": "The AI-compute selloff could deepen further if CoreWeave's credit stress spreads, dragging NBIS down regardless of its own fundamentals.",
+"conviction": "medium",
+"mentions": 16,
+"vel": 0.4,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-14",
 "ticker": "UNH",
 "thesis": "UnitedHealth's Q3 beat on margin recovery plus new AI initiatives, a Mizuho top-pick nod, and CFO comments that Wall Street underestimates 2027 upside give this a multi-pronged real catalyst with mentions up 1.5\u00d7. The combination of earnings validation and analyst endorsement suggests early accumulation before the recovery narrative broadens.",
 "risk": "Managed-care regulatory overhang and medical cost trends could still pressure margins despite the beat.",
