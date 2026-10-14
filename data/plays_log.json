@@ -2474,6 +2474,39 @@
 "vel": 8.5,
 "state": "sustained",
 "crypto": false
+},
+{
+"date": "2026-10-14",
+"ticker": "AAPL",
+"thesis": "Apple's new HomeView smart home hub powered by Apple Intelligence and facial recognition, plus an analyst note projecting a $20/month Siri tier could generate $24 billion annually, provide fresh product and monetization catalysts with mentions up 2.1\u00d7. The services-monetization angle is underappreciated and could drive a re-rating before the AI hardware cycle becomes consensus.",
+"risk": "Smart home hub is a crowded, low-margin category and the paid Siri tier is speculative with no confirmed launch.",
+"conviction": "low",
+"mentions": 27,
+"vel": 2.1,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-14",
+"ticker": "JPM",
+"thesis": "JPMorgan raised its full-year net interest income outlook despite a Q3 revenue miss, a guidance-driven catalyst that's accelerating mentions 3.9\u00d7 while the stock is still in a 'hot' but not yet universally chased state. The NII raise is a concrete fundamental signal that could re-rate the bank trade before it becomes obvious.",
+"risk": "A revenue miss could cap upside if investors focus on the top-line shortfall rather than the guidance raise.",
+"conviction": "medium",
+"mentions": 35,
+"vel": 3.9,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-14",
+"ticker": "UNH",
+"thesis": "UnitedHealth's Q3 beat on margin recovery plus new AI initiatives, a Mizuho top-pick nod, and CFO comments that Wall Street underestimates 2027 upside give this a multi-pronged real catalyst with mentions up 1.5\u00d7. The combination of earnings validation and analyst endorsement suggests early accumulation before the recovery narrative broadens.",
+"risk": "Managed-care regulatory overhang and medical cost trends could still pressure margins despite the beat.",
+"conviction": "medium",
+"mentions": 21,
+"vel": 1.5,
+"state": "hot",
+"crypto": false
 }
 ]
 }
