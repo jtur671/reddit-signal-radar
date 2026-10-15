@@ -2532,6 +2532,17 @@
 },
 {
 "date": "2026-10-15",
+"ticker": "ET",
+"thesis": "Energy Transfer's preferred units joining the 8% yield club is a specific income catalyst drawing fresh attention, and with mentions still cooling rather than spiking, this looks like an under-the-radar yield play before momentum builds.",
+"risk": "Rising rate/inflation backdrop could pressure high-yield energy names and cap the move.",
+"conviction": "medium",
+"mentions": 42,
+"vel": 42.0,
+"state": "cooling",
+"crypto": false
+},
+{
+"date": "2026-10-15",
 "ticker": "TSM",
 "thesis": "TSMC just posted record Q3 profit with a bright outlook, yet the stock is being dragged down by a broad AI-chip rout rather than any company-specific weakness \u2014 a classic early setup where strong fundamentals diverge from sentiment-driven selling. With mentions up 75\u00d7 and the panic narrative still dominating, the market may be mispricing a fundamentally sound name before the AI-selloff narrative exhausts itself.",
 "risk": "The AI-chip rout could deepen and keep dragging TSM lower regardless of its earnings beat.",
@@ -2550,6 +2561,17 @@
 "mentions": 11,
 "vel": 5.5,
 "state": "new",
+"crypto": false
+},
+{
+"date": "2026-10-15",
+"ticker": "WMT",
+"thesis": "Deutsche Bank's upgrade to Buy with a raised price target is a concrete analyst catalyst, and Walmart's low-price strategy winning consumers gives a fundamental tailwind that could sustain the move beyond the initial headline.",
+"risk": "Consumer discretionary weakness or margin pressure from low-price positioning could undercut the thesis.",
+"conviction": "medium",
+"mentions": 28,
+"vel": null,
+"state": "sustained",
 "crypto": false
 }
 ]
