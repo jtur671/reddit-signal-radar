@@ -2529,6 +2529,28 @@
 "vel": 1.5,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-10-15",
+"ticker": "TSM",
+"thesis": "TSMC just posted record Q3 profit with a bright outlook, yet the stock is being dragged down by a broad AI-chip rout rather than any company-specific weakness \u2014 a classic early setup where strong fundamentals diverge from sentiment-driven selling. With mentions up 75\u00d7 and the panic narrative still dominating, the market may be mispricing a fundamentally sound name before the AI-selloff narrative exhausts itself.",
+"risk": "The AI-chip rout could deepen and keep dragging TSM lower regardless of its earnings beat.",
+"conviction": "medium",
+"mentions": 75,
+"vel": 75.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-15",
+"ticker": "USAR",
+"thesis": "USA Rare Earth is drawing fresh scrutiny around its two major capital commitments ($2.8B Brazil deal, $1.2B South Carolina project) while the stock sits 6% down on uncertainty over unsecured milestone-based government funding \u2014 an early debate phase before the market resolves which investment matters. The 'new' lifecycle state and 5.5\u00d7 mention growth suggest positioning is just beginning.",
+"risk": "Government funding milestones may not be secured, leaving the capital commitments unfunded and the stock exposed.",
+"conviction": "low",
+"mentions": 11,
+"vel": 5.5,
+"state": "new",
+"crypto": false
 }
 ]
 }
