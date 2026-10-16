@@ -2573,6 +2573,39 @@
 "vel": null,
 "state": "sustained",
 "crypto": false
+},
+{
+"date": "2026-10-16",
+"ticker": "BETR",
+"thesis": "Early 10\u00d7 acceleration in 'new' state with two hard catalysts \u2014 preliminary Q3 results showing Tinman AI volume up 64% YoY to $790MM and Linda Yaccarino joining the board \u2014 that could re-rate a beaten-down housing fintech.",
+"risk": "Preliminary results are unaudited and the mortgage market remains rate-sensitive.",
+"conviction": "medium",
+"mentions": 10,
+"vel": 10.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-10-16",
+"ticker": "PR",
+"thesis": "Hot 6.8\u00d7 acceleration driven by a cluster of analyst price-target hikes (Wells Fargo, Citigroup to $28) ahead of Q3 earnings, a classic pre-earnings positioning setup before the move becomes obvious.",
+"risk": "Earnings could disappoint and the rally is already partly priced in.",
+"conviction": "low",
+"mentions": 27,
+"vel": 6.8,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-16",
+"ticker": "SPCE",
+"thesis": "Fresh 33\u00d7 mention spike in 'new' state backed by a concrete, verifiable catalyst \u2014 a 24-month Air Force Research Laboratory space-weather agreement using its Spaceship \u2014 giving a real fundamental hook before the crowd fully prices it.",
+"risk": "Defense/space contracts are slow to convert to revenue and the stock is prone to headline-driven volatility.",
+"conviction": "medium",
+"mentions": 33,
+"vel": 33.0,
+"state": "new",
+"crypto": false
 }
 ]
 }
