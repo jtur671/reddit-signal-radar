@@ -2587,6 +2587,17 @@
 },
 {
 "date": "2026-10-16",
+"ticker": "IBKR",
+"thesis": "Sustained (not spiky) interest with a concrete product launch \u2014 Ethereum staking \u2014 layered on top of a just-reported earnings beat, suggesting durable rather than one-day attention.",
+"risk": "Launch is incremental to a large, well-covered broker, so upside surprise may be limited.",
+"conviction": "low",
+"mentions": 13,
+"vel": 3.2,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-10-16",
 "ticker": "PR",
 "thesis": "Hot 6.8\u00d7 acceleration driven by a cluster of analyst price-target hikes (Wells Fargo, Citigroup to $28) ahead of Q3 earnings, a classic pre-earnings positioning setup before the move becomes obvious.",
 "risk": "Earnings could disappoint and the rally is already partly priced in.",
