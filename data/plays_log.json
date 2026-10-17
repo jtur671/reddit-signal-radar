@@ -2617,6 +2617,39 @@
 "vel": 33.0,
 "state": "new",
 "crypto": false
+},
+{
+"date": "2026-10-17",
+"ticker": "MA",
+"thesis": "Concrete $1.8B BVNK acquisition plus a stablecoin-based global money platform is a genuine strategic catalyst; mentions are accelerating (1.8x) but still modest, suggesting the story hasn't gone mainstream yet.",
+"risk": "Stablecoin/crypto regulatory pushback could blunt the strategic payoff.",
+"conviction": "medium",
+"mentions": 11,
+"vel": 1.8,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-17",
+"ticker": "MSCI",
+"thesis": "Fresh 10x mention surge on a concrete, finalized index-rule change excluding MSTR\u2014a real structural catalyst that can force index-fund selling and re-rating, still early as the board just caught on.",
+"risk": "Rule impact may already be largely priced into MSTR with limited read-through to MSCI itself.",
+"conviction": "medium",
+"mentions": 10,
+"vel": 10.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-10-17",
+"ticker": "XLAB",
+"thesis": "A tangible $8.2M Nvidia HGX B300 server sale to Sunon gives a real revenue catalyst behind a 20x mention spike, an early signal of AI-infrastructure demand traction.",
+"risk": "State is already cooling and the deal is small relative to hype, so momentum may fade fast.",
+"conviction": "low",
+"mentions": 20,
+"vel": 20.0,
+"state": "cooling",
+"crypto": false
 }
 ]
 }
