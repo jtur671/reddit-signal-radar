@@ -2642,6 +2642,17 @@
 },
 {
 "date": "2026-10-17",
+"ticker": "UMAC",
+"thesis": "CEO Allan Evans becoming XTI Aerospace chairman ties Unusual Machines to the XTEND AI robotics/drone-defense theme at 11x mention growth, still 'sustained' rather than euphoric \u2014 a plausible early read-through for a small-cap narrative stock.",
+"risk": "Catalyst is a governance/board appointment, not a revenue event, so the link may fade quickly.",
+"conviction": "low",
+"mentions": 11,
+"vel": 11.0,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-10-17",
 "ticker": "XLAB",
 "thesis": "A tangible $8.2M Nvidia HGX B300 server sale to Sunon gives a real revenue catalyst behind a 20x mention spike, an early signal of AI-infrastructure demand traction.",
 "risk": "State is already cooling and the deal is small relative to hype, so momentum may fade fast.",
