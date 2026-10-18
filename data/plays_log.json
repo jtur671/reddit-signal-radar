@@ -2661,6 +2661,28 @@
 "vel": 20.0,
 "state": "cooling",
 "crypto": false
+},
+{
+"date": "2026-10-18",
+"ticker": "AAOI",
+"thesis": "Applied Optoelectronics has a hard, identifiable catalyst\u2014a completed $600M follow-on offering\u2014and the stock has been beaten down (12% drop, price-target cut), creating a potential oversold early-entry setup as the dilution overhang clears. Mention growth of 2.2\u00d7 shows attention building off a real event, not a pure spike.",
+"risk": "Post-offering weakness and analyst downgrades could extend the decline before any recovery.",
+"conviction": "low",
+"mentions": 11,
+"vel": 2.2,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-10-18",
+"ticker": "ONDS",
+"thesis": "Ondas has a concrete, substantive catalyst\u2014launching Regna AI with Palantir plus EASA certification of its missile protection system\u2014yet mentions are only flat vs yesterday (1.0\u00d7) and the name is still in 'sustained' rather than fully hot, meaning the market hasn't fully priced the dual defense/AI narrative. This is a real fundamental story building before the crowd piles in.",
+"risk": "Momentum has stalled (flat mention growth), so the catalyst may already be partly priced without fresh volume to confirm.",
+"conviction": "medium",
+"mentions": 15,
+"vel": 1.0,
+"state": "sustained",
+"crypto": false
 }
 ]
 }
