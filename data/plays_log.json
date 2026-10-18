@@ -2675,6 +2675,17 @@
 },
 {
 "date": "2026-10-18",
+"ticker": "EU",
+"thesis": "enCore Energy is the freshest fast-accelerating single-name with a concrete, verifiable catalyst (\u20ac40M EU antitrust fine on Kingspan) drawing scrutiny and fresh attention, and at 3.4\u00d7 growth with only 27 mentions it's still early relative to mainstream coverage.",
+"risk": "The catalyst is a governance/regulatory negative that could just as easily pressure the stock as spark a squeeze.",
+"conviction": "medium",
+"mentions": 27,
+"vel": 3.4,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-18",
 "ticker": "ONDS",
 "thesis": "Ondas has a concrete, substantive catalyst\u2014launching Regna AI with Palantir plus EASA certification of its missile protection system\u2014yet mentions are only flat vs yesterday (1.0\u00d7) and the name is still in 'sustained' rather than fully hot, meaning the market hasn't fully priced the dual defense/AI narrative. This is a real fundamental story building before the crowd piles in.",
 "risk": "Momentum has stalled (flat mention growth), so the catalyst may already be partly priced without fresh volume to confirm.",
