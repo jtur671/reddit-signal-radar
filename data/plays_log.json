@@ -2719,6 +2719,28 @@
 },
 {
 "date": "2026-10-19",
+"ticker": "GLD",
+"thesis": "14x mention growth backed by real fundamental drivers\u2014India flipping to a gold premium and strong Chinese official buying\u2014signals a macro tailwind that's just starting to get noticed.",
+"risk": "Gold is a crowded macro trade that can reverse sharply on any dollar or rate surprise.",
+"conviction": "medium",
+"mentions": 14,
+"vel": 14.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-19",
+"ticker": "IBKR",
+"thesis": "Mentions exploded 11x on a concrete earnings catalyst with higher profit and a dividend increase, and at just 11 mentions it's still under the radar for most traders.",
+"risk": "Earnings already reported, so the move may be largely priced in by the time retail piles in.",
+"conviction": "medium",
+"mentions": 11,
+"vel": 11.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-19",
 "ticker": "ORCL",
 "thesis": "3.7x acceleration into an upcoming product event flagged as a looming catalyst \u2014 a dated, identifiable trigger that lets you get in before the news is obvious.",
 "risk": "Event-driven pops often fade fast if the announcement underwhelms expectations.",
