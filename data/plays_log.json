@@ -2694,6 +2694,39 @@
 "vel": 1.0,
 "state": "sustained",
 "crypto": false
+},
+{
+"date": "2026-10-19",
+"ticker": "AM",
+"thesis": "4x mention growth into a concrete scheduled Q3 earnings event gives traders a defined catalyst to position ahead of, with midstream energy tailwinds supporting the setup.",
+"risk": "Pre-earnings positioning can reverse sharply if the print disappoints.",
+"conviction": "medium",
+"mentions": 16,
+"vel": 4.0,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-10-19",
+"ticker": "ET",
+"thesis": "Mentions exploded 6.7x on a downgrade-after-a-big-run narrative plus midstream/LNG export tailwinds \u2014 a real fundamental theme rather than a pure pump, and the 'cooling' state means the crowd is early, not yet chasing.",
+"risk": "A fresh analyst downgrade could cap upside and signal the run is already stretched.",
+"conviction": "medium",
+"mentions": 20,
+"vel": 6.7,
+"state": "cooling",
+"crypto": false
+},
+{
+"date": "2026-10-19",
+"ticker": "ORCL",
+"thesis": "3.7x acceleration into an upcoming product event flagged as a looming catalyst \u2014 a dated, identifiable trigger that lets you get in before the news is obvious.",
+"risk": "Event-driven pops often fade fast if the announcement underwhelms expectations.",
+"conviction": "low",
+"mentions": 11,
+"vel": 3.7,
+"state": "cooling",
+"crypto": false
 }
 ]
 }
