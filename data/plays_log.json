@@ -2774,6 +2774,17 @@
 },
 {
 "date": "2026-10-20",
+"ticker": "GL",
+"thesis": "Q3 earnings due tomorrow with a fresh JPMorgan Overweight and $195 PT raise gives a dated, verifiable catalyst, and 10x mention growth from a 'new' state suggests the setup is being discovered right before the print.",
+"risk": "Binary earnings event tomorrow \u2014 a miss or soft guidance would immediately invalidate the early entry.",
+"conviction": "low",
+"mentions": 10,
+"vel": 10.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-10-20",
 "ticker": "NFLX",
 "thesis": "Mentions tripled into a hard, dated catalyst (earnings after hours today) with a fresh Globo content deal that hasn't yet been priced in, so positioning ahead of the print is a genuine early-entry setup.",
 "risk": "Binary earnings outcome could gap the stock sharply against you.",
@@ -2781,6 +2792,28 @@
 "mentions": 20,
 "vel": 3.3,
 "state": "cooling",
+"crypto": false
+},
+{
+"date": "2026-10-20",
+"ticker": "RIVN",
+"thesis": "A concrete M&A speculation from a high-profile early Uber investor (Calacanis floating Waymo/Rivian) is exactly the kind of catalyst that can precede a real re-rating, and 23x mention growth from a hot state signals the idea is just starting to spread.",
+"risk": "M&A speculation from a single commentator may fizzle with no follow-through, leaving a pure rumor pop.",
+"conviction": "medium",
+"mentions": 23,
+"vel": 23.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-20",
+"ticker": "RMD",
+"thesis": "A tangible product event (US launch of the AirTouch F40 CPAP mask) plus an imminent earnings preview gives a real fundamental hook, and 10x mention growth from a hot state means retail attention is only now building.",
+"risk": "Earnings preview could disappoint and the product launch is a niche incremental rather than a major revenue driver.",
+"conviction": "medium",
+"mentions": 10,
+"vel": 10.0,
+"state": "hot",
 "crypto": false
 }
 ]
