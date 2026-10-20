@@ -2749,6 +2749,39 @@
 "vel": 3.7,
 "state": "cooling",
 "crypto": false
+},
+{
+"date": "2026-10-20",
+"ticker": "APLD",
+"thesis": "5x mention growth on a concrete company-specific event (objection to tokenized stock on OKX-ICE) layered on an AI-infra sentiment rebound from the CoreWeave upgrade, giving a real narrative to ride before it broadens.",
+"risk": "Cooling lifecycle state and reliance on peer sentiment could mean the move fades fast.",
+"conviction": "low",
+"mentions": 35,
+"vel": 5.0,
+"state": "cooling",
+"crypto": false
+},
+{
+"date": "2026-10-20",
+"ticker": "CRWV",
+"thesis": "Massive 4x mention acceleration with a concrete fundamental backdrop: Wells Fargo's 162% upside call plus a 57% drawdown has investors actively debating whether the AI-infra selloff is a bottom, giving you a real catalyst to front-run a sentiment reversal.",
+"risk": "AI infrastructure sentiment could keep deteriorating and the 'buy the dip' thesis may be premature.",
+"conviction": "medium",
+"mentions": 155,
+"vel": 4.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-20",
+"ticker": "NFLX",
+"thesis": "Mentions tripled into a hard, dated catalyst (earnings after hours today) with a fresh Globo content deal that hasn't yet been priced in, so positioning ahead of the print is a genuine early-entry setup.",
+"risk": "Binary earnings outcome could gap the stock sharply against you.",
+"conviction": "medium",
+"mentions": 20,
+"vel": 3.3,
+"state": "cooling",
+"crypto": false
 }
 ]
 }
