@@ -2815,6 +2815,39 @@
 "vel": 10.0,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-10-21",
+"ticker": "BYD",
+"thesis": "Sustained-state name accelerating 14\u00d7 on a concrete Morgan Stanley upgrade to Overweight, a real analyst catalyst that often precedes multi-day institutional accumulation. Still low absolute mention count (14), so it's early relative to the broader board.",
+"risk": "Upgrade-driven pops often fade without follow-through buying.",
+"conviction": "medium",
+"mentions": 14,
+"vel": 14.0,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-10-21",
+"ticker": "LRCX",
+"thesis": "Brand-new name with 7.5\u00d7 mention acceleration into an imminent earnings catalyst, meaning the crowd is just starting to position before the print rather than reacting to it. Analyst forecast revisions ahead of the call give a plausible fundamental driver for a pre-earnings drift.",
+"risk": "Earnings could disappoint and reverse the pre-print positioning quickly.",
+"conviction": "medium",
+"mentions": 15,
+"vel": 7.5,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-10-21",
+"ticker": "USDC",
+"thesis": "New-state name with 10\u00d7 acceleration backed by a concrete catalyst \u2014 Circle's USDC expansion to 40 markets and the AI-agent/Arc blockchain positioning \u2014 a genuine narrative with room to build. Low mention count suggests the theme is under the radar.",
+"risk": "Crypto-adjacent sentiment can sour fast and the AI-agent angle is speculative.",
+"conviction": "low",
+"mentions": 10,
+"vel": 10.0,
+"state": "new",
+"crypto": true
 }
 ]
 }
