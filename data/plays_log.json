@@ -2851,6 +2851,17 @@
 },
 {
 "date": "2026-10-22",
+"ticker": "AAOI",
+"thesis": "The $600M equity raise fuels valuation debate while bulls argue deep undervaluation, and it rides a broader AI-optics rebound \u2014 a concrete, name-specific catalyst with room to re-rate as capital gets deployed into AI datacom demand.",
+"risk": "Equity raise dilutes holders and 'cooling' mention state signals fading attention.",
+"conviction": "low",
+"mentions": 10,
+"vel": 10.0,
+"state": "cooling",
+"crypto": false
+},
+{
+"date": "2026-10-22",
 "ticker": "BABA",
 "thesis": "Fresh 'new' lifecycle name with an 11x mention spike and a concrete, hard catalyst\u2014a reported $35B Nvidia chip order plus raised AI ambition\u2014while the stock is still sliding, meaning the market hasn't priced in the AI buildout narrative yet.",
 "risk": "The order is a report, not confirmed, and the stock's slide could reflect skepticism or broader China/regulatory overhang.",
@@ -2858,6 +2869,17 @@
 "mentions": 11,
 "vel": 11.0,
 "state": "new",
+"crypto": false
+},
+{
+"date": "2026-10-22",
+"ticker": "FCF",
+"thesis": "A clean, dated catalyst \u2014 upcoming Q3 earnings with expected growth \u2014 gives a defined event window before the move is obvious, and mention growth is accelerating into it.",
+"risk": "Regional bank earnings are macro-sensitive and a miss would reverse any pre-earnings drift.",
+"conviction": "low",
+"mentions": 21,
+"vel": 2.6,
+"state": "hot",
 "crypto": false
 },
 {
@@ -2880,6 +2902,17 @@
 "mentions": 346,
 "vel": 6.5,
 "state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-22",
+"ticker": "NOK",
+"thesis": "Nokia's Q3 shows AI-driven network demand lifting sales 10% with its AI business up 126%, a real fundamental inflection that the broader market still frames as a legacy telecom rather than an AI data-center play. Mention growth is strong and the story is underappreciated versus crowded AI names.",
+"risk": "Stock is already in 'cooling' state, so the mention surge may fade before price follows through.",
+"conviction": "medium",
+"mentions": 19,
+"vel": 6.3,
+"state": "cooling",
 "crypto": false
 }
 ]
