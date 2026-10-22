@@ -2848,6 +2848,39 @@
 "vel": 10.0,
 "state": "new",
 "crypto": true
+},
+{
+"date": "2026-10-22",
+"ticker": "BABA",
+"thesis": "Fresh 'new' lifecycle name with an 11x mention spike and a concrete, hard catalyst\u2014a reported $35B Nvidia chip order plus raised AI ambition\u2014while the stock is still sliding, meaning the market hasn't priced in the AI buildout narrative yet.",
+"risk": "The order is a report, not confirmed, and the stock's slide could reflect skepticism or broader China/regulatory overhang.",
+"conviction": "medium",
+"mentions": 11,
+"vel": 11.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-10-22",
+"ticker": "LRCX",
+"thesis": "Hot name with 6.1x acceleration and a real earnings beat plus above-consensus guidance, but the stock dropped ~7% on supply-chain timing and China fears\u2014a classic case where the selloff may be overdone versus the underlying beat.",
+"risk": "Supply-chain deferrals and China slowdown could prove structural rather than timing, keeping the stock pressured.",
+"conviction": "medium",
+"mentions": 73,
+"vel": 6.1,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-22",
+"ticker": "META",
+"thesis": "Highest absolute mention count (346) with 6.5x growth, backed by a genuine Q3 beat, rising Q4 guidance, and an external 22% upside call tied to Muse AI adoption\u2014momentum plus fundamental confirmation.",
+"risk": "Already 'hot' and widely covered, so much of the beat may be priced in, limiting early-entry edge.",
+"conviction": "low",
+"mentions": 346,
+"vel": 6.5,
+"state": "hot",
+"crypto": false
 }
 ]
 }
