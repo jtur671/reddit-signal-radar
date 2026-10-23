@@ -2914,6 +2914,39 @@
 "vel": 6.3,
 "state": "cooling",
 "crypto": false
+},
+{
+"date": "2026-10-23",
+"ticker": "BE",
+"thesis": "Hot and still accelerating at 6x with a genuine earnings catalyst\u2014138% revenue growth and raised guidance on on-site power demand\u2014positioning it as an early AI-power beneficiary before the theme broadens.",
+"risk": "Already extended after earnings and vulnerable to the same AI-sentiment selloff hitting peers.",
+"conviction": "medium",
+"mentions": 126,
+"vel": 6.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-23",
+"ticker": "LMT",
+"thesis": "Fresh new-state name with a hard fundamental catalyst\u2014Q3 beat plus raised outlook and an 850-jet F-35 deal\u2014that the market may still be digesting, giving an early entry before defense strength becomes consensus.",
+"risk": "Defense headlines can fade fast and the stock may already gap on the beat.",
+"conviction": "medium",
+"mentions": 19,
+"vel": 19.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-10-23",
+"ticker": "RSP",
+"thesis": "New and exploding 30x on a real macro rotation out of mega-cap tech into equal-weight breadth, an early signal if the broadening trade is just beginning.",
+"risk": "Rotation could reverse quickly if mega-cap tech rebounds and drags breadth back down.",
+"conviction": "low",
+"mentions": 30,
+"vel": 30.0,
+"state": "new",
+"crypto": false
 }
 ]
 }
