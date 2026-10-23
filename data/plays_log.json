@@ -2928,6 +2928,28 @@
 },
 {
 "date": "2026-10-23",
+"ticker": "GEV",
+"thesis": "Mentions are accelerating 8.3x into Q3 earnings with the AI-driven power demand narrative as a structural tailwind, so positioning is building before the print rather than after a confirmed move.",
+"risk": "Earnings could disappoint or guidance could already be priced in.",
+"conviction": "medium",
+"mentions": 25,
+"vel": 8.3,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-10-23",
+"ticker": "HR",
+"thesis": "A concrete Deutsche Bank upgrade to Buy with a raised $23 target gives a real catalyst behind the 5x mention growth, and the stock is still in a sustained (not yet euphoric) state.",
+"risk": "Conflicting Wells Fargo equal-weight/lowered target could cap upside.",
+"conviction": "low",
+"mentions": 10,
+"vel": 5.0,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-10-23",
 "ticker": "LMT",
 "thesis": "Fresh new-state name with a hard fundamental catalyst\u2014Q3 beat plus raised outlook and an 850-jet F-35 deal\u2014that the market may still be digesting, giving an early entry before defense strength becomes consensus.",
 "risk": "Defense headlines can fade fast and the stock may already gap on the beat.",
@@ -2946,6 +2968,17 @@
 "mentions": 30,
 "vel": 30.0,
 "state": "new",
+"crypto": false
+},
+{
+"date": "2026-10-23",
+"ticker": "WDC",
+"thesis": "A beat-and-raise quarter with a 17% dividend hike and guidance for up to 72% Q2 revenue growth that nonetheless sold off creates a classic early-entry dislocation \u2014 the fundamentals are accelerating while price lags, and 12x mention growth signals the crowd is just waking up.",
+"risk": "The selloff may reflect real margin or memory-cycle concerns rather than a mispricing.",
+"conviction": "high",
+"mentions": 170,
+"vel": 12.1,
+"state": "hot",
 "crypto": false
 }
 ]
