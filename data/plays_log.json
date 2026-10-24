@@ -2983,6 +2983,17 @@
 },
 {
 "date": "2026-10-24",
+"ticker": "ASTS",
+"thesis": "Cooling mention count masks a genuinely bullish catalyst \u2014 Roth flagging SpaceX's cell-site push as a win for ASTS plus Vodafone joining a European satellite-spectrum bid \u2014 so the narrative is strengthening while chatter cools, a classic early-entry setup.",
+"risk": "Speculative, pre-revenue story that can whipsaw on any spectrum-bid or financing headline.",
+"conviction": "low",
+"mentions": 39,
+"vel": 0.8,
+"state": "cooling",
+"crypto": false
+},
+{
+"date": "2026-10-24",
 "ticker": "CRDO",
 "thesis": "MaxLinear targeting Credo's AEC market has hammered the stock to a six-month low, but the competitive threat is being priced as existential while Credo's dominant share and 1.6T ramp remain intact \u2014 a contrarian early setup if the fear proves overdone.",
 "risk": "Genuine share loss to MaxLinear would validate the selloff and extend the decline.",
