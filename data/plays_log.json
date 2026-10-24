@@ -2980,6 +2980,39 @@
 "vel": 12.1,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-10-24",
+"ticker": "CRDO",
+"thesis": "MaxLinear targeting Credo's AEC market has hammered the stock to a six-month low, but the competitive threat is being priced as existential while Credo's dominant share and 1.6T ramp remain intact \u2014 a contrarian early setup if the fear proves overdone.",
+"risk": "Genuine share loss to MaxLinear would validate the selloff and extend the decline.",
+"conviction": "low",
+"mentions": 20,
+"vel": 5.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-24",
+"ticker": "FIGR",
+"thesis": "Brand-new name with a concrete fundamental catalyst (SMB financing exceeding $500M annualized, $135M in Q3) that the broader market likely hasn't priced in yet, giving an early entry before the story spreads.",
+"risk": "Thin liquidity and a single data point may not sustain momentum if volume fades.",
+"conviction": "medium",
+"mentions": 22,
+"vel": null,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-10-24",
+"ticker": "ONDS",
+"thesis": "Fresh EASA certification for its American Robotics drone systems is a tangible regulatory milestone that expands defense-market access, and at only 11 mentions it's still under the radar with accelerating chatter.",
+"risk": "Certification headlines can fade fast without a follow-on contract to confirm revenue.",
+"conviction": "medium",
+"mentions": 11,
+"vel": 1.8,
+"state": "hot",
+"crypto": false
 }
 ]
 }
