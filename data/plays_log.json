@@ -3038,6 +3038,17 @@
 },
 {
 "date": "2026-10-25",
+"ticker": "SNDK",
+"thesis": "Analyst coverage framing Sandisk as a top AI-memory name with record margins, amplified by Jensen Huang rebutting the bear case during the memory selloff, gives a concrete narrative to accumulate before the theme broadens.",
+"risk": "Mention growth is decelerating (0.5\u00d7) and the thesis leans on analyst framing rather than hard new numbers.",
+"conviction": "low",
+"mentions": 12,
+"vel": 0.5,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-10-25",
 "ticker": "SOXX",
 "thesis": "Fresh 1.4\u00d7 acceleration driven by a real memory/storage rebound post-Western Digital earnings, giving an early sector-level entry before the chip recovery broadens.",
 "risk": "Memory rally fades if sector selloff resumes.",
