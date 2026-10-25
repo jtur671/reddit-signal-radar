@@ -3024,6 +3024,39 @@
 "vel": 1.8,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-10-25",
+"ticker": "NOW",
+"thesis": "Mentions are accelerating into the Oct 28 earnings catalyst, where the agentic AI narrative plus Armis acquisition progress could re-rate the stock before the print becomes obvious.",
+"risk": "Earnings could disappoint on premium-valuation scrutiny.",
+"conviction": "medium",
+"mentions": 13,
+"vel": 1.2,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-25",
+"ticker": "SOXX",
+"thesis": "Fresh 1.4\u00d7 acceleration driven by a real memory/storage rebound post-Western Digital earnings, giving an early sector-level entry before the chip recovery broadens.",
+"risk": "Memory rally fades if sector selloff resumes.",
+"conviction": "medium",
+"mentions": 10,
+"vel": 1.4,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-25",
+"ticker": "SPCX",
+"thesis": "Musk's concrete proposal to distribute SpaceX equity to children is a novel, shareholder-relevant catalyst that could drive retail attention before it's widely priced in.",
+"risk": "Proposal is speculative and may never materialize.",
+"conviction": "low",
+"mentions": 19,
+"vel": 0.4,
+"state": "cooling",
+"crypto": false
 }
 ]
 }
