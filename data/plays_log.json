@@ -3068,6 +3068,39 @@
 "vel": 0.4,
 "state": "cooling",
 "crypto": false
+},
+{
+"date": "2026-10-26",
+"ticker": "EWZ",
+"thesis": "The Brazil ETF is a fresh, fast-accelerating macro vehicle (20x mentions, new state) with a clear catalyst \u2014 Lula's re-election being read as bullish for the commodity/resource growth story, a broad theme that tends to build over days rather than fade instantly.",
+"risk": "The Lula-driven rally could reverse quickly if election interpretation shifts or commodity prices stall.",
+"conviction": "low",
+"mentions": 20,
+"vel": 20.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-10-26",
+"ticker": "NBIS",
+"thesis": "Nebius is the freshest high-conviction AI-compute name here, with 59 mentions and 11.8x acceleration backed by concrete catalysts ($3.5B secured debt from Citi plus on-site power at its 300 MW NJ data center) rather than pure hype. Those real financing and infrastructure milestones suggest the market is still digesting fundamental progress, giving early entry before the story broadens.",
+"risk": "Neocloud financing sentiment could sour further if Musk-style skepticism spreads and compresses the whole sector.",
+"conviction": "high",
+"mentions": 59,
+"vel": 11.8,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-26",
+"ticker": "NU",
+"thesis": "Nu Holdings pairs a genuine fundamental milestone (first-ever $1B+ earnings quarter) with a U.S. launch, yet the stock is being dragged down ~12% by Brazil election noise and a CTO resignation \u2014 a classic catalyst-vs-noise dislocation that early traders can exploit.",
+"risk": "Brazil macro/political uncertainty and the CTO departure could keep pressuring the stock despite strong results.",
+"conviction": "medium",
+"mentions": 20,
+"vel": 20.0,
+"state": "hot",
+"crypto": false
 }
 ]
 }
