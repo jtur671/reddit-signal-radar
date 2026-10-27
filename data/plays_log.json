@@ -3123,6 +3123,28 @@
 "vel": 20.0,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-10-27",
+"ticker": "AMKR",
+"thesis": "Amkor is new to the board with 10x acceleration, and the mixed Q3 plus renewed attention to its $3B AI packaging deal gives a plausible fundamental hook for an early AI-packaging narrative to build.",
+"risk": "Revenue miss and soft guidance could keep sentiment negative despite margin expansion.",
+"conviction": "low",
+"mentions": 10,
+"vel": 10.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-10-27",
+"ticker": "CLS",
+"thesis": "Celestica is a brand-new name on the board with explosive 32x mention growth, and the catalyst is a genuine earnings/revenue beat \u2014 a real fundamental event rather than a pure momentum spike, giving early entrants a fresh, catalyst-backed setup.",
+"risk": "Earnings beats can be fully priced in fast, so the early edge may already be fading.",
+"conviction": "medium",
+"mentions": 32,
+"vel": 32.0,
+"state": "new",
+"crypto": false
 }
 ]
 }
