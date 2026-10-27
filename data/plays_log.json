@@ -3137,6 +3137,17 @@
 },
 {
 "date": "2026-10-27",
+"ticker": "API",
+"thesis": "Agora shows sustained 3.8x acceleration anchored by CEO-linked insider buying, a concrete bullish signal that often precedes broader recognition of the conversational AI growth story.",
+"risk": "Insider buying is a single data point and the name remains thinly followed.",
+"conviction": "low",
+"mentions": 19,
+"vel": 3.8,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-10-27",
 "ticker": "CLS",
 "thesis": "Celestica is a brand-new name on the board with explosive 32x mention growth, and the catalyst is a genuine earnings/revenue beat \u2014 a real fundamental event rather than a pure momentum spike, giving early entrants a fresh, catalyst-backed setup.",
 "risk": "Earnings beats can be fully priced in fast, so the early edge may already be fading.",
