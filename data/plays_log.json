@@ -3156,6 +3156,39 @@
 "vel": 32.0,
 "state": "new",
 "crypto": false
+},
+{
+"date": "2026-10-28",
+"ticker": "BBAI",
+"thesis": "Brand-new name with a concrete revenue beat and raised FY2026 guidance despite a wider loss \u2014 early chatter at only 10 mentions means it's under the radar before momentum traders pile in.",
+"risk": "Wider loss and thin liquidity could keep the stock volatile and the beat may be dismissed.",
+"conviction": "medium",
+"mentions": 10,
+"vel": null,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-10-28",
+"ticker": "GM",
+"thesis": "7.5\u00d7 acceleration on a real strategic catalyst (hybrid SUV expansion + Nasdaq listing switch to rebrand as tech) \u2014 a narrative shift that tends to build over days rather than one session.",
+"risk": "Rebranding/tech-pivot stories often disappoint if fundamentals don't follow.",
+"conviction": "low",
+"mentions": 30,
+"vel": 7.5,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-28",
+"ticker": "SOFI",
+"thesis": "Fast 5.9\u00d7 acceleration on a genuine fundamental beat (record 1.2M new members + raised 2026 guidance) \u2014 a real catalyst, not a meme spike, so the retail buzz likely precedes broader analyst/price follow-through.",
+"risk": "Earnings-driven pops often fade as the initial retail enthusiasm cools and the market digests valuation.",
+"conviction": "high",
+"mentions": 47,
+"vel": 5.9,
+"state": "hot",
+"crypto": false
 }
 ]
 }
