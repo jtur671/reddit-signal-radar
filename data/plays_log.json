@@ -3181,6 +3181,17 @@
 },
 {
 "date": "2026-10-28",
+"ticker": "HBM",
+"thesis": "Copper mine approval underpins a re-rating narrative on a 14x mention surge in a sustained state, suggesting the growth story is gaining traction before valuation fully resets.",
+"risk": "Commodity price swings and execution risk on the newly approved mine.",
+"conviction": "low",
+"mentions": 14,
+"vel": 14.0,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-10-28",
 "ticker": "SOFI",
 "thesis": "Fast 5.9\u00d7 acceleration on a genuine fundamental beat (record 1.2M new members + raised 2026 guidance) \u2014 a real catalyst, not a meme spike, so the retail buzz likely precedes broader analyst/price follow-through.",
 "risk": "Earnings-driven pops often fade as the initial retail enthusiasm cools and the market digests valuation.",
@@ -3188,6 +3199,28 @@
 "mentions": 47,
 "vel": 5.9,
 "state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-28",
+"ticker": "VRT",
+"thesis": "A 61% revenue jump and raised 2026 outlook give Vertiv a hard fundamental catalyst behind its 22x mention spike, positioning it as a cleaner AI-infrastructure beneficiary before the broader crowd rotates in.",
+"risk": "AI-capex sentiment could reverse and drag high-multiple infrastructure names down.",
+"conviction": "medium",
+"mentions": 22,
+"vel": 22.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-28",
+"ticker": "WEN",
+"thesis": "Trian's non-binding $7.35/share cash buyout proposal plus a 16.23% stake creates a live merger-arb setup where the market may still be pricing skepticism on deal completion, offering early entry before terms firm up.",
+"risk": "Proposal is non-binding and could be rejected or repriced, collapsing the premium.",
+"conviction": "medium",
+"mentions": 15,
+"vel": 15.0,
+"state": "cooling",
 "crypto": false
 }
 ]
