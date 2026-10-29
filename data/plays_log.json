@@ -3222,6 +3222,39 @@
 "vel": 15.0,
 "state": "cooling",
 "crypto": false
+},
+{
+"date": "2026-10-29",
+"ticker": "LITE",
+"thesis": "Fresh 'new' lifecycle name with 45x mention growth on a concrete M&A catalyst \u2014 Marvell in advanced talks to acquire Lumentum \u2014 meaning the move is event-driven and still early in retail awareness, with MRVL chatter confirming deal validity.",
+"risk": "Deal talks could collapse or fall through, erasing the takeover premium quickly.",
+"conviction": "medium",
+"mentions": 45,
+"vel": 45.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-10-29",
+"ticker": "ORCL",
+"thesis": "Sustained-state name with 38.5x mention acceleration backed by a concrete, hard catalyst \u2014 the $225B-by-2030 AI cloud revenue projection \u2014 giving a fundamental narrative that can build beyond a single-day spike.",
+"risk": "Aggressive long-range guidance may be dismissed as hype if AI cloud execution disappoints.",
+"conviction": "medium",
+"mentions": 77,
+"vel": 38.5,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-10-29",
+"ticker": "VRT",
+"thesis": "Hot name with 10.5x growth on a real earnings-driven surge plus a broader tech-oversold rebound and Fed hold, positioning it as an early AI-infrastructure beneficiary before the move broadens.",
+"risk": "Momentum is partly macro/sympathy-driven and could fade if the tech rebound stalls.",
+"conviction": "low",
+"mentions": 21,
+"vel": 10.5,
+"state": "hot",
+"crypto": false
 }
 ]
 }
