@@ -3225,6 +3225,28 @@
 },
 {
 "date": "2026-10-29",
+"ticker": "AAOI",
+"thesis": "Applied Optoelectronics is riding the same optical-sector rally triggered by Lumentum's 'completely sold out' AI components, but at only 11 mentions and 'cooling' state it's still under the radar relative to the catalyst. Early read on an AI-infrastructure bottleneck theme with room to broaden.",
+"risk": "Sector sympathy rally can fade fast if LITE/Marvell news sours.",
+"conviction": "low",
+"mentions": 11,
+"vel": 11.0,
+"state": "cooling",
+"crypto": false
+},
+{
+"date": "2026-10-29",
+"ticker": "FCF",
+"thesis": "First Commonwealth is 'hot' at 5.2\u00d7 on a real, company-specific catalyst \u2014 Q3 earnings plus a dividend declaration and a $25M buyback authorization \u2014 a concrete capital-return signal largely ignored by the broader board.",
+"risk": "Small-cap bank with limited liquidity; buyback is modest.",
+"conviction": "low",
+"mentions": 47,
+"vel": 5.2,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-29",
 "ticker": "LITE",
 "thesis": "Fresh 'new' lifecycle name with 45x mention growth on a concrete M&A catalyst \u2014 Marvell in advanced talks to acquire Lumentum \u2014 meaning the move is event-driven and still early in retail awareness, with MRVL chatter confirming deal validity.",
 "risk": "Deal talks could collapse or fall through, erasing the takeover premium quickly.",
