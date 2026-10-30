@@ -3277,6 +3277,39 @@
 "vel": 10.5,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-10-30",
+"ticker": "RSP",
+"thesis": "The equal-weight rotation is a real, measurable theme (non-AI constituents outperforming the S&P by ~6 points this month) backed by Alphabet's record drop and broad AI-bubble fears, making it an early way to play the rotation before it becomes consensus.",
+"risk": "A sharp megacap rebound would quickly unwind the rotation trade, and the board state is already 'cooling.'",
+"conviction": "low",
+"mentions": 10,
+"vel": 10.0,
+"state": "cooling",
+"crypto": false
+},
+{
+"date": "2026-10-30",
+"ticker": "SAP",
+"thesis": "Freshest name on the board (new state, 51x mention growth) with a concrete AI-product catalyst rather than a pure sentiment spike; the stock's dip on peer earnings (ServiceNow/Fortinet) creates an early entry before the AI narrative gets priced in.",
+"risk": "The selloff is being driven by read-through from peer software results, so a weak enterprise-software tape could keep dragging SAP down regardless of its own AI news.",
+"conviction": "medium",
+"mentions": 51,
+"vel": 51.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-10-30",
+"ticker": "UI",
+"thesis": "Small-cap with 7x mention acceleration into Friday's earnings, and pre-earnings positioning is a genuine, dated catalyst that tends to build into the print rather than fade.",
+"risk": "Binary earnings event \u2014 a miss or soft guide reverses the pre-earnings run immediately, and thin liquidity amplifies the move.",
+"conviction": "low",
+"mentions": 14,
+"vel": 7.0,
+"state": "hot",
+"crypto": false
 }
 ]
 }
