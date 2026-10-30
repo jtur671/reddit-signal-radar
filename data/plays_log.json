@@ -3280,6 +3280,17 @@
 },
 {
 "date": "2026-10-30",
+"ticker": "ON",
+"thesis": "10x mention growth into an imminent earnings report, with discussion framed around buy-or-wait positioning \u2014 an early accumulation setup ahead of a binary catalyst.",
+"risk": "Semis are in a volatile, AI-spend-fear tape, so an earnings miss could compound sector weakness.",
+"conviction": "low",
+"mentions": 10,
+"vel": 10.0,
+"state": "cooling",
+"crypto": false
+},
+{
+"date": "2026-10-30",
 "ticker": "RSP",
 "thesis": "The equal-weight rotation is a real, measurable theme (non-AI constituents outperforming the S&P by ~6 points this month) backed by Alphabet's record drop and broad AI-bubble fears, making it an early way to play the rotation before it becomes consensus.",
 "risk": "A sharp megacap rebound would quickly unwind the rotation trade, and the board state is already 'cooling.'",
