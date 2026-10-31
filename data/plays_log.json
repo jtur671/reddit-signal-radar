@@ -3321,6 +3321,39 @@
 "vel": 7.0,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-10-31",
+"ticker": "GLD",
+"thesis": "A 52-week low with Peter Brandt flagging a potential bottom is a concrete price event, and 6.0\u00d7 mention growth from a low base suggests early contrarian interest before any reversal is obvious.",
+"risk": "Bottom-calling on a downtrending gold ETF can be premature if the decline continues.",
+"conviction": "low",
+"mentions": 12,
+"vel": 6.0,
+"state": "cooling",
+"crypto": false
+},
+{
+"date": "2026-10-31",
+"ticker": "KO",
+"thesis": "Q3 earnings with broad-based volume gains and margin expansion is a concrete fundamental catalyst, yet mentions are only 18 and just 2.6\u00d7 \u2014 the move is real but not yet crowded, giving early entry before the earnings narrative broadens.",
+"risk": "Consumer staples upside may already be priced in, limiting follow-through.",
+"conviction": "medium",
+"mentions": 18,
+"vel": 2.6,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-31",
+"ticker": "LINK",
+"thesis": "The Aave Horizon deal to use Chainlink weekend price feeds for tokenized US stocks is a specific, verifiable partnership catalyst, and at 19 mentions/2.1\u00d7 in a sustained state it's still under the radar versus mega-cap chatter.",
+"risk": "Crypto-linked names can reverse sharply if broader tokenization sentiment cools.",
+"conviction": "medium",
+"mentions": 19,
+"vel": 2.1,
+"state": "sustained",
+"crypto": false
 }
 ]
 }
