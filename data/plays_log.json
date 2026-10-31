@@ -3324,6 +3324,17 @@
 },
 {
 "date": "2026-10-31",
+"ticker": "API",
+"thesis": "Fastest accelerator on the board at 4.0\u00d7 with a real earnings beat and raised 2026 outlook behind it, suggesting the fundamental catalyst is being discovered before the move is fully obvious.",
+"risk": "Ticker/company mismatch (Agora.io vs APi Group) means the catalyst may not map cleanly to the traded name.",
+"conviction": "low",
+"mentions": 20,
+"vel": 4.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-10-31",
 "ticker": "GLD",
 "thesis": "A 52-week low with Peter Brandt flagging a potential bottom is a concrete price event, and 6.0\u00d7 mention growth from a low base suggests early contrarian interest before any reversal is obvious.",
 "risk": "Bottom-calling on a downtrending gold ETF can be premature if the decline continues.",
