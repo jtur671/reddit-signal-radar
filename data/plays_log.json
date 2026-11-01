@@ -3365,6 +3365,39 @@
 "vel": 2.1,
 "state": "sustained",
 "crypto": false
+},
+{
+"date": "2026-11-01",
+"ticker": "IP",
+"thesis": "10x mention acceleration on a hot state despite a weak Q3 (large loss, negative FCF) while the stock holds up ~20%, signaling a genuine valuation debate that could resolve into a re-rating as sentiment turns.",
+"risk": "Fundamentals are deteriorating, so the 'undervalued' thesis may be a value trap.",
+"conviction": "low",
+"mentions": 10,
+"vel": 10.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-11-01",
+"ticker": "MSOS",
+"thesis": "A brand-new name with 10x mention growth riding a concrete regulatory catalyst \u2014 a congressional bill to legalize marijuana and overhaul federal drug classification \u2014 which is exactly the kind of hard news that can re-rate the whole cannabis ETF before the crowd piles in.",
+"risk": "Legislative bills frequently stall in committee, so the catalyst can evaporate without a vote.",
+"conviction": "medium",
+"mentions": 10,
+"vel": 10.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-11-01",
+"ticker": "SPCX",
+"thesis": "Starship flying commercial payloads this year is a real revenue-tied milestone, and at 13 mentions with only 0.5x growth it's still under the radar relative to the AI mega-caps \u2014 early positioning before the milestone becomes obvious.",
+"risk": "SpaceX is private, so retail exposure is indirect and the milestone could slip.",
+"conviction": "low",
+"mentions": 13,
+"vel": 0.5,
+"state": "sustained",
+"crypto": false
 }
 ]
 }
