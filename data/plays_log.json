@@ -3368,6 +3368,17 @@
 },
 {
 "date": "2026-11-01",
+"ticker": "AGI",
+"thesis": "Mentions are steady but the Q3 earnings call and 2027 production-jump outlook tied to the $835M expansion completing give a fundamental catalyst that could drive a re-rating as output ramps.",
+"risk": "Gold price and execution on the expansion could disappoint.",
+"conviction": "low",
+"mentions": 24,
+"vel": 1.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-11-01",
 "ticker": "IP",
 "thesis": "10x mention acceleration on a hot state despite a weak Q3 (large loss, negative FCF) while the stock holds up ~20%, signaling a genuine valuation debate that could resolve into a re-rating as sentiment turns.",
 "risk": "Fundamentals are deteriorating, so the 'undervalued' thesis may be a value trap.",
