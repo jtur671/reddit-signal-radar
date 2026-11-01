@@ -1,5 +1,5 @@
 {
- "as_of": "2026-10-25",
+ "as_of": "2026-11-01",
  "power": {
   "days": 91,
   "sufficient": false,
@@ -18,235 +18,235 @@
  "quintiles": {
   "1": {
    "horizon": 1,
-   "n": 5012,
+   "n": 4629,
    "q1": {
-    "mean_excess": 0.0018179123756650467,
-    "n": 988
+    "mean_excess": -0.00011603818003071621,
+    "n": 904
    },
    "q2": {
-    "mean_excess": 0.0014960644325444652,
-    "n": 1017
+    "mean_excess": -0.0005493385127453834,
+    "n": 934
    },
    "q3": {
-    "mean_excess": 0.00012806936531775876,
-    "n": 1013
+    "mean_excess": -0.0019732470785466644,
+    "n": 936
    },
    "q4": {
-    "mean_excess": -0.0011221032674639038,
-    "n": 992
+    "mean_excess": -0.0023454080708699334,
+    "n": 915
    },
    "q5": {
-    "mean_excess": -0.0005822809145091781,
-    "n": 1002
+    "mean_excess": -0.002791942341246329,
+    "n": 940
    },
-   "spread": -0.002400193290174225
+   "spread": -0.0026759041612156127
   },
   "5": {
    "horizon": 5,
-   "n": 4658,
+   "n": 4347,
    "q1": {
-    "mean_excess": 0.010772554493897551,
-    "n": 920
+    "mean_excess": 0.0048686916942747415,
+    "n": 849
    },
    "q2": {
-    "mean_excess": 0.00677196527397335,
-    "n": 947
+    "mean_excess": 0.0023907738768765784,
+    "n": 878
    },
    "q3": {
-    "mean_excess": 0.0018819445971943148,
-    "n": 940
+    "mean_excess": -0.002146429722835561,
+    "n": 880
    },
    "q4": {
-    "mean_excess": -0.0014989183500865462,
-    "n": 922
+    "mean_excess": -0.008047725543846543,
+    "n": 859
    },
    "q5": {
-    "mean_excess": -0.002857131642167154,
-    "n": 929
+    "mean_excess": -0.006346764027005132,
+    "n": 881
    },
-   "spread": -0.013629686136064705
+   "spread": -0.011215455721279874
   },
   "10": {
    "horizon": 10,
-   "n": 4273,
+   "n": 3934,
    "q1": {
-    "mean_excess": 0.012774439404556824,
-    "n": 844
+    "mean_excess": 0.0010599674885389827,
+    "n": 770
    },
    "q2": {
-    "mean_excess": 0.012360800396255908,
-    "n": 870
+    "mean_excess": -0.0006931594990486811,
+    "n": 796
    },
    "q3": {
-    "mean_excess": 0.007355496915633811,
-    "n": 862
+    "mean_excess": -0.002926970651903127,
+    "n": 795
    },
    "q4": {
-    "mean_excess": 0.0031625559924563828,
-    "n": 845
+    "mean_excess": -0.007572919630979044,
+    "n": 777
    },
    "q5": {
-    "mean_excess": -0.00514942766095495,
-    "n": 852
+    "mean_excess": -0.017507422017790313,
+    "n": 796
    },
-   "spread": -0.017923867065511773
+   "spread": -0.018567389506329295
   }
  },
  "quintiles_iwm": {
   "1": {
    "horizon": 1,
-   "n": 5012,
+   "n": 4629,
    "q1": {
-    "mean_excess": 0.0030875497892062505,
-    "n": 988
+    "mean_excess": 0.0007111660573187681,
+    "n": 904
    },
    "q2": {
-    "mean_excess": 0.0028376254611443036,
-    "n": 1017
+    "mean_excess": 0.0003544512974300148,
+    "n": 934
    },
    "q3": {
-    "mean_excess": 0.0014307982500500627,
-    "n": 1013
+    "mean_excess": -0.0010996886527928744,
+    "n": 936
    },
    "q4": {
-    "mean_excess": 0.00021667628226705615,
-    "n": 992
+    "mean_excess": -0.0014650604827423541,
+    "n": 915
    },
    "q5": {
-    "mean_excess": 0.0007258284705697952,
-    "n": 1002
+    "mean_excess": -0.001920834036380532,
+    "n": 940
    },
-   "spread": -0.002361721318636455
+   "spread": -0.0026320000936993
   },
   "5": {
    "horizon": 5,
-   "n": 4658,
+   "n": 4347,
    "q1": {
-    "mean_excess": 0.018367173837166247,
-    "n": 920
+    "mean_excess": 0.009208815088835991,
+    "n": 849
    },
    "q2": {
-    "mean_excess": 0.014421349291038095,
-    "n": 947
+    "mean_excess": 0.0067881197313694516,
+    "n": 878
    },
    "q3": {
-    "mean_excess": 0.009574457536744204,
-    "n": 940
+    "mean_excess": 0.002244086767301817,
+    "n": 880
    },
    "q4": {
-    "mean_excess": 0.0061690482189525175,
-    "n": 922
+    "mean_excess": -0.0037180641495312304,
+    "n": 859
    },
    "q5": {
-    "mean_excess": 0.004717788451478859,
-    "n": 929
+    "mean_excess": -0.002090652281366201,
+    "n": 881
    },
-   "spread": -0.013649385385687388
+   "spread": -0.011299467370202192
   },
   "10": {
    "horizon": 10,
-   "n": 4273,
+   "n": 3934,
    "q1": {
-    "mean_excess": 0.027633373984661414,
-    "n": 844
+    "mean_excess": 0.01373519359772412,
+    "n": 770
    },
    "q2": {
-    "mean_excess": 0.02733411611875717,
-    "n": 870
+    "mean_excess": 0.012146812043606032,
+    "n": 796
    },
    "q3": {
-    "mean_excess": 0.02255320615892691,
-    "n": 862
+    "mean_excess": 0.010039705430343007,
+    "n": 795
    },
    "q4": {
-    "mean_excess": 0.018292880874909243,
-    "n": 845
+    "mean_excess": 0.00525075671282646,
+    "n": 777
    },
    "q5": {
-    "mean_excess": 0.009959995627019748,
-    "n": 852
+    "mean_excess": -0.004760418860500469,
+    "n": 796
    },
-   "spread": -0.017673378357641666
+   "spread": -0.01849561245822459
   }
  },
  "rank_ic": {
   "1": {
-   "mean": -0.015494343321996878,
-   "t": -0.8323181014173765,
+   "mean": -0.006518615582627779,
+   "t": -0.32332377429665005,
    "days": 86
   },
   "5": {
-   "mean": -0.05373852629947693,
-   "t": -3.409205462880485,
+   "mean": -0.046185517770680015,
+   "t": -2.698243831344345,
    "days": 80
   },
   "10": {
-   "mean": -0.060439180035513615,
-   "t": -4.472192730852497,
+   "mean": -0.059481615997039085,
+   "t": -4.2574830879988905,
    "days": 73
   }
  },
  "event_study": {
-  "n_events": 388,
-  "n_used": 254,
+  "n_events": 326,
+  "n_used": 183,
   "car": {
-   "-5": -0.012103003404987961,
-   "-4": -0.005724218178844335,
-   "-3": -0.005065548002698323,
-   "-2": -0.0004254914196430553,
+   "-5": -0.022163436732676102,
+   "-4": -0.015192169065103851,
+   "-3": -0.013948935475759114,
+   "-2": -0.008966122502932203,
    "-1": 0.0,
-   "0": 0.00147888586225132,
-   "1": 0.005800704625286495,
-   "2": 0.008639473290949462,
-   "3": 0.008124626730580904,
-   "4": 0.014095559625642906,
-   "5": 0.016273876623321023,
-   "6": 0.016631105909728442,
-   "7": 0.0200951219957564,
-   "8": 0.020126308279949948,
-   "9": 0.020701966946527775,
-   "10": 0.021996502779339244,
-   "11": 0.0205209932212209,
-   "12": 0.02090926264070889,
-   "13": 0.016091849226638692,
-   "14": 0.014877690685143585,
-   "15": 0.008913919899308254,
-   "16": 0.006713524923345782,
-   "17": 0.0016792252912169077,
-   "18": 0.0003269110018286946,
-   "19": -0.005550848653261009,
-   "20": -0.004656598771611319
+   "0": -0.006600714654524781,
+   "1": -0.004061141285955114,
+   "2": -0.0024513712122633357,
+   "3": -0.004578482786037724,
+   "4": -0.0006778955830552418,
+   "5": -0.00034199061800244015,
+   "6": -0.0026956525081136026,
+   "7": -0.0009751208993282932,
+   "8": -0.00143413085277376,
+   "9": -0.0023665459371544793,
+   "10": -0.004576374461978897,
+   "11": -0.006003910023146166,
+   "12": -0.0032805154717494935,
+   "13": -0.007912477530235471,
+   "14": -0.011807191739952429,
+   "15": -0.016321953199136926,
+   "16": -0.02084558012079766,
+   "17": -0.025388130965959196,
+   "18": -0.02614150904104601,
+   "19": -0.029104506971958453,
+   "20": -0.02766396553574794
   }
  },
  "vol_test": {
   "q1": {
-   "mean": 0.4655998895498719,
-   "n": 967
+   "mean": 0.4788459759738242,
+   "n": 885
   },
   "q2": {
-   "mean": 0.46228575661767224,
-   "n": 996
+   "mean": 0.4751165328968457,
+   "n": 915
   },
   "q3": {
-   "mean": 0.44845816977486436,
-   "n": 990
+   "mean": 0.451894975673072,
+   "n": 917
   },
   "q4": {
-   "mean": 0.48007886618203877,
-   "n": 971
+   "mean": 0.4947184863070887,
+   "n": 896
   },
   "q5": {
-   "mean": 0.511052249688101,
-   "n": 979
+   "mean": 0.5033642399670554,
+   "n": 921
   }
  },
  "scorecard": {
-  "n_picks": 273,
+  "n_picks": 304,
   "since": "2026-08-07",
-  "mean_excess_5d": -0.017117291811324646,
-  "mean_excess_10d": -0.025139686643905767,
-  "win_rate_5d": 0.42035398230088494,
-  "win_rate_10d": 0.4010416666666667,
+  "mean_excess_5d": -0.01200070775432422,
+  "mean_excess_10d": -0.029574103739026643,
+  "win_rate_5d": 0.44140625,
+  "win_rate_10d": 0.3893805309734513,
   "picks": [
    {
     "date": "2026-08-07",
@@ -1618,447 +1618,447 @@
     "ticker": "AAOI",
     "conviction": "high",
     "excess_5d": -0.23187335832338873,
-    "excess_10d": null
+    "excess_10d": -0.3433695103276473
    },
    {
     "date": "2026-10-09",
     "ticker": "ARR",
     "conviction": "low",
     "excess_5d": -0.00023788693417681195,
-    "excess_10d": null
+    "excess_10d": -0.013346899389653721
    },
    {
     "date": "2026-10-09",
     "ticker": "ASTS",
     "conviction": "medium",
     "excess_5d": -0.19038866614919214,
-    "excess_10d": null
+    "excess_10d": -0.23168466747994743
    },
    {
     "date": "2026-10-09",
     "ticker": "CIFR",
     "conviction": "medium",
     "excess_5d": -0.2723855365272956,
-    "excess_10d": null
+    "excess_10d": -0.4019380623320533
    },
    {
     "date": "2026-10-09",
     "ticker": "HUM",
     "conviction": "low",
-    "excess_5d": -0.034781302461150854,
-    "excess_10d": null
+    "excess_5d": -0.03478131866793999,
+    "excess_10d": 0.0021261863032397965
    },
    {
     "date": "2026-10-09",
     "ticker": "TSM",
     "conviction": "medium",
     "excess_5d": -0.055480998666934234,
-    "excess_10d": null
+    "excess_10d": -0.057001733486423345
    },
    {
     "date": "2026-10-10",
     "ticker": "IQ",
     "conviction": "low",
     "excess_5d": -0.04399258136913353,
-    "excess_10d": null
+    "excess_10d": -0.07583325952296815
    },
    {
     "date": "2026-10-10",
     "ticker": "MRNA",
     "conviction": "medium",
     "excess_5d": -0.01737392926623782,
-    "excess_10d": null
+    "excess_10d": -0.1462399044665189
    },
    {
     "date": "2026-10-10",
     "ticker": "OR",
     "conviction": "medium",
     "excess_5d": 0.043808060974014795,
-    "excess_10d": null
+    "excess_10d": -0.01644467685239026
    },
    {
     "date": "2026-10-10",
     "ticker": "TMUS",
     "conviction": "medium",
     "excess_5d": 0.07612772818337743,
-    "excess_10d": null
+    "excess_10d": -0.004108737301782739
    },
    {
     "date": "2026-10-11",
     "ticker": "AMD",
     "conviction": "low",
     "excess_5d": -0.0654283520499448,
-    "excess_10d": null
+    "excess_10d": -0.10735615046594682
    },
    {
     "date": "2026-10-11",
     "ticker": "ARR",
     "conviction": "medium",
     "excess_5d": -0.00023788693417681195,
-    "excess_10d": null
+    "excess_10d": -0.013346899389653721
    },
    {
     "date": "2026-10-11",
     "ticker": "NFLX",
     "conviction": "low",
     "excess_5d": -0.007319641405083233,
-    "excess_10d": null
+    "excess_10d": -0.0652737978567548
    },
    {
     "date": "2026-10-11",
     "ticker": "TLT",
     "conviction": "medium",
     "excess_5d": 0.04142737504581939,
-    "excess_10d": null
+    "excess_10d": 0.07043538201682809
    },
    {
     "date": "2026-10-11",
     "ticker": "TP",
     "conviction": "medium",
     "excess_5d": -0.12771995254802415,
-    "excess_10d": null
+    "excess_10d": -0.05808847346359014
    },
    {
     "date": "2026-10-12",
     "ticker": "AVGO",
     "conviction": "medium",
     "excess_5d": -0.029854076976663646,
-    "excess_10d": null
+    "excess_10d": -0.01496745549689893
    },
    {
     "date": "2026-10-12",
     "ticker": "ET",
     "conviction": "low",
     "excess_5d": -0.0003831243948270169,
-    "excess_10d": null
+    "excess_10d": 0.017263217857112267
    },
    {
     "date": "2026-10-12",
     "ticker": "IREN",
     "conviction": "medium",
     "excess_5d": -0.18111879338501524,
-    "excess_10d": null
+    "excess_10d": -0.21034189317345164
    },
    {
     "date": "2026-10-12",
     "ticker": "ON",
     "conviction": "medium",
     "excess_5d": -0.02304061113740874,
-    "excess_10d": null
+    "excess_10d": 0.019811668233784663
    },
    {
     "date": "2026-10-12",
     "ticker": "ONDS",
     "conviction": "medium",
     "excess_5d": -0.07222163731229392,
-    "excess_10d": null
+    "excess_10d": -0.031015501678331225
    },
    {
     "date": "2026-10-13",
     "ticker": "API",
     "conviction": "medium",
     "excess_5d": 0.0002937592033636083,
-    "excess_10d": null
+    "excess_10d": 0.029503708003093543
    },
    {
     "date": "2026-10-13",
     "ticker": "CBRS",
     "conviction": "medium",
     "excess_5d": -0.15979792489067735,
-    "excess_10d": null
+    "excess_10d": -0.16507400767672098
    },
    {
     "date": "2026-10-13",
     "ticker": "EU",
     "conviction": "medium",
     "excess_5d": -0.09516076419363118,
-    "excess_10d": null
+    "excess_10d": -0.12882966396287943
    },
    {
     "date": "2026-10-13",
     "ticker": "OKLO",
     "conviction": "medium",
     "excess_5d": -0.08495010749209775,
-    "excess_10d": null
+    "excess_10d": -0.11348663790902835
    },
    {
     "date": "2026-10-13",
     "ticker": "ON",
     "conviction": "low",
     "excess_5d": 0.025820094741140776,
-    "excess_10d": null
+    "excess_10d": 0.028157247621531267
    },
    {
     "date": "2026-10-14",
     "ticker": "AAPL",
     "conviction": "low",
     "excess_5d": -0.005949970402547411,
-    "excess_10d": null
+    "excess_10d": -0.00028847896303307863
    },
    {
     "date": "2026-10-14",
     "ticker": "JPM",
     "conviction": "medium",
     "excess_5d": -0.014893446204043093,
-    "excess_10d": null
+    "excess_10d": 0.018212269687053695
    },
    {
     "date": "2026-10-14",
     "ticker": "MU",
     "conviction": "low",
     "excess_5d": 0.009113869123425156,
-    "excess_10d": null
+    "excess_10d": 0.10724300216706828
    },
    {
     "date": "2026-10-14",
     "ticker": "NBIS",
     "conviction": "medium",
     "excess_5d": -0.06130314703029072,
-    "excess_10d": null
+    "excess_10d": -0.016393219727188657
    },
    {
     "date": "2026-10-14",
     "ticker": "UNH",
     "conviction": "medium",
     "excess_5d": 0.04256101258430678,
-    "excess_10d": null
+    "excess_10d": 0.027763843615724815
    },
    {
     "date": "2026-10-15",
     "ticker": "ET",
     "conviction": "medium",
     "excess_5d": 0.02372942082779339,
-    "excess_10d": null
+    "excess_10d": 0.06516365041232164
    },
    {
     "date": "2026-10-15",
     "ticker": "TSM",
     "conviction": "medium",
     "excess_5d": -0.003948267259588745,
-    "excess_10d": null
+    "excess_10d": -0.0016127575082002243
    },
    {
     "date": "2026-10-15",
     "ticker": "USAR",
     "conviction": "low",
     "excess_5d": -0.11571691860806099,
-    "excess_10d": null
+    "excess_10d": -0.08484406213481865
    },
    {
     "date": "2026-10-15",
     "ticker": "WMT",
     "conviction": "medium",
     "excess_5d": 0.046980183714337986,
-    "excess_10d": null
+    "excess_10d": 0.058278665258010065
    },
    {
     "date": "2026-10-16",
     "ticker": "BETR",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": 0.6804253603910865,
     "excess_10d": null
    },
    {
     "date": "2026-10-16",
     "ticker": "IBKR",
     "conviction": "low",
-    "excess_5d": null,
+    "excess_5d": -0.02345002506143523,
     "excess_10d": null
    },
    {
     "date": "2026-10-16",
     "ticker": "PR",
     "conviction": "low",
-    "excess_5d": null,
+    "excess_5d": 0.045250500363535395,
     "excess_10d": null
    },
    {
     "date": "2026-10-16",
     "ticker": "SPCE",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": 0.00649085749452516,
     "excess_10d": null
    },
    {
     "date": "2026-10-17",
     "ticker": "MA",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": 0.026490877506051835,
     "excess_10d": null
    },
    {
     "date": "2026-10-17",
     "ticker": "MSCI",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": 0.09612237790065137,
     "excess_10d": null
    },
    {
     "date": "2026-10-17",
     "ticker": "UMAC",
     "conviction": "low",
-    "excess_5d": null,
+    "excess_5d": 0.00292794387227302,
     "excess_10d": null
    },
    {
     "date": "2026-10-17",
     "ticker": "XLAB",
     "conviction": "low",
-    "excess_5d": null,
+    "excess_5d": 0.2850622805920576,
     "excess_10d": null
    },
    {
     "date": "2026-10-18",
     "ticker": "AAOI",
     "conviction": "low",
-    "excess_5d": null,
+    "excess_5d": -0.1500091005438049,
     "excess_10d": null
    },
    {
     "date": "2026-10-18",
     "ticker": "EU",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": -0.16218382745721915,
     "excess_10d": null
    },
    {
     "date": "2026-10-18",
     "ticker": "ONDS",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": 0.00020559805668429743,
     "excess_10d": null
    },
    {
     "date": "2026-10-19",
     "ticker": "AM",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": 0.00828651444686268,
     "excess_10d": null
    },
    {
     "date": "2026-10-19",
     "ticker": "ET",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": 0.01791857576500333,
     "excess_10d": null
    },
    {
     "date": "2026-10-19",
     "ticker": "GLD",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": -0.02696491457634065,
     "excess_10d": null
    },
    {
     "date": "2026-10-19",
     "ticker": "IBKR",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": 0.011732055013656595,
     "excess_10d": null
    },
    {
     "date": "2026-10-19",
     "ticker": "ORCL",
     "conviction": "low",
-    "excess_5d": null,
+    "excess_5d": -0.014616339307903625,
     "excess_10d": null
    },
    {
     "date": "2026-10-20",
     "ticker": "APLD",
     "conviction": "low",
-    "excess_5d": null,
+    "excess_5d": -0.008010463744866692,
     "excess_10d": null
    },
    {
     "date": "2026-10-20",
     "ticker": "CRWV",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": -0.05953544328053284,
     "excess_10d": null
    },
    {
     "date": "2026-10-20",
     "ticker": "GL",
     "conviction": "low",
-    "excess_5d": null,
+    "excess_5d": -0.07854356947759078,
     "excess_10d": null
    },
    {
     "date": "2026-10-20",
     "ticker": "NFLX",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": -0.034631795772650964,
     "excess_10d": null
    },
    {
     "date": "2026-10-20",
     "ticker": "RIVN",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": -0.06599572513633467,
     "excess_10d": null
    },
    {
     "date": "2026-10-20",
     "ticker": "RMD",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": 0.018355948348419693,
     "excess_10d": null
    },
    {
     "date": "2026-10-21",
     "ticker": "BYD",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": 0.017544690528305207,
     "excess_10d": null
    },
    {
     "date": "2026-10-21",
     "ticker": "LRCX",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": 0.07590408368911716,
     "excess_10d": null
    },
    {
     "date": "2026-10-22",
     "ticker": "AAOI",
     "conviction": "low",
-    "excess_5d": null,
+    "excess_5d": 0.04374505727470401,
     "excess_10d": null
    },
    {
     "date": "2026-10-22",
     "ticker": "BABA",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": -0.010184662405029687,
     "excess_10d": null
    },
    {
     "date": "2026-10-22",
     "ticker": "FCF",
     "conviction": "low",
-    "excess_5d": null,
+    "excess_5d": 0.01095873266350278,
     "excess_10d": null
    },
    {
     "date": "2026-10-22",
     "ticker": "LRCX",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": 0.050996392512564936,
     "excess_10d": null
    },
    {
     "date": "2026-10-22",
     "ticker": "META",
     "conviction": "low",
-    "excess_5d": null,
+    "excess_5d": -0.03903742182795722,
     "excess_10d": null
    },
    {
     "date": "2026-10-22",
     "ticker": "NOK",
     "conviction": "medium",
-    "excess_5d": null,
+    "excess_5d": 0.07107222263182322,
     "excess_10d": null
    },
    {
@@ -2158,14 +2158,231 @@
     "conviction": "low",
     "excess_5d": null,
     "excess_10d": null
+   },
+   {
+    "date": "2026-10-26",
+    "ticker": "EWZ",
+    "conviction": "low",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-10-26",
+    "ticker": "HOOD",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-10-26",
+    "ticker": "MELI",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-10-26",
+    "ticker": "NBIS",
+    "conviction": "high",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-10-26",
+    "ticker": "NU",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-10-27",
+    "ticker": "AMKR",
+    "conviction": "low",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-10-27",
+    "ticker": "API",
+    "conviction": "low",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-10-27",
+    "ticker": "CLS",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-10-28",
+    "ticker": "BBAI",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-10-28",
+    "ticker": "GM",
+    "conviction": "low",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-10-28",
+    "ticker": "HBM",
+    "conviction": "low",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-10-28",
+    "ticker": "SOFI",
+    "conviction": "high",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-10-28",
+    "ticker": "VRT",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-10-28",
+    "ticker": "WEN",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-10-29",
+    "ticker": "AAOI",
+    "conviction": "low",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-10-29",
+    "ticker": "FCF",
+    "conviction": "low",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-10-29",
+    "ticker": "LITE",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-10-29",
+    "ticker": "ORCL",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-10-29",
+    "ticker": "VRT",
+    "conviction": "low",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-10-30",
+    "ticker": "ON",
+    "conviction": "low",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-10-30",
+    "ticker": "RSP",
+    "conviction": "low",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-10-30",
+    "ticker": "SAP",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-10-30",
+    "ticker": "UI",
+    "conviction": "low",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-10-31",
+    "ticker": "API",
+    "conviction": "low",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-10-31",
+    "ticker": "GLD",
+    "conviction": "low",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-10-31",
+    "ticker": "KO",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-10-31",
+    "ticker": "LINK",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-11-01",
+    "ticker": "AGI",
+    "conviction": "low",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-11-01",
+    "ticker": "IP",
+    "conviction": "low",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-11-01",
+    "ticker": "MSOS",
+    "conviction": "medium",
+    "excess_5d": null,
+    "excess_10d": null
+   },
+   {
+    "date": "2026-11-01",
+    "ticker": "SPCX",
+    "conviction": "low",
+    "excess_5d": null,
+    "excess_10d": null
    }
   ],
   "excluded_crypto": 6,
   "disclaimer": "Hypothetical, frictionless, benchmark-adjusted. Not investment advice."
  },
  "price_coverage": {
-  "requested": 468,
-  "priced": 433,
+  "requested": 428,
+  "priced": 399,
   "missing": [
    "ADA",
    "APY",
@@ -2181,6 +2398,6 @@
  },
  "universe": {
   "description": "all history tickers + logged picks + benchmarks",
-  "n_tickers": 468
+  "n_tickers": 428
  }
 }
