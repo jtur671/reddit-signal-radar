@@ -3409,6 +3409,39 @@
 "vel": 0.5,
 "state": "sustained",
 "crypto": false
+},
+{
+"date": "2026-11-02",
+"ticker": "ET",
+"thesis": "Mentions are accelerating 2.5\u00d7 in a hot state around a flagged potentially major project/deal catalyst, making it an early name worth watching before the specific event is fully priced.",
+"risk": "The catalyst is vaguely described, so the thesis could deflate if no concrete deal materializes.",
+"conviction": "low",
+"mentions": 10,
+"vel": 2.5,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-11-02",
+"ticker": "RKLB",
+"thesis": "Rocket Lab is in a hot state with 3.3\u00d7 mention growth and a concrete near-term catalyst in its Nov 9 earnings, and the 38-64% collapse plus $2.36B backlog sets up a high-stakes rebound setup that the crowd is only starting to price.",
+"risk": "Earnings could disappoint and extend the drawdown rather than reverse it.",
+"conviction": "medium",
+"mentions": 10,
+"vel": 3.3,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-11-02",
+"ticker": "SOXL",
+"thesis": "Sustained 3.7\u00d7 acceleration is backed by a real semiconductor rally and an analyst upgrade, giving the leveraged-semis trade a plausible momentum catalyst before it becomes consensus.",
+"risk": "3\u00d7 leverage amplifies any reversal if the Nvidia-led rally stalls.",
+"conviction": "medium",
+"mentions": 11,
+"vel": 3.7,
+"state": "sustained",
+"crypto": false
 }
 ]
 }
