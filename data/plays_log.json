@@ -3423,6 +3423,17 @@
 },
 {
 "date": "2026-11-02",
+"ticker": "PLTR",
+"thesis": "Mentions are accelerating into a concrete earnings event with a narrow revenue-expectation gap, so positioning ahead of results is a defined early-entry setup.",
+"risk": "Earnings are binary and a miss or soft guidance could gap the stock down hard.",
+"conviction": "low",
+"mentions": 39,
+"vel": 9.8,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-11-02",
 "ticker": "RKLB",
 "thesis": "Rocket Lab is in a hot state with 3.3\u00d7 mention growth and a concrete near-term catalyst in its Nov 9 earnings, and the 38-64% collapse plus $2.36B backlog sets up a high-stakes rebound setup that the crowd is only starting to price.",
 "risk": "Earnings could disappoint and extend the drawdown rather than reverse it.",
@@ -3441,6 +3452,17 @@
 "mentions": 11,
 "vel": 3.7,
 "state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-11-02",
+"ticker": "USO",
+"thesis": "A concrete supply-disruption event (tanker fire/mine in the Strait of Hormuz) is a hard catalyst that can reprice oil quickly, and at only 11 mentions the crowd hasn't piled in yet.",
+"risk": "If the Hormuz incident proves minor or quickly contained, the geopolitical premium can evaporate fast.",
+"conviction": "medium",
+"mentions": 11,
+"vel": 11.0,
+"state": "hot",
 "crypto": false
 }
 ]
