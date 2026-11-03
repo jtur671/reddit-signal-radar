@@ -3467,6 +3467,28 @@
 },
 {
 "date": "2026-11-03",
+"ticker": "HBM",
+"thesis": "Hudbay is leading a concrete C$49.8M strategic financing into Pecoy Copper, a real deal catalyst that pairs with a sharp recent dip in the shares\u2014an early, under-the-radar setup with only 11 mentions so far.",
+"risk": "Thin mention volume means the narrative could fizzle fast if the financing news doesn't translate into sustained buying.",
+"conviction": "medium",
+"mentions": 11,
+"vel": 11.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-11-03",
+"ticker": "IQ",
+"thesis": "iQIYI launched China's first AI film studio with an inaugural title already in production\u2014a tangible product catalyst in a sustained (not spiking) discussion pattern, suggesting room to build.",
+"risk": "China regulatory/macro headwinds and the AI-studio angle may prove more PR than monetizable near-term.",
+"conviction": "medium",
+"mentions": 19,
+"vel": 4.8,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-11-03",
 "ticker": "MRVL",
 "thesis": "Marvell's $115B all-stock acquisition of Lumentum is a genuine, market-moving event that just hit the tape, and the 33x mention acceleration with 'sustained' state suggests the debate over dilution vs. strategic rationale is still forming rather than fully priced. Early entrants can position ahead of analyst revisions and the market's digestion of the AI/datacenter optics angle.",
 "risk": "Heavy dilution and investor skepticism could keep both names under pressure, making the 'deal arb' read wrong-footed.",
@@ -3474,6 +3496,17 @@
 "mentions": 66,
 "vel": 33.0,
 "state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-11-03",
+"ticker": "SHOP",
+"thesis": "Fresh 'new' state with 17x mention growth after a ~10% post-earnings drop\u2014a sharp overreaction setup where the weak holiday outlook is now priced in, giving early dip-buyers an edge before sentiment stabilizes.",
+"risk": "Guidance cut could be the start of a deeper re-rating rather than a one-day overreaction.",
+"conviction": "low",
+"mentions": 17,
+"vel": 17.0,
+"state": "new",
 "crypto": false
 },
 {
