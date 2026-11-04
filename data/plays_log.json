@@ -3530,6 +3530,39 @@
 "vel": null,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-11-04",
+"ticker": "ANET",
+"thesis": "Fresh 'new' lifecycle name with 5\u00d7 mention acceleration and a hard, company-specific catalyst \u2014 Q3 earnings plus an $18.5B 2027 guide and AI business doubling to $7B \u2014 that the broader board hasn't fully priced into the narrative yet.",
+"risk": "Guidance-heavy move could reverse if AI networking orders slip or the 2027 outlook proves aggressive.",
+"conviction": "high",
+"mentions": 10,
+"vel": 5.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-11-04",
+"ticker": "DJT",
+"thesis": "Fastest-accelerating meme name at 4\u00d7 with a genuine filing catalyst (second amended S-4 for the TAE merger) plus midterm tailwinds \u2014 early enough that the merger narrative is still developing.",
+"risk": "Meme-driven and headline-fragile; merger/regulatory setbacks or post-midterm fade could unwind the move quickly.",
+"conviction": "low",
+"mentions": 12,
+"vel": 4.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-11-04",
+"ticker": "SMCI",
+"thesis": "Sustained name with 3.5\u00d7 acceleration backed by a concrete earnings beat, raised outlook, and huge AI deployments \u2014 real fundamentals driving attention rather than a pure spike.",
+"risk": "Single customer at 44% of revenue is a severe concentration risk that could crater sentiment on any order pause.",
+"conviction": "medium",
+"mentions": 46,
+"vel": 3.5,
+"state": "sustained",
+"crypto": false
 }
 ]
 }
