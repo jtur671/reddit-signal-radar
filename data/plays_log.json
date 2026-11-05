@@ -3577,6 +3577,17 @@
 },
 {
 "date": "2026-11-05",
+"ticker": "DNUT",
+"thesis": "A clean Q3 earnings beat (EPS $0.06 vs $0.01 est.) plus raised FY2026 sales guidance is a real catalyst on a new, low-mention name \u2014 classic early-stage setup before broader attention.",
+"risk": "Small-cap consumer name with thin liquidity can whipsaw despite the beat.",
+"conviction": "medium",
+"mentions": 26,
+"vel": 26.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-11-05",
 "ticker": "QCOM",
 "thesis": "A concrete, company-specific deal catalyst (SpaceX selecting Qualcomm for its private 5G network) is driving a 36x mention explosion, and the news is fresh enough that broader market recognition likely hasn't fully priced it in.",
 "risk": "SpaceX 5G chip revenue may be immaterial near-term, so the pop could fade without follow-through orders.",
