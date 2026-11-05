@@ -3563,6 +3563,39 @@
 "vel": 3.5,
 "state": "sustained",
 "crypto": false
+},
+{
+"date": "2026-11-05",
+"ticker": "APP",
+"thesis": "A genuine earnings beat with record revenue and management reframing the prior miss as self-inflicted gives a credible turnaround narrative, and 23x mention growth signals early re-engagement.",
+"risk": "Stock already jumped ~23-25% after hours, so much of the move is priced in before entry.",
+"conviction": "low",
+"mentions": 70,
+"vel": 23.3,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-11-05",
+"ticker": "QCOM",
+"thesis": "A concrete, company-specific deal catalyst (SpaceX selecting Qualcomm for its private 5G network) is driving a 36x mention explosion, and the news is fresh enough that broader market recognition likely hasn't fully priced it in.",
+"risk": "SpaceX 5G chip revenue may be immaterial near-term, so the pop could fade without follow-through orders.",
+"conviction": "medium",
+"mentions": 36,
+"vel": 36.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-11-05",
+"ticker": "UUUU",
+"thesis": "Brand-new ticker on the board with a real earnings catalyst (revenue beat) and a hot state, meaning attention is just beginning to build before the move becomes obvious.",
+"risk": "Still posting a loss, so the beat may not sustain momentum beyond a one-day reaction.",
+"conviction": "low",
+"mentions": 15,
+"vel": null,
+"state": "hot",
+"crypto": false
 }
 ]
 }
