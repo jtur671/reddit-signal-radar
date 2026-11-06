@@ -3610,6 +3610,17 @@
 },
 {
 "date": "2026-11-06",
+"ticker": "DC",
+"thesis": "Dakota Gold has the highest raw mention count (59) and is already 'hot' at 3x growth, driven by a company-specific CEO clip on advancing the next gold mine in the historic Homestake District. A concrete, mine-development narrative in a hot gold tape can build momentum well before it's obvious.",
+"risk": "Junior miner execution/permitting risk and a CEO-clip-driven spike can fade without follow-through news.",
+"conviction": "medium",
+"mentions": 59,
+"vel": 3.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-11-06",
 "ticker": "DNUT",
 "thesis": "Krispy Kreme's Q3 earnings delivered margin expansion and raised guidance with management calling the turnaround real \u2014 a fundamental inflection that's still early (sustained, not yet mainstream) and could re-rate the stock as the story spreads.",
 "risk": "Turnaround credibility hinges on execution; a single soft quarter could reverse the narrative fast.",
@@ -3628,6 +3639,17 @@
 "mentions": 14,
 "vel": 14.0,
 "state": "new",
+"crypto": false
+},
+{
+"date": "2026-11-06",
+"ticker": "INOD",
+"thesis": "Innodata is in a sustained acceleration phase (6.3x mentions) backed by a hard fundamental catalyst: a wide Q3 beat on both earnings and revenue plus raised 2026 guidance. That combination of record growth and a guidance raise is exactly the kind of real, verifiable news that can re-rate a small-cap before the broader market catches on.",
+"risk": "Small-cap AI-data name can be volatile and the post-earnings pop may already be partly priced in.",
+"conviction": "high",
+"mentions": 19,
+"vel": 6.3,
+"state": "sustained",
 "crypto": false
 },
 {
