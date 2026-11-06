@@ -3607,6 +3607,39 @@
 "vel": null,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-11-06",
+"ticker": "DNUT",
+"thesis": "Krispy Kreme's Q3 earnings delivered margin expansion and raised guidance with management calling the turnaround real \u2014 a fundamental inflection that's still early (sustained, not yet mainstream) and could re-rate the stock as the story spreads.",
+"risk": "Turnaround credibility hinges on execution; a single soft quarter could reverse the narrative fast.",
+"conviction": "high",
+"mentions": 50,
+"vel": 50.0,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-11-06",
+"ticker": "EVER",
+"thesis": "EverQuote is brand-new to the board with a return-to-growth earnings print \u2014 the freshest signal here, and early-stage growth resumption stories often get discovered by retail before broader coverage catches up.",
+"risk": "Small-cap with thin liquidity; growth reacceleration may not persist.",
+"conviction": "medium",
+"mentions": 14,
+"vel": 14.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-11-06",
+"ticker": "SMA",
+"thesis": "SmartStop beat on sales, hit FFO in line, and raised FY guidance \u2014 a clean positive catalyst in a rate-sensitive REIT that's still 'hot' rather than saturated, giving room for further discovery.",
+"risk": "REIT performance is rate-sensitive; a yield backup could cap upside.",
+"conviction": "low",
+"mentions": 26,
+"vel": 13.0,
+"state": "hot",
+"crypto": false
 }
 ]
 }
