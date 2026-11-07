@@ -3662,6 +3662,39 @@
 "vel": 13.0,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-11-07",
+"ticker": "FLY",
+"thesis": "Freshest name on the board (15.0\u00d7 mention growth, new state) with a hard, verifiable catalyst \u2014 Firefly's $1.3B AST SpaceMobile engine/launch supply deal \u2014 that gives the move real fundamental backing rather than pure hype. Early because the mention count is still tiny (15) and the deal's revenue implications likely aren't fully priced yet.",
+"risk": "Deal is long-dated and milestone-dependent, so near-term revenue impact may disappoint momentum traders.",
+"conviction": "medium",
+"mentions": 15,
+"vel": 15.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-11-07",
+"ticker": "UIS",
+"thesis": "New name with a genuine fundamental catalyst \u2014 Q3 earnings beat with raised guidance and surging new business \u2014 yet only 10 mentions, so the market narrative is still forming. Guidance raises tend to have follow-through beyond the initial day.",
+"risk": "Legacy IT-services name with thin Reddit liquidity; the pop may fade without sustained institutional interest.",
+"conviction": "low",
+"mentions": 10,
+"vel": null,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-11-07",
+"ticker": "VIVK",
+"thesis": "Brand-new hot name with a concrete two-part catalyst (energy-infrastructure exec hire for the airport hydrogen project plus a New Mexico midstream operating agreement) \u2014 a plausible real story behind a fresh spike, and mention volume is still low at 14.",
+"risk": "Micro-cap with a promotional feel; the 'proposed acquisition' and hydrogen project are early-stage and could stall.",
+"conviction": "low",
+"mentions": 14,
+"vel": null,
+"state": "hot",
+"crypto": false
 }
 ]
 }
