@@ -3676,6 +3676,28 @@
 },
 {
 "date": "2026-11-07",
+"ticker": "GRND",
+"thesis": "New-state name accelerating 2.2\u00d7 on a real fundamental print\u201422% revenue growth\u2014which is the kind of durable operating catalyst that can re-rate a name before the crowd piles in.",
+"risk": "The shelf prospectus signals dilution/offering overhang that could cap upside.",
+"conviction": "medium",
+"mentions": 13,
+"vel": 2.2,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-11-07",
+"ticker": "RKLB",
+"thesis": "Sustained (not spiking) with 35 mentions and 1.8\u00d7 growth into an upcoming earnings catalyst plus tangible space-robot news, giving a pre-earnings setup with real substance behind the attention.",
+"risk": "Pre-earnings run-up raises the bar, so a soft report could reverse the move sharply.",
+"conviction": "low",
+"mentions": 35,
+"vel": 1.8,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-11-07",
 "ticker": "UIS",
 "thesis": "New name with a genuine fundamental catalyst \u2014 Q3 earnings beat with raised guidance and surging new business \u2014 yet only 10 mentions, so the market narrative is still forming. Guidance raises tend to have follow-through beyond the initial day.",
 "risk": "Legacy IT-services name with thin Reddit liquidity; the pop may fade without sustained institutional interest.",
