@@ -3720,6 +3720,17 @@
 },
 {
 "date": "2026-11-08",
+"ticker": "ASTS",
+"thesis": "The $1.3B Firefly launch deal plus the Blacklift reusable rocket plan is a concrete, structural catalyst that de-risks its 2028 launch cadence\u2014yet mentions are actually decelerating (0.5\u00d7), meaning the news hasn't been fully priced into attention.",
+"risk": "Execution and capital intensity of building its own rockets could strain the balance sheet.",
+"conviction": "medium",
+"mentions": 20,
+"vel": 0.5,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-11-08",
 "ticker": "CIA",
 "thesis": "Freshest accelerating name on the board (1.6\u00d7 growth, hot state) with a concrete fundamental catalyst \u2014 a break-even Q3 \u2014 that could mark an inflection from losses, and it's still under the radar at only 11 mentions.",
 "risk": "Break-even may be a one-off and liquidity/micro-cap volatility could whipsaw the move.",
@@ -3737,6 +3748,17 @@
 "conviction": "low",
 "mentions": 13,
 "vel": 0.4,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-11-08",
+"ticker": "NBIS",
+"thesis": "Microsoft reassessing AI compute deals is being read as a competitive opening for Nebius's capacity, giving a real fundamental catalyst while mentions are still modest (20) and not yet euphoric. If the read-through holds, NBIS could re-rate before the crowd piles in.",
+"risk": "The 'opening' is speculative\u2014Microsoft's pullback could signal sector-wide AI capex caution that hits NBIS too.",
+"conviction": "medium",
+"mentions": 20,
+"vel": 0.6,
 "state": "sustained",
 "crypto": false
 }
