@@ -3717,6 +3717,28 @@
 "vel": null,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-11-08",
+"ticker": "CIA",
+"thesis": "Freshest accelerating name on the board (1.6\u00d7 growth, hot state) with a concrete fundamental catalyst \u2014 a break-even Q3 \u2014 that could mark an inflection from losses, and it's still under the radar at only 11 mentions.",
+"risk": "Break-even may be a one-off and liquidity/micro-cap volatility could whipsaw the move.",
+"conviction": "medium",
+"mentions": 11,
+"vel": 1.6,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-11-08",
+"ticker": "GOOG",
+"thesis": "Real, hard catalyst (SpaceX stake expansion to $69B plus deeper AI ties) with modest but steady mention growth, giving a fundamental re-rating story before it becomes obvious.",
+"risk": "Mega-cap move may already be priced in and mentions are only growing slowly.",
+"conviction": "low",
+"mentions": 13,
+"vel": 0.4,
+"state": "sustained",
+"crypto": false
 }
 ]
 }
