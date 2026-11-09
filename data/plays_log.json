@@ -3761,6 +3761,39 @@
 "vel": 0.6,
 "state": "sustained",
 "crypto": false
+},
+{
+"date": "2026-11-09",
+"ticker": "AMD",
+"thesis": "Oppenheimer's upgrade with a $600 target plus Google adopting AMD chips for its new AI TPU system is a concrete, dual catalyst that could re-rate AMD against Nvidia before the AI-chip rotation becomes consensus.",
+"risk": "The move is already up 9.5%, so much of the news may be priced in and a pullback is possible.",
+"conviction": "high",
+"mentions": 242,
+"vel": 22.0,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-11-09",
+"ticker": "IP",
+"thesis": "A reported US subpoena of containerboard producers over price-fixing is a hard, company-specific legal catalyst that can drive sharp volatility and is still only at 17 mentions.",
+"risk": "Legal headlines are binary and could resolve negatively or fade without follow-through.",
+"conviction": "low",
+"mentions": 17,
+"vel": 17.0,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-11-09",
+"ticker": "RTX",
+"thesis": "A third successful DeepStrike/JRRR flight test for the US Army is a tangible defense-program milestone that could feed into contract momentum, and 21\u00d7 mention growth off a small base signals early retail discovery.",
+"risk": "Defense test milestones rarely move the needle on a mega-cap's revenue near-term.",
+"conviction": "medium",
+"mentions": 21,
+"vel": 21.0,
+"state": "hot",
+"crypto": false
 }
 ]
 }
