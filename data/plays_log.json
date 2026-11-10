@@ -3794,6 +3794,39 @@
 "vel": 21.0,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-11-10",
+"ticker": "GLD",
+"thesis": "12\u00d7 mention acceleration with a real macro catalyst (gold price rebound on tech rotation and easing Middle East tensions) points to a broadening precious-metals narrative that retail is only starting to crowd into.",
+"risk": "A risk-on rebound in tech could quickly unwind the safe-haven bid.",
+"conviction": "low",
+"mentions": 12,
+"vel": 12.0,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-11-10",
+"ticker": "TTD",
+"thesis": "Fresh 'new' lifecycle name with 8.6\u00d7 mention acceleration backed by a real hard catalyst (strong Q3 earnings plus a cluster of analyst price-target raises), suggesting the retail crowd is just discovering a fundamentally-driven move before it broadens.",
+"risk": "Multiple analyst upgrades may already be priced in, so the stock could be near a short-term top.",
+"conviction": "medium",
+"mentions": 43,
+"vel": 8.6,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-11-10",
+"ticker": "TTWO",
+"thesis": "GTA VI preorders running 'far in excess' of expectations is a concrete, forward-looking catalyst that can sustain momentum well beyond the initial 8% pop, and 2.9\u00d7 growth in a 'hot' state means the story is still building.",
+"risk": "GTA VI launch timing/execution risk could reverse sentiment quickly.",
+"conviction": "medium",
+"mentions": 23,
+"vel": 2.9,
+"state": "hot",
+"crypto": false
 }
 ]
 }
