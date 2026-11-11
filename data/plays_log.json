@@ -3827,6 +3827,39 @@
 "vel": 2.9,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-11-11",
+"ticker": "API",
+"thesis": "Agora shows a concrete insider-buying signal (CEO purchasing ~$123K of ADS) with 2.6x mention growth in a sustained state\u2014a quiet, catalyst-backed name rather than a hype spike.",
+"risk": "Insider buys are small in absolute dollars and may not signal near-term re-rating.",
+"conviction": "low",
+"mentions": 18,
+"vel": 2.6,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-11-11",
+"ticker": "IREN",
+"thesis": "JPMorgan turning bullish while the stock fell, combined with CoreWeave's $132B backlog and CFO comments on AI demand outstripping capacity, reframes IREN as a differentiated AI-compute name at a still-early 34-mention base.",
+"risk": "Cooling lifecycle state suggests momentum may already be fading.",
+"conviction": "medium",
+"mentions": 34,
+"vel": 6.8,
+"state": "cooling",
+"crypto": false
+},
+{
+"date": "2026-11-11",
+"ticker": "NBIS",
+"thesis": "Nebius is riding the CoreWeave beat-and-raise read-through with a 5.2x mention acceleration and a 13% sympathy pop ahead of its own earnings\u2014an early AI-compute derivative play before its catalyst fully prices in.",
+"risk": "Its own earnings could disappoint and reverse the sympathy rally.",
+"conviction": "high",
+"mentions": 166,
+"vel": 5.2,
+"state": "hot",
+"crypto": false
 }
 ]
 }
