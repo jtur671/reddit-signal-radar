@@ -3860,6 +3860,39 @@
 "vel": 5.2,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-11-12",
+"ticker": "CBRS",
+"thesis": "11\u00d7 mention growth with a specific, forward-looking catalyst \u2014 a Q3 earnings preview plus disclosure that Cathie Wood and other major funds bought ahead of the print \u2014 is a classic pre-catalyst setup.",
+"risk": "Low absolute mention count and a 'cooling' state mean thin conviction and possible fade.",
+"conviction": "low",
+"mentions": 11,
+"vel": 11.0,
+"state": "cooling",
+"crypto": false
+},
+{
+"date": "2026-11-12",
+"ticker": "HR",
+"thesis": "Mentions exploded 26.3\u00d7 on a genuine fundamental catalyst \u2014 a Q2 earnings beat plus raised guidance \u2014 yet the stock is still being framed as undervalued, suggesting the re-rating may not be fully priced in.",
+"risk": "A 5% dividend yield can signal the market doubts the durability of the beat/guidance.",
+"conviction": "medium",
+"mentions": 79,
+"vel": 26.3,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-11-12",
+"ticker": "NBIS",
+"thesis": "A concrete AI platform win backed by Gartner plus a 15% move into a Q3 print gives a real catalyst, and 2.7\u00d7 growth on already-high 243 mentions shows the AI-compute trade is re-accelerating before it's obvious.",
+"risk": "Much of the move is anticipation of the Q3 report, so a miss could reverse it sharply.",
+"conviction": "medium",
+"mentions": 243,
+"vel": 2.7,
+"state": "sustained",
+"crypto": false
 }
 ]
 }
