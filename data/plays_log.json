@@ -3893,6 +3893,28 @@
 "vel": 2.7,
 "state": "sustained",
 "crypto": false
+},
+{
+"date": "2026-11-12",
+"ticker": "PR",
+"thesis": "Record free cash flow on the Q3 call plus a Wells Fargo price-target raise back a 4.9x mention acceleration, and the sustained (not spiking) state suggests steady accumulation rather than a one-day pop.",
+"risk": "Oil-price sensitivity could undercut the FCF story quickly.",
+"conviction": "low",
+"mentions": 69,
+"vel": 4.9,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-11-12",
+"ticker": "RTX",
+"thesis": "A concrete defense-tech catalyst (successful DeepStrike missile test plus a DARPA contract win) is driving a 4.4x mention jump in a sustained state, giving a plausible fundamental tailwind before broader defense-sector attention catches up.",
+"risk": "Single test/contract wins rarely move a mega-cap defense name durably.",
+"conviction": "medium",
+"mentions": 40,
+"vel": 4.4,
+"state": "sustained",
+"crypto": false
 }
 ]
 }
