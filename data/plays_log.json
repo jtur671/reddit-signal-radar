@@ -3915,6 +3915,39 @@
 "vel": 4.4,
 "state": "sustained",
 "crypto": false
+},
+{
+"date": "2026-11-13",
+"ticker": "AMAT",
+"thesis": "Applied Materials has a concrete record-earnings catalyst with CEO commentary on multiyear fab investment, and at 2.1x growth it's still early relative to the mega-cap AI names crowding the board.",
+"risk": "Semicap demand is cyclical and any guidance wobble would quickly reverse the move.",
+"conviction": "medium",
+"mentions": 23,
+"vel": 2.1,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-11-13",
+"ticker": "CBRS",
+"thesis": "Cerebras is in a hot state with 4x mention acceleration, and the Q4 sales blowout plus Microsoft partnership is a genuine fundamental catalyst that diversifies it beyond OpenAI \u2014 the kind of news that can re-rate a name before the crowd fully digests it.",
+"risk": "Diversification away from OpenAI could still leave customer concentration risk if Microsoft ramp is slow.",
+"conviction": "high",
+"mentions": 48,
+"vel": 4.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-11-13",
+"ticker": "LUNR",
+"thesis": "Intuitive Machines shows the strongest acceleration among catalyst-backed names (8.3x, sustained) on record revenue and a $1.1B backlog \u2014 a real order-book story that supports a multi-day narrative rather than a one-day pop.",
+"risk": "Space-sector execution and contract-timing risk could undercut the backlog narrative.",
+"conviction": "medium",
+"mentions": 25,
+"vel": 8.3,
+"state": "sustained",
+"crypto": false
 }
 ]
 }
