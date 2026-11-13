@@ -3940,6 +3940,17 @@
 },
 {
 "date": "2026-11-13",
+"ticker": "CSCO",
+"thesis": "Cisco's 5% drop despite an earnings beat and raised $9B AI outlook creates a contrarian early-entry setup, with 12.5\u00d7 mention growth showing fresh attention to a potential mispricing.",
+"risk": "Citi's warning that growth may have peaked could keep a lid on any rebound.",
+"conviction": "low",
+"mentions": 25,
+"vel": 12.5,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-11-13",
 "ticker": "LUNR",
 "thesis": "Intuitive Machines shows the strongest acceleration among catalyst-backed names (8.3x, sustained) on record revenue and a $1.1B backlog \u2014 a real order-book story that supports a multi-day narrative rather than a one-day pop.",
 "risk": "Space-sector execution and contract-timing risk could undercut the backlog narrative.",
