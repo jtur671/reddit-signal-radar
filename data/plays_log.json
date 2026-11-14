@@ -3959,6 +3959,39 @@
 "vel": 8.3,
 "state": "sustained",
 "crypto": false
+},
+{
+"date": "2026-11-14",
+"ticker": "HSBC",
+"thesis": "Fresh 12x mention spike in 'new' state backed by a concrete Goldman/HSBC Saudi financing and private credit deal \u2014 a real institutional catalyst that most retail traders haven't priced yet.",
+"risk": "Large-cap bank moves on such deals tend to be muted, so the mention surge may not translate into a tradeable pop.",
+"conviction": "medium",
+"mentions": 12,
+"vel": 12.0,
+"state": "new",
+"crypto": false
+},
+{
+"date": "2026-11-14",
+"ticker": "ICE",
+"thesis": "Hot state with 4.3x acceleration and a genuine strategic catalyst \u2014 ICE backing a prediction-market platform is a real business development still early in narrative formation.",
+"risk": "The 'why now' framing suggests uncertainty over strategy, and exchange stocks react slowly to single-platform bets.",
+"conviction": "medium",
+"mentions": 13,
+"vel": 4.3,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-11-14",
+"ticker": "LHX",
+"thesis": "New 10x mention spike tied to a concrete defense-industry event (AUSA, Operation Jailbreak tactical comms), giving a real catalyst behind the early chatter.",
+"risk": "Defense names are headline-sensitive and the catalyst is conference-driven, which can fade quickly without follow-through.",
+"conviction": "low",
+"mentions": 10,
+"vel": 10.0,
+"state": "new",
+"crypto": false
 }
 ]
 }
