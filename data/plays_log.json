@@ -3995,6 +3995,17 @@
 },
 {
 "date": "2026-11-15",
+"ticker": "ASML",
+"thesis": "Mentions exploded 20\u00d7 on a real fundamental narrative \u2014 a ~10% weekly surge plus Musk's Terafab signaling massive wafer demand \u2014 suggesting the chip-equipment re-rating is just starting to hit retail radar.",
+"risk": "The move is already ~10% extended, so chasing after a fast run risks buying the local top.",
+"conviction": "high",
+"mentions": 20,
+"vel": 20.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-11-15",
 "ticker": "ETH",
 "thesis": "BNY partnering with Figment to bring ETH staking to institutional custody clients is a concrete product/deal catalyst that expands institutional access, and 88 mentions at 1.9\u00d7 growth shows real attention building rather than a pure spike. This is an early institutional-adoption narrative that could compound.",
 "risk": "Broader crypto sentiment is weak given BTC's slide and ETF outflows, which could drag ETH down regardless of the staking news.",
@@ -4013,6 +4024,17 @@
 "mentions": 19,
 "vel": 3.2,
 "state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-11-15",
+"ticker": "RKLB",
+"thesis": "The 100th Electron launch milestone is a tangible operational catalyst, and 5\u00d7 mention growth in a still-cooling state means attention is early relative to the achievement.",
+"risk": "Cooling lifecycle state suggests the news may already be priced in.",
+"conviction": "low",
+"mentions": 10,
+"vel": 5.0,
+"state": "cooling",
 "crypto": false
 },
 {
