@@ -3992,6 +3992,39 @@
 "vel": 10.0,
 "state": "new",
 "crypto": false
+},
+{
+"date": "2026-11-15",
+"ticker": "ETH",
+"thesis": "BNY partnering with Figment to bring ETH staking to institutional custody clients is a concrete product/deal catalyst that expands institutional access, and 88 mentions at 1.9\u00d7 growth shows real attention building rather than a pure spike. This is an early institutional-adoption narrative that could compound.",
+"risk": "Broader crypto sentiment is weak given BTC's slide and ETF outflows, which could drag ETH down regardless of the staking news.",
+"conviction": "medium",
+"mentions": 88,
+"vel": 1.9,
+"state": "hot",
+"crypto": true
+},
+{
+"date": "2026-11-15",
+"ticker": "EU",
+"thesis": "Q3 results showing sales nearly doubling to $16.7M from $8.9M is a genuine fundamental catalyst, and 3.2\u00d7 growth at 19 mentions in a sustained state suggests early accumulation of interest. Revenue growth trajectory is the kind of thing that gets re-rated over time.",
+"risk": "EPS worsened to -$0.17 from -$0.03, so profitability concerns could cap upside if losses keep widening.",
+"conviction": "low",
+"mentions": 19,
+"vel": 3.2,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-11-15",
+"ticker": "VC",
+"thesis": "RBC's price target raise to $102 with Outperform is a concrete bullish analyst revision, and 6.7\u00d7 mention growth on a modest 20 mentions suggests the idea is still under the radar. Analyst-driven re-ratings often precede broader discovery.",
+"risk": "A single analyst note is a thin catalyst and the move could fade without follow-through from other banks or fundamentals.",
+"conviction": "medium",
+"mentions": 20,
+"vel": 6.7,
+"state": "hot",
+"crypto": false
 }
 ]
 }
