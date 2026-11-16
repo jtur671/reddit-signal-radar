@@ -4050,6 +4050,28 @@
 },
 {
 "date": "2026-11-16",
+"ticker": "GO",
+"thesis": "An earnings beat driving analyst upgrades and raised price targets is a genuine fundamental catalyst, and 13 mentions at 13x growth off a low base suggests the story is just starting to surface on the board.",
+"risk": "Mixed sentiment and thin mention volume mean the move could fade without follow-through buying.",
+"conviction": "medium",
+"mentions": 13,
+"vel": 13.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-11-16",
+"ticker": "GOOGL",
+"thesis": "The $10B Anthropic investment ahead of its IPO gives Alphabet a concrete, strategically significant AI stake and positions it as an NVIDIA alternative, with 78x mention growth signaling early retail attention.",
+"risk": "The investment thesis is long-dated and could be dismissed as immaterial to a mega-cap's earnings.",
+"conviction": "medium",
+"mentions": 78,
+"vel": 78.0,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-11-16",
 "ticker": "IQ",
 "thesis": "iQIYI is in a sustained state with 2x mention growth and a genuine, specific catalyst\u2014a Best Actor win at the Golden Rooster Awards\u2014giving it a plausible content-driven narrative that could build before broader attention.",
 "risk": "A single award is a thin, sentiment-driven catalyst that may fade without follow-through on subscriber or revenue metrics.",
