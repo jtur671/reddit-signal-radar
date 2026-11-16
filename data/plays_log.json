@@ -4047,6 +4047,39 @@
 "vel": 6.7,
 "state": "hot",
 "crypto": false
+},
+{
+"date": "2026-11-16",
+"ticker": "IQ",
+"thesis": "iQIYI is in a sustained state with 2x mention growth and a genuine, specific catalyst\u2014a Best Actor win at the Golden Rooster Awards\u2014giving it a plausible content-driven narrative that could build before broader attention.",
+"risk": "A single award is a thin, sentiment-driven catalyst that may fade without follow-through on subscriber or revenue metrics.",
+"conviction": "medium",
+"mentions": 18,
+"vel": 2.0,
+"state": "sustained",
+"crypto": false
+},
+{
+"date": "2026-11-16",
+"ticker": "TTWO",
+"thesis": "Take-Two is the freshest, fastest-accelerating name on the board (14x mention growth) and the catalyst is concrete and material: earnings plus ~$1.9B in GTA VI preorders, which is a real fundamental driver rather than chatter.",
+"risk": "GTA VI preorder figures or launch timing could disappoint, and the stock may already be pricing in much of the hype.",
+"conviction": "high",
+"mentions": 14,
+"vel": 14.0,
+"state": "hot",
+"crypto": false
+},
+{
+"date": "2026-11-16",
+"ticker": "YOU",
+"thesis": "CLEAR Secure shows sustained 2x growth backed by real product news\u2014a smarter travel app, gifting options, and a holiday deal\u2014positioning it for a holiday-season narrative before the move is obvious.",
+"risk": "Product-launch buzz is easily overlooked by the market and may not translate into near-term bookings.",
+"conviction": "low",
+"mentions": 24,
+"vel": 2.0,
+"state": "sustained",
+"crypto": false
 }
 ]
 }
