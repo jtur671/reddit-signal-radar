@@ -156,19 +156,22 @@
 "short_ratio": 0.2596,
 "state": "cooling",
 "weighted": 12.0
+},
+"2026-11-18": {
+"attention": null,
+"authors": 0,
+"pageviews": null,
+"pc_ratio": 0.595,
+"pct_bull": 16.0,
+"raw": 31,
+"score": 80.84,
+"short_ratio": 0.4112,
+"state": "hot",
+"uoa": false,
+"weighted": 31.0
 }
 },
 "AAPL": {
-"2026-08-19": {
-"authors": 0,
-"cramer": "strong_buy",
-"pct_bull": 0.0,
-"raw": 31,
-"score": 8.74,
-"short_ratio": 0.3292,
-"state": "cooling",
-"weighted": 31.0
-},
 "2026-08-20": {
 "authors": 0,
 "cramer": "strong_buy",
@@ -1000,6 +1003,16 @@
 "ts_bull": 69.8,
 "ts_comments": 2,
 "weighted": 46.0
+},
+"2026-11-18": {
+"authors": 0,
+"cramer": "buy",
+"pct_bull": 0.0,
+"raw": 35,
+"score": 3.13,
+"short_ratio": 0.4224,
+"state": "cooling",
+"weighted": 35.0
 }
 },
 "ABNB": {
@@ -1236,17 +1249,6 @@
 }
 },
 "AGI": {
-"2026-08-19": {
-"authors": 0,
-"pct_bull": 0.0,
-"raw": 12,
-"score": 4.51,
-"short_ratio": 0.3561,
-"state": "cooling",
-"ts_bull": 50.0,
-"ts_comments": 2,
-"weighted": 12.0
-},
 "2026-08-25": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -2233,20 +2235,19 @@
 "short_ratio": 0.6619,
 "state": "cooling",
 "weighted": 22.0
+},
+"2026-11-18": {
+"authors": 0,
+"cramer": "wait_hold_neutral",
+"pct_bull": 0.0,
+"raw": 17,
+"score": 0.64,
+"short_ratio": 0.6114,
+"state": "cooling",
+"weighted": 17.0
 }
 },
 "AM": {
-"2026-08-19": {
-"attention": 52.31,
-"authors": 0,
-"pageviews": 113,
-"pct_bull": 39.0,
-"raw": 39,
-"score": 17.92,
-"short_ratio": 0.2867,
-"state": "cooling",
-"weighted": 39.0
-},
 "2026-08-20": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -2888,6 +2889,15 @@
 "short_ratio": 0.6845,
 "state": "cooling",
 "weighted": 40.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 35,
+"score": 11.22,
+"short_ratio": 0.6969,
+"state": "cooling",
+"weighted": 35.0
 }
 },
 "AMAT": {
@@ -2958,18 +2968,6 @@
 }
 },
 "AMD": {
-"2026-08-19": {
-"authors": 0,
-"cramer": "buy",
-"pct_bull": 0.0,
-"raw": 28,
-"score": 3.7,
-"short_ratio": 0.5497,
-"state": "cooling",
-"ts_bull": 57.5,
-"ts_comments": 4,
-"weighted": 28.0
-},
 "2026-08-20": {
 "authors": 0,
 "cramer": "buy",
@@ -4021,6 +4019,18 @@
 "ts_bull": 60.6,
 "ts_comments": 4,
 "weighted": 93.0
+},
+"2026-11-18": {
+"authors": 0,
+"cramer": "caution_concern",
+"pct_bull": 0.0,
+"raw": 176,
+"score": 10.1,
+"short_ratio": 0.5928,
+"state": "cooling",
+"ts_bull": 62.1,
+"ts_comments": 11,
+"weighted": 176.0
 }
 },
 "AMKR": {
@@ -4039,16 +4049,6 @@
 }
 },
 "AMZN": {
-"2026-08-19": {
-"authors": 0,
-"cramer": "strong_buy",
-"pct_bull": 0.0,
-"raw": 39,
-"score": 8.47,
-"short_ratio": 0.2064,
-"state": "cooling",
-"weighted": 39.0
-},
 "2026-08-20": {
 "authors": 0,
 "cramer": "strong_buy",
@@ -4870,6 +4870,20 @@
 "ts_bull": 32.9,
 "ts_comments": 2,
 "weighted": 17.0
+},
+"2026-11-18": {
+"attention": null,
+"authors": 0,
+"cramer": "buy",
+"pageviews": null,
+"pct_bull": 18.0,
+"raw": 51,
+"score": 24.75,
+"short_ratio": 0.3505,
+"state": "cooling",
+"ts_bull": 77.2,
+"ts_comments": 3,
+"weighted": 51.0
 }
 },
 "ANET": {
@@ -4910,17 +4924,6 @@
 }
 },
 "API": {
-"2026-08-19": {
-"attention": null,
-"authors": 0,
-"pageviews": null,
-"pct_bull": 36.0,
-"raw": 17,
-"score": 12.74,
-"short_ratio": 0.3735,
-"state": "cooling",
-"weighted": 17.0
-},
 "2026-09-01": {
 "attention": null,
 "authors": 0,
@@ -5275,6 +5278,15 @@
 "ts_bull": 50.0,
 "ts_comments": 1,
 "weighted": 10.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 18,
+"score": 15.83,
+"short_ratio": 0.4946,
+"state": "cooling",
+"weighted": 18.0
 }
 },
 "APLD": {
@@ -5790,6 +5802,17 @@
 "state": "sustained",
 "uoa": false,
 "weighted": 15.0
+},
+"2026-11-18": {
+"attention": 94.61,
+"authors": 0,
+"pageviews": 1898,
+"pct_bull": 18.0,
+"raw": 10,
+"score": 24.93,
+"short_ratio": 0.4273,
+"state": "cooling",
+"weighted": 10.0
 }
 },
 "ARR": {
@@ -6086,16 +6109,6 @@
 }
 },
 "ASTS": {
-"2026-08-19": {
-"authors": 0,
-"cramer": "wait_hold_neutral",
-"pct_bull": 0.0,
-"raw": 23,
-"score": 2.91,
-"short_ratio": 0.5506,
-"state": "cooling",
-"weighted": 23.0
-},
 "2026-08-20": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -6866,6 +6879,18 @@
 "ts_bull": 45.9,
 "ts_comments": 8,
 "weighted": 82.0
+},
+"2026-11-18": {
+"authors": 0,
+"cramer": "sell_avoid",
+"pct_bull": 0.0,
+"raw": 34,
+"score": -0.45,
+"short_ratio": 0.5494,
+"state": "cooling",
+"ts_bull": 29.9,
+"ts_comments": 2,
+"weighted": 34.0
 }
 },
 "AVAV": {
@@ -6935,16 +6960,6 @@
 }
 },
 "AVGO": {
-"2026-08-19": {
-"authors": 0,
-"cramer": "wait_hold_neutral",
-"pct_bull": 0.0,
-"raw": 15,
-"score": 4.76,
-"short_ratio": 0.4089,
-"state": "cooling",
-"weighted": 15.0
-},
 "2026-08-20": {
 "authors": 0,
 "cramer": "wait_hold_neutral",
@@ -7718,6 +7733,18 @@
 "short_ratio": 0.3137,
 "state": "cooling",
 "weighted": 13.0
+},
+"2026-11-18": {
+"authors": 0,
+"cramer": "caution_concern",
+"pct_bull": 0.0,
+"raw": 21,
+"score": 6.31,
+"short_ratio": 0.2548,
+"state": "cooling",
+"ts_bull": 72.0,
+"ts_comments": 1,
+"weighted": 21.0
 }
 },
 "BA": {
@@ -7909,15 +7936,6 @@
 }
 },
 "BE": {
-"2026-08-19": {
-"authors": 0,
-"pct_bull": 0.0,
-"raw": 17,
-"score": 16.97,
-"short_ratio": 0.4168,
-"state": "cooling",
-"weighted": 17.0
-},
 "2026-08-20": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -8479,6 +8497,16 @@
 "short_ratio": 0.4173,
 "state": "cooling",
 "weighted": 11.0
+},
+"2026-11-18": {
+"authors": 0,
+"cramer": "caution_concern",
+"pct_bull": 0.0,
+"raw": 15,
+"score": 10.86,
+"short_ratio": 0.46,
+"state": "cooling",
+"weighted": 15.0
 }
 },
 "BEAT": {
@@ -8576,17 +8604,6 @@
 }
 },
 "BTC": {
-"2026-08-19": {
-"authors": 0,
-"pct_bull": 0.0,
-"raw": 125,
-"score": 2.29,
-"short_ratio": 0.3517,
-"state": "cooling",
-"ts_bull": 50.0,
-"ts_comments": 1,
-"weighted": 125.0
-},
 "2026-08-20": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -9395,22 +9412,18 @@
 "short_ratio": 0.4267,
 "state": "cooling",
 "weighted": 99.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 78,
+"score": -7.78,
+"short_ratio": 0.451,
+"state": "cooling",
+"weighted": 78.0
 }
 },
 "BULL": {
-"2026-08-19": {
-"attention": null,
-"authors": 0,
-"pageviews": null,
-"pc_ratio": 0.309,
-"pct_bull": 18.0,
-"raw": 15,
-"score": 34.29,
-"short_ratio": 0.4648,
-"state": "sustained",
-"uoa": false,
-"weighted": 15.0
-},
 "2026-08-20": {
 "attention": null,
 "authors": 0,
@@ -9665,17 +9678,6 @@
 }
 },
 "CAST": {
-"2026-08-19": {
-"attention": null,
-"authors": 0,
-"pageviews": null,
-"pct_bull": 21.0,
-"raw": 26,
-"score": 72.12,
-"short_ratio": 0.5725,
-"state": "hot",
-"weighted": 26.0
-},
 "2026-08-20": {
 "attention": null,
 "authors": 0,
@@ -9939,18 +9941,20 @@
 "short_ratio": 0.4641,
 "state": "cooling",
 "weighted": 10.0
+},
+"2026-11-18": {
+"attention": 46.81,
+"authors": 0,
+"pageviews": 341,
+"pct_bull": 40.0,
+"raw": 14,
+"score": 26.88,
+"short_ratio": 0.4298,
+"state": "cooling",
+"weighted": 14.0
 }
 },
 "CC": {
-"2026-08-19": {
-"authors": 0,
-"pct_bull": 0.0,
-"raw": 10,
-"score": 4.91,
-"short_ratio": 0.5356,
-"state": "cooling",
-"weighted": 10.0
-},
 "2026-08-20": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -10740,6 +10744,18 @@
 "short_ratio": 0.5382,
 "state": "cooling",
 "weighted": 10.0
+},
+"2026-11-18": {
+"attention": 46.51,
+"authors": 0,
+"cramer": "buy",
+"pageviews": 1898,
+"pct_bull": 26.0,
+"raw": 17,
+"score": 27.17,
+"short_ratio": 0.5463,
+"state": "sustained",
+"weighted": 17.0
 }
 },
 "CRCL": {
@@ -11574,6 +11590,16 @@
 "ts_bull": 52.5,
 "ts_comments": 3,
 "weighted": 20.0
+},
+"2026-11-18": {
+"authors": 0,
+"cramer": "buy",
+"pct_bull": 0.0,
+"raw": 40,
+"score": 8.08,
+"short_ratio": 0.4512,
+"state": "cooling",
+"weighted": 40.0
 }
 },
 "CSCO": {
@@ -11671,19 +11697,6 @@
 "ts_bull": 33.3,
 "ts_comments": 8,
 "weighted": 14.0
-}
-},
-"CXAI": {
-"2026-08-19": {
-"attention": null,
-"authors": 0,
-"pageviews": null,
-"pct_bull": 24.0,
-"raw": 11,
-"score": 24.89,
-"short_ratio": 0.577,
-"state": "cooling",
-"weighted": 11.0
 }
 },
 "DAY": {
@@ -11958,6 +11971,15 @@
 "short_ratio": 0.5227,
 "state": "cooling",
 "weighted": 27.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 10,
+"score": -4.75,
+"short_ratio": 0.552,
+"state": "cooling",
+"weighted": 10.0
 }
 },
 "DE": {
@@ -12476,6 +12498,20 @@
 "short_ratio": 0.4142,
 "state": "cooling",
 "weighted": 20.0
+},
+"2026-11-18": {
+"attention": 46.11,
+"authors": 0,
+"cramer": "caution_concern",
+"pageviews": 360,
+"pc_ratio": 0.818,
+"pct_bull": 18.0,
+"raw": 17,
+"score": 62.42,
+"short_ratio": 0.5626,
+"state": "hot",
+"uoa": false,
+"weighted": 17.0
 }
 },
 "DRTS": {
@@ -12492,15 +12528,6 @@
 }
 },
 "DTE": {
-"2026-08-19": {
-"authors": 0,
-"pct_bull": 0.0,
-"raw": 68,
-"score": 10.6,
-"short_ratio": 0.4407,
-"state": "cooling",
-"weighted": 68.0
-},
 "2026-08-20": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -13353,6 +13380,15 @@
 "short_ratio": 0.6596,
 "state": "cooling",
 "weighted": 50.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 57,
+"score": 10.07,
+"short_ratio": 0.6451,
+"state": "cooling",
+"weighted": 57.0
 }
 },
 "EIX": {
@@ -13371,15 +13407,6 @@
 }
 },
 "ES": {
-"2026-08-19": {
-"authors": 0,
-"pct_bull": 0.0,
-"raw": 13,
-"score": 11.92,
-"short_ratio": 0.6174,
-"state": "cooling",
-"weighted": 13.0
-},
 "2026-08-24": {
 "attention": 31.43,
 "authors": 0,
@@ -13673,21 +13700,18 @@
 "ts_bull": 42.6,
 "ts_comments": 2,
 "weighted": 13.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 12,
+"score": 14.37,
+"short_ratio": 0.423,
+"state": "cooling",
+"weighted": 12.0
 }
 },
 "ET": {
-"2026-08-19": {
-"authors": 0,
-"cramer": "buy",
-"pct_bull": 0.0,
-"raw": 10,
-"score": 12.25,
-"short_ratio": 0.2494,
-"state": "cooling",
-"ts_bull": 43.5,
-"ts_comments": 2,
-"weighted": 10.0
-},
 "2026-08-20": {
 "authors": 0,
 "cramer": "buy",
@@ -14163,18 +14187,19 @@
 "short_ratio": 0.373,
 "state": "cooling",
 "weighted": 66.0
+},
+"2026-11-18": {
+"authors": 0,
+"cramer": "buy",
+"pct_bull": 0.0,
+"raw": 58,
+"score": 15.23,
+"short_ratio": 0.3063,
+"state": "cooling",
+"weighted": 58.0
 }
 },
 "ETH": {
-"2026-08-19": {
-"authors": 0,
-"pct_bull": 0.0,
-"raw": 32,
-"score": 1.43,
-"short_ratio": 0.3512,
-"state": "cooling",
-"weighted": 32.0
-},
 "2026-08-20": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -14915,18 +14940,18 @@
 "short_ratio": 0.3886,
 "state": "cooling",
 "weighted": 33.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 16,
+"score": -10.04,
+"short_ratio": 0.204,
+"state": "cooling",
+"weighted": 16.0
 }
 },
 "EU": {
-"2026-08-19": {
-"authors": 0,
-"pct_bull": 0.0,
-"raw": 10,
-"score": 3.58,
-"short_ratio": 0.6756,
-"state": "cooling",
-"weighted": 10.0
-},
 "2026-08-20": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -15564,17 +15589,6 @@
 }
 },
 "FCF": {
-"2026-08-19": {
-"authors": 0,
-"pct_bull": 0.0,
-"raw": 12,
-"score": 10.03,
-"short_ratio": 0.6592,
-"state": "cooling",
-"ts_bull": 25.1,
-"ts_comments": 2,
-"weighted": 12.0
-},
 "2026-09-23": {
 "attention": null,
 "authors": 0,
@@ -15837,6 +15851,17 @@
 "short_ratio": 0.6167,
 "state": "cooling",
 "weighted": 14.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 13,
+"score": 15.95,
+"short_ratio": 0.6419,
+"state": "cooling",
+"ts_bull": 65.0,
+"ts_comments": 3,
+"weighted": 13.0
 }
 },
 "FICO": {
@@ -16301,15 +16326,6 @@
 }
 },
 "GLD": {
-"2026-08-19": {
-"authors": 0,
-"pct_bull": 0.0,
-"raw": 10,
-"score": 10.96,
-"short_ratio": 0.5023,
-"state": "cooling",
-"weighted": 10.0
-},
 "2026-08-20": {
 "attention": null,
 "authors": 0,
@@ -16660,6 +16676,19 @@
 "short_ratio": 0.5347,
 "state": "cooling",
 "weighted": 10.0
+},
+"2026-11-18": {
+"attention": null,
+"authors": 0,
+"pageviews": null,
+"pc_ratio": 0.648,
+"pct_bull": 20.0,
+"raw": 29,
+"score": 41.4,
+"short_ratio": 0.6194,
+"state": "sustained",
+"uoa": false,
+"weighted": 29.0
 }
 },
 "GLND": {
@@ -17217,6 +17246,17 @@
 "short_ratio": 0.5431,
 "state": "cooling",
 "weighted": 10.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 20,
+"score": 14.42,
+"short_ratio": 0.4864,
+"state": "cooling",
+"ts_bull": 69.3,
+"ts_comments": 2,
+"weighted": 20.0
 }
 },
 "GO": {
@@ -17319,15 +17359,6 @@
 }
 },
 "GOOG": {
-"2026-08-19": {
-"authors": 0,
-"pct_bull": 0.0,
-"raw": 50,
-"score": 5.58,
-"short_ratio": 0.3042,
-"state": "cooling",
-"weighted": 50.0
-},
 "2026-08-20": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -18158,19 +18189,20 @@
 "ts_bull": 63.8,
 "ts_comments": 5,
 "weighted": 50.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 63,
+"score": 8.64,
+"short_ratio": 0.2601,
+"state": "cooling",
+"ts_bull": 48.5,
+"ts_comments": 3,
+"weighted": 63.0
 }
 },
 "GOOGL": {
-"2026-08-19": {
-"authors": 0,
-"cramer": "wait_hold_neutral",
-"pct_bull": 0.0,
-"raw": 47,
-"score": 6.63,
-"short_ratio": 0.3082,
-"state": "cooling",
-"weighted": 47.0
-},
 "2026-08-20": {
 "authors": 0,
 "cramer": "wait_hold_neutral",
@@ -19062,6 +19094,33 @@
 "short_ratio": 0.3347,
 "state": "cooling",
 "weighted": 53.0
+},
+"2026-11-18": {
+"authors": 0,
+"cramer": "caution_concern",
+"pct_bull": 0.0,
+"raw": 64,
+"score": 10.28,
+"short_ratio": 0.2039,
+"state": "cooling",
+"ts_bull": 74.2,
+"ts_comments": 2,
+"weighted": 64.0
+}
+},
+"GP": {
+"2026-11-18": {
+"attention": null,
+"authors": 0,
+"pageviews": null,
+"pct_bull": 35.0,
+"raw": 75,
+"score": 42.81,
+"short_ratio": 0.5508,
+"state": "new",
+"ts_bull": 40.7,
+"ts_comments": 3,
+"weighted": 75.0
 }
 },
 "GPRO": {
@@ -19234,20 +19293,6 @@
 }
 },
 "HD": {
-"2026-08-19": {
-"attention": 49.99,
-"authors": 0,
-"cramer": "buy",
-"pageviews": 1308,
-"pc_ratio": 0.657,
-"pct_bull": 19.0,
-"raw": 11,
-"score": 27.49,
-"short_ratio": 0.4393,
-"state": "hot",
-"uoa": false,
-"weighted": 11.0
-},
 "2026-10-01": {
 "attention": 47.1,
 "authors": 0,
@@ -19716,6 +19761,15 @@
 "short_ratio": 0.5067,
 "state": "cooling",
 "weighted": 21.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 18,
+"score": 8.36,
+"short_ratio": 0.3937,
+"state": "cooling",
+"weighted": 18.0
 }
 },
 "HPE": {
@@ -19884,6 +19938,17 @@
 "short_ratio": 0.3077,
 "state": "cooling",
 "weighted": 15.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 18,
+"score": -0.6,
+"short_ratio": 0.3238,
+"state": "cooling",
+"ts_bull": 63.1,
+"ts_comments": 3,
+"weighted": 18.0
 }
 },
 "HSBC": {
@@ -19934,15 +19999,6 @@
 }
 },
 "HTZ": {
-"2026-08-19": {
-"authors": 0,
-"pct_bull": 0.0,
-"raw": 30,
-"score": 0.85,
-"short_ratio": 0.4861,
-"state": "cooling",
-"weighted": 30.0
-},
 "2026-08-20": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -20683,18 +20739,6 @@
 }
 },
 "INTC": {
-"2026-08-19": {
-"authors": 0,
-"cramer": "buy_on_pullback",
-"pct_bull": 0.0,
-"raw": 11,
-"score": 6.21,
-"short_ratio": 0.3695,
-"state": "cooling",
-"ts_bull": 50.0,
-"ts_comments": 1,
-"weighted": 11.0
-},
 "2026-08-20": {
 "authors": 0,
 "cramer": "buy_on_pullback",
@@ -21368,6 +21412,18 @@
 "ts_bull": 33.5,
 "ts_comments": 2,
 "weighted": 39.0
+},
+"2026-11-18": {
+"authors": 0,
+"cramer": "caution_concern",
+"pct_bull": 0.0,
+"raw": 15,
+"score": -0.15,
+"short_ratio": 0.2744,
+"state": "cooling",
+"ts_bull": 17.0,
+"ts_comments": 1,
+"weighted": 15.0
 }
 },
 "INTU": {
@@ -21684,6 +21740,17 @@
 "short_ratio": 0.4599,
 "state": "cooling",
 "weighted": 15.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 13,
+"score": 1.87,
+"short_ratio": 0.4471,
+"state": "cooling",
+"ts_bull": 53.4,
+"ts_comments": 4,
+"weighted": 13.0
 }
 },
 "IQ": {
@@ -22081,6 +22148,15 @@
 "short_ratio": 0.7517,
 "state": "cooling",
 "weighted": 19.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 14,
+"score": 2.94,
+"short_ratio": 0.6843,
+"state": "cooling",
+"weighted": 14.0
 }
 },
 "IREN": {
@@ -22577,18 +22653,21 @@
 "ts_bull": 83.5,
 "ts_comments": 1,
 "weighted": 23.0
+},
+"2026-11-18": {
+"authors": 0,
+"cramer": "caution_concern",
+"pct_bull": 0.0,
+"raw": 19,
+"score": 4.67,
+"short_ratio": 0.2553,
+"state": "cooling",
+"ts_bull": 45.6,
+"ts_comments": 2,
+"weighted": 19.0
 }
 },
 "IT": {
-"2026-08-19": {
-"authors": 0,
-"pct_bull": 0.0,
-"raw": 19,
-"score": 12.22,
-"short_ratio": 0.6116,
-"state": "cooling",
-"weighted": 19.0
-},
 "2026-08-20": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -23303,6 +23382,15 @@
 "state": "sustained",
 "uoa": false,
 "weighted": 88.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 52,
+"score": 4.35,
+"short_ratio": 0.6917,
+"state": "cooling",
+"weighted": 52.0
 }
 },
 "IWM": {
@@ -23815,19 +23903,6 @@
 }
 },
 "KLAR": {
-"2026-08-19": {
-"attention": 70.44,
-"authors": 0,
-"pageviews": 987,
-"pc_ratio": 0.874,
-"pct_bull": 33.0,
-"raw": 53,
-"score": 30.24,
-"short_ratio": 0.7205,
-"state": "hot",
-"uoa": false,
-"weighted": 53.0
-},
 "2026-09-10": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -23937,6 +24012,18 @@
 "short_ratio": 0.566,
 "state": "cooling",
 "weighted": 14.0
+},
+"2026-11-18": {
+"attention": null,
+"authors": 0,
+"cramer": "buy",
+"pageviews": null,
+"pct_bull": 18.0,
+"raw": 10,
+"score": 4.2,
+"short_ratio": 0.6401,
+"state": "cooling",
+"weighted": 10.0
 }
 },
 "KORU": {
@@ -24266,6 +24353,15 @@
 "short_ratio": 0.4656,
 "state": "cooling",
 "weighted": 13.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 10,
+"score": 6.92,
+"short_ratio": 0.3639,
+"state": "cooling",
+"weighted": 10.0
 }
 },
 "LITE": {
@@ -24792,6 +24888,15 @@
 "short_ratio": 0.4755,
 "state": "cooling",
 "weighted": 19.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 11,
+"score": 12.44,
+"short_ratio": 0.4928,
+"state": "cooling",
+"weighted": 11.0
 }
 },
 "LUNR": {
@@ -25526,20 +25631,6 @@
 }
 },
 "META": {
-"2026-08-19": {
-"attention": 71.85,
-"authors": 0,
-"cramer": "wait_hold_neutral",
-"pageviews": 6925,
-"pct_bull": 34.0,
-"raw": 176,
-"score": 20.67,
-"short_ratio": 0.2742,
-"state": "sustained",
-"ts_bull": 53.3,
-"ts_comments": 9,
-"weighted": 176.0
-},
 "2026-08-20": {
 "authors": 0,
 "cramer": "wait_hold_neutral",
@@ -26487,6 +26578,18 @@
 "short_ratio": 0.4976,
 "state": "cooling",
 "weighted": 14.0
+},
+"2026-11-18": {
+"authors": 0,
+"cramer": "buy_on_pullback",
+"pct_bull": 0.0,
+"raw": 20,
+"score": 6.7,
+"short_ratio": 0.3451,
+"state": "cooling",
+"ts_bull": 60.6,
+"ts_comments": 3,
+"weighted": 20.0
 }
 },
 "MGM": {
@@ -26904,16 +27007,6 @@
 }
 },
 "MRVL": {
-"2026-08-19": {
-"authors": 0,
-"cramer": "buy_on_pullback",
-"pct_bull": 0.0,
-"raw": 16,
-"score": 4.94,
-"short_ratio": 0.4617,
-"state": "cooling",
-"weighted": 16.0
-},
 "2026-08-20": {
 "authors": 0,
 "cramer": "buy_on_pullback",
@@ -27356,18 +27449,6 @@
 }
 },
 "MSFT": {
-"2026-08-19": {
-"authors": 0,
-"cramer": "strong_buy",
-"pct_bull": 0.0,
-"raw": 48,
-"score": 4.29,
-"short_ratio": 0.4024,
-"state": "cooling",
-"ts_bull": 78.3,
-"ts_comments": 2,
-"weighted": 48.0
-},
 "2026-08-20": {
 "authors": 0,
 "cramer": "strong_buy",
@@ -28361,6 +28442,18 @@
 "short_ratio": 0.3416,
 "state": "cooling",
 "weighted": 48.0
+},
+"2026-11-18": {
+"authors": 0,
+"cramer": "buy",
+"pct_bull": 0.0,
+"raw": 27,
+"score": -5.56,
+"short_ratio": 0.2728,
+"state": "cooling",
+"ts_bull": 54.1,
+"ts_comments": 3,
+"weighted": 27.0
 }
 },
 "MSOS": {
@@ -28414,15 +28507,6 @@
 }
 },
 "MSTR": {
-"2026-08-19": {
-"authors": 0,
-"pct_bull": 0.0,
-"raw": 12,
-"score": 2.75,
-"short_ratio": 0.5308,
-"state": "cooling",
-"weighted": 12.0
-},
 "2026-08-20": {
 "attention": 55.59,
 "authors": 0,
@@ -28933,21 +29017,20 @@
 "ts_bull": 57.2,
 "ts_comments": 4,
 "weighted": 24.0
+},
+"2026-11-18": {
+"attention": null,
+"authors": 0,
+"pageviews": null,
+"pct_bull": 15.0,
+"raw": 15,
+"score": 6.16,
+"short_ratio": 0.3114,
+"state": "cooling",
+"weighted": 15.0
 }
 },
 "MU": {
-"2026-08-19": {
-"authors": 0,
-"cramer": "buy",
-"pct_bull": 0.0,
-"raw": 230,
-"score": 7.24,
-"short_ratio": 0.5629,
-"state": "cooling",
-"ts_bull": 56.1,
-"ts_comments": 6,
-"weighted": 230.0
-},
 "2026-08-20": {
 "authors": 0,
 "cramer": "buy",
@@ -30073,6 +30156,18 @@
 "ts_bull": 47.9,
 "ts_comments": 8,
 "weighted": 153.0
+},
+"2026-11-18": {
+"authors": 0,
+"cramer": "mild_buy",
+"pct_bull": 0.0,
+"raw": 130,
+"score": 7.21,
+"short_ratio": 0.2538,
+"state": "cooling",
+"ts_bull": 50.0,
+"ts_comments": 1,
+"weighted": 130.0
 }
 },
 "MX": {
@@ -30102,15 +30197,6 @@
 }
 },
 "NBIS": {
-"2026-08-19": {
-"authors": 0,
-"pct_bull": 0.0,
-"raw": 102,
-"score": 4.21,
-"short_ratio": 0.4789,
-"state": "cooling",
-"weighted": 102.0
-},
 "2026-08-20": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -31031,6 +31117,18 @@
 "ts_bull": 54.5,
 "ts_comments": 4,
 "weighted": 60.0
+},
+"2026-11-18": {
+"authors": 0,
+"cramer": "caution_concern",
+"pct_bull": 0.0,
+"raw": 111,
+"score": 11.14,
+"short_ratio": 0.3993,
+"state": "cooling",
+"ts_bull": 62.7,
+"ts_comments": 3,
+"weighted": 111.0
 }
 },
 "NET": {
@@ -31045,16 +31143,6 @@
 }
 },
 "NFLX": {
-"2026-08-19": {
-"authors": 0,
-"cramer": "wait_hold_neutral",
-"pct_bull": 0.0,
-"raw": 35,
-"score": 10.08,
-"short_ratio": 0.5125,
-"state": "cooling",
-"weighted": 35.0
-},
 "2026-08-20": {
 "authors": 0,
 "cramer": "wait_hold_neutral",
@@ -31500,6 +31588,18 @@
 "short_ratio": 0.2434,
 "state": "cooling",
 "weighted": 16.0
+},
+"2026-11-18": {
+"authors": 0,
+"cramer": "sell_avoid",
+"pct_bull": 0.0,
+"raw": 22,
+"score": 10.19,
+"short_ratio": 0.1961,
+"state": "cooling",
+"ts_bull": 43.6,
+"ts_comments": 8,
+"weighted": 22.0
 }
 },
 "NGL": {
@@ -31516,18 +31616,6 @@
 }
 },
 "NKE": {
-"2026-08-19": {
-"attention": 56.05,
-"authors": 0,
-"cramer": "wait_hold_neutral",
-"pageviews": 2287,
-"pct_bull": 32.0,
-"raw": 65,
-"score": 16.04,
-"short_ratio": 0.2556,
-"state": "sustained",
-"weighted": 65.0
-},
 "2026-08-20": {
 "authors": 0,
 "cramer": "wait_hold_neutral",
@@ -32069,15 +32157,6 @@
 }
 },
 "NOK": {
-"2026-08-19": {
-"authors": 0,
-"pct_bull": 0.0,
-"raw": 11,
-"score": -3.68,
-"short_ratio": 0.4589,
-"state": "cooling",
-"weighted": 11.0
-},
 "2026-09-09": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -32152,16 +32231,6 @@
 }
 },
 "NOW": {
-"2026-08-19": {
-"authors": 0,
-"cramer": "buy",
-"pct_bull": 0.0,
-"raw": 22,
-"score": 7.34,
-"short_ratio": 0.3253,
-"state": "cooling",
-"weighted": 22.0
-},
 "2026-08-20": {
 "authors": 0,
 "cramer": "buy",
@@ -32777,6 +32846,18 @@
 "ts_bull": 50.0,
 "ts_comments": 5,
 "weighted": 27.0
+},
+"2026-11-18": {
+"authors": 0,
+"cramer": "caution_concern",
+"pct_bull": 0.0,
+"raw": 26,
+"score": 11.12,
+"short_ratio": 0.2456,
+"state": "cooling",
+"ts_bull": 17.4,
+"ts_comments": 2,
+"weighted": 26.0
 }
 },
 "NRXP": {
@@ -32852,18 +32933,6 @@
 }
 },
 "NVDA": {
-"2026-08-19": {
-"authors": 0,
-"cramer": "strong_buy",
-"pct_bull": 0.0,
-"raw": 106,
-"score": 8.11,
-"short_ratio": 0.3923,
-"state": "cooling",
-"ts_bull": 68.5,
-"ts_comments": 2,
-"weighted": 106.0
-},
 "2026-08-20": {
 "authors": 0,
 "cramer": "strong_buy",
@@ -33977,6 +34046,22 @@
 "ts_bull": 50.1,
 "ts_comments": 94,
 "weighted": 1363.0
+},
+"2026-11-18": {
+"attention": 100.0,
+"authors": 0,
+"cramer": "buy",
+"pageviews": 52812,
+"pc_ratio": 0.575,
+"pct_bull": 35.0,
+"raw": 2150,
+"score": 31.91,
+"short_ratio": 0.236,
+"state": "sustained",
+"ts_bull": 50.7,
+"ts_comments": 110,
+"uoa": false,
+"weighted": 2150.0
 }
 },
 "NVO": {
@@ -34103,6 +34188,15 @@
 "ts_bull": 37.4,
 "ts_comments": 5,
 "weighted": 10.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 15,
+"score": 8.78,
+"short_ratio": 0.5128,
+"state": "cooling",
+"weighted": 15.0
 }
 },
 "OCS": {
@@ -34389,17 +34483,6 @@
 }
 },
 "ON": {
-"2026-08-19": {
-"attention": 47.29,
-"authors": 0,
-"pageviews": 141,
-"pct_bull": 29.0,
-"raw": 13,
-"score": 20.43,
-"short_ratio": 0.534,
-"state": "sustained",
-"weighted": 13.0
-},
 "2026-08-20": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -34734,6 +34817,17 @@
 "ts_bull": 87.1,
 "ts_comments": 2,
 "weighted": 18.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 16,
+"score": 12.42,
+"short_ratio": 0.4254,
+"state": "cooling",
+"ts_bull": 58.5,
+"ts_comments": 3,
+"weighted": 16.0
 }
 },
 "ONDS": {
@@ -35548,6 +35642,20 @@
 "short_ratio": 0.5865,
 "state": "cooling",
 "weighted": 10.0
+},
+"2026-11-18": {
+"attention": 56.17,
+"authors": 0,
+"cramer": "buy",
+"pageviews": 661,
+"pc_ratio": 1.106,
+"pct_bull": 14.0,
+"raw": 10,
+"score": 36.41,
+"short_ratio": 0.4063,
+"state": "new",
+"uoa": false,
+"weighted": 10.0
 }
 },
 "PATH": {
@@ -35690,16 +35798,6 @@
 }
 },
 "PLTR": {
-"2026-08-19": {
-"authors": 0,
-"cramer": "buy",
-"pct_bull": 0.0,
-"raw": 16,
-"score": 3.21,
-"short_ratio": 0.5703,
-"state": "cooling",
-"weighted": 16.0
-},
 "2026-08-20": {
 "authors": 0,
 "cramer": "buy",
@@ -36312,19 +36410,6 @@
 }
 },
 "PR": {
-"2026-08-19": {
-"attention": null,
-"authors": 0,
-"pageviews": null,
-"pc_ratio": 0.224,
-"pct_bull": 34.0,
-"raw": 10,
-"score": 38.03,
-"short_ratio": 0.4445,
-"state": "hot",
-"uoa": false,
-"weighted": 10.0
-},
 "2026-09-14": {
 "attention": null,
 "authors": 0,
@@ -36535,6 +36620,15 @@
 "short_ratio": 0.478,
 "state": "cooling",
 "weighted": 23.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 20,
+"score": 3.04,
+"short_ratio": 0.5482,
+"state": "cooling",
+"weighted": 20.0
 }
 },
 "PS": {
@@ -36598,6 +36692,17 @@
 "short_ratio": 0.498,
 "state": "cooling",
 "weighted": 10.0
+},
+"2026-11-18": {
+"attention": 59.39,
+"authors": 0,
+"pageviews": 48,
+"pct_bull": 23.0,
+"raw": 11,
+"score": 24.84,
+"short_ratio": 0.5895,
+"state": "cooling",
+"weighted": 11.0
 }
 },
 "PUMP": {
@@ -36635,6 +36740,19 @@
 "state": "hot",
 "ts_bull": 51.9,
 "ts_comments": 8,
+"uoa": false,
+"weighted": 11.0
+},
+"2026-11-18": {
+"attention": null,
+"authors": 0,
+"pageviews": null,
+"pc_ratio": null,
+"pct_bull": 14.0,
+"raw": 11,
+"score": 52.0,
+"short_ratio": 0.5639,
+"state": "hot",
 "uoa": false,
 "weighted": 11.0
 }
@@ -36777,15 +36895,6 @@
 }
 },
 "QQQ": {
-"2026-08-19": {
-"authors": 0,
-"pct_bull": 0.0,
-"raw": 111,
-"score": 11.14,
-"short_ratio": 0.728,
-"state": "cooling",
-"weighted": 111.0
-},
 "2026-08-20": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -37772,6 +37881,17 @@
 "ts_bull": 56.2,
 "ts_comments": 17,
 "weighted": 200.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 197,
+"score": 13.13,
+"short_ratio": 0.4937,
+"state": "cooling",
+"ts_bull": 61.6,
+"ts_comments": 15,
+"weighted": 197.0
 }
 },
 "QQQM": {
@@ -37854,18 +37974,6 @@
 }
 },
 "RDDT": {
-"2026-08-19": {
-"authors": 0,
-"cramer": "buy",
-"pct_bull": 0.0,
-"raw": 78,
-"score": 5.39,
-"short_ratio": 0.7215,
-"state": "cooling",
-"ts_bull": 52.6,
-"ts_comments": 5,
-"weighted": 78.0
-},
 "2026-08-20": {
 "authors": 0,
 "cramer": "buy",
@@ -38737,6 +38845,18 @@
 "ts_bull": 68.2,
 "ts_comments": 2,
 "weighted": 33.0
+},
+"2026-11-18": {
+"authors": 0,
+"cramer": "caution_concern",
+"pct_bull": 0.0,
+"raw": 16,
+"score": 1.85,
+"short_ratio": 0.6075,
+"state": "cooling",
+"ts_bull": 82.6,
+"ts_comments": 2,
+"weighted": 16.0
 }
 },
 "RE": {
@@ -38849,16 +38969,6 @@
 }
 },
 "RKLB": {
-"2026-08-19": {
-"authors": 0,
-"cramer": "wait_hold_neutral",
-"pct_bull": 0.0,
-"raw": 16,
-"score": 0.95,
-"short_ratio": 0.4993,
-"state": "cooling",
-"weighted": 16.0
-},
 "2026-08-20": {
 "authors": 0,
 "cramer": "wait_hold_neutral",
@@ -40756,6 +40866,17 @@
 "ts_comments": 80,
 "uoa": false,
 "weighted": 375.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 61,
+"score": -10.0,
+"short_ratio": 0.5394,
+"state": "cooling",
+"ts_bull": 63.9,
+"ts_comments": 4,
+"weighted": 61.0
 }
 },
 "SLV": {
@@ -41126,6 +41247,15 @@
 "ts_bull": 32.9,
 "ts_comments": 2,
 "weighted": 11.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 13,
+"score": 7.64,
+"short_ratio": 0.5093,
+"state": "cooling",
+"weighted": 13.0
 }
 },
 "SMH": {
@@ -41283,6 +41413,15 @@
 "ts_bull": 68.8,
 "ts_comments": 2,
 "weighted": 13.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 11,
+"score": 10.9,
+"short_ratio": 0.5281,
+"state": "cooling",
+"weighted": 11.0
 }
 },
 "SMR": {
@@ -41351,18 +41490,6 @@
 }
 },
 "SNDK": {
-"2026-08-19": {
-"authors": 0,
-"cramer": "strong_buy",
-"pct_bull": 0.0,
-"raw": 206,
-"score": 5.7,
-"short_ratio": 0.4177,
-"state": "cooling",
-"ts_bull": 36.9,
-"ts_comments": 3,
-"weighted": 206.0
-},
 "2026-08-20": {
 "authors": 0,
 "cramer": "strong_buy",
@@ -42360,6 +42487,18 @@
 "ts_bull": 41.5,
 "ts_comments": 2,
 "weighted": 73.0
+},
+"2026-11-18": {
+"authors": 0,
+"cramer": "caution_concern",
+"pct_bull": 0.0,
+"raw": 44,
+"score": 2.97,
+"short_ratio": 0.3098,
+"state": "cooling",
+"ts_bull": 66.5,
+"ts_comments": 4,
+"weighted": 44.0
 }
 },
 "SNOW": {
@@ -42599,6 +42738,15 @@
 "short_ratio": 0.6764,
 "state": "cooling",
 "weighted": 10.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 14,
+"score": 20.26,
+"short_ratio": 0.7263,
+"state": "cooling",
+"weighted": 14.0
 }
 },
 "SOFI": {
@@ -42860,15 +43008,6 @@
 }
 },
 "SOXL": {
-"2026-08-19": {
-"authors": 0,
-"pct_bull": 0.0,
-"raw": 30,
-"score": 11.46,
-"short_ratio": 0.5542,
-"state": "cooling",
-"weighted": 30.0
-},
 "2026-08-20": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -43565,20 +43704,18 @@
 "ts_bull": 50.0,
 "ts_comments": 1,
 "weighted": 27.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 35,
+"score": 9.45,
+"short_ratio": 0.6312,
+"state": "cooling",
+"weighted": 35.0
 }
 },
 "SOXS": {
-"2026-08-19": {
-"attention": null,
-"authors": 0,
-"pageviews": null,
-"pct_bull": 12.0,
-"raw": 23,
-"score": 22.16,
-"short_ratio": 0.2839,
-"state": "sustained",
-"weighted": 23.0
-},
 "2026-09-02": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -43976,6 +44113,15 @@
 "short_ratio": 0.3632,
 "state": "cooling",
 "weighted": 20.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 13,
+"score": 9.63,
+"short_ratio": 0.4609,
+"state": "cooling",
+"weighted": 13.0
 }
 },
 "SPCE": {
@@ -43994,18 +44140,6 @@
 }
 },
 "SPCX": {
-"2026-08-19": {
-"authors": 0,
-"cramer": "buy_on_pullback",
-"pct_bull": 0.0,
-"raw": 52,
-"score": 2.75,
-"short_ratio": 0.648,
-"state": "cooling",
-"ts_bull": 77.2,
-"ts_comments": 2,
-"weighted": 52.0
-},
 "2026-08-20": {
 "authors": 0,
 "cramer": "buy_on_pullback",
@@ -44967,6 +45101,16 @@
 "short_ratio": 0.5507,
 "state": "cooling",
 "weighted": 73.0
+},
+"2026-11-18": {
+"authors": 0,
+"cramer": "buy",
+"pct_bull": 0.0,
+"raw": 93,
+"score": 12.75,
+"short_ratio": 0.5524,
+"state": "cooling",
+"weighted": 93.0
 }
 },
 "SPMO": {
@@ -45000,17 +45144,6 @@
 }
 },
 "SPY": {
-"2026-08-19": {
-"authors": 0,
-"pct_bull": 0.0,
-"raw": 377,
-"score": 12.52,
-"short_ratio": 0.5937,
-"state": "cooling",
-"ts_bull": 47.3,
-"ts_comments": 6,
-"weighted": 377.0
-},
 "2026-08-20": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -46011,6 +46144,17 @@
 "ts_bull": 52.9,
 "ts_comments": 22,
 "weighted": 393.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 316,
+"score": 10.27,
+"short_ratio": 0.5164,
+"state": "cooling",
+"ts_bull": 50.6,
+"ts_comments": 17,
+"weighted": 316.0
 }
 },
 "SQQQ": {
@@ -46090,20 +46234,6 @@
 }
 },
 "STX": {
-"2026-08-19": {
-"attention": 56.7,
-"authors": 0,
-"cramer": "strong_buy",
-"pageviews": 336,
-"pc_ratio": 2.505,
-"pct_bull": 15.0,
-"raw": 18,
-"score": 42.19,
-"short_ratio": 0.4177,
-"state": "cooling",
-"uoa": false,
-"weighted": 18.0
-},
 "2026-08-20": {
 "authors": 0,
 "cramer": "strong_buy",
@@ -46330,20 +46460,6 @@
 }
 },
 "TGT": {
-"2026-08-19": {
-"attention": 50.94,
-"authors": 0,
-"cramer": "mild_buy",
-"pageviews": 1366,
-"pc_ratio": 1.444,
-"pct_bull": 21.0,
-"raw": 25,
-"score": 42.1,
-"short_ratio": 0.376,
-"state": "cooling",
-"uoa": false,
-"weighted": 25.0
-},
 "2026-08-20": {
 "authors": 0,
 "cramer": "mild_buy",
@@ -46379,15 +46495,6 @@
 }
 },
 "TLT": {
-"2026-08-19": {
-"authors": 0,
-"pct_bull": 0.0,
-"raw": 15,
-"score": 14.81,
-"short_ratio": 0.442,
-"state": "sustained",
-"weighted": 15.0
-},
 "2026-08-20": {
 "attention": null,
 "authors": 0,
@@ -47134,6 +47241,15 @@
 "short_ratio": 0.6098,
 "state": "sustained",
 "weighted": 24.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 16,
+"score": 11.36,
+"short_ratio": 0.5885,
+"state": "cooling",
+"weighted": 16.0
 }
 },
 "TRUMP": {
@@ -47149,17 +47265,6 @@
 }
 },
 "TSLA": {
-"2026-08-19": {
-"authors": 0,
-"pct_bull": 0.0,
-"raw": 35,
-"score": 3.33,
-"short_ratio": 0.4388,
-"state": "cooling",
-"ts_bull": 40.4,
-"ts_comments": 2,
-"weighted": 35.0
-},
 "2026-08-20": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -48102,6 +48207,18 @@
 "ts_bull": 68.5,
 "ts_comments": 3,
 "weighted": 33.0
+},
+"2026-11-18": {
+"authors": 0,
+"cramer": "caution_concern",
+"pct_bull": 0.0,
+"raw": 30,
+"score": 3.85,
+"short_ratio": 0.5643,
+"state": "cooling",
+"ts_bull": 73.6,
+"ts_comments": 2,
+"weighted": 30.0
 }
 },
 "TSM": {
@@ -48316,6 +48433,15 @@
 "short_ratio": 0.2573,
 "state": "sustained",
 "uoa": false,
+"weighted": 14.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 14,
+"score": 22.77,
+"short_ratio": 0.0965,
+"state": "cooling",
 "weighted": 14.0
 }
 },
@@ -48629,6 +48755,21 @@
 "short_ratio": 0.5439,
 "state": "cooling",
 "weighted": 32.0
+},
+"2026-11-18": {
+"attention": 100.0,
+"authors": 0,
+"pageviews": 12074,
+"pc_ratio": 0.895,
+"pct_bull": 19.0,
+"raw": 47,
+"score": 42.71,
+"short_ratio": 0.5018,
+"state": "hot",
+"ts_bull": 52.6,
+"ts_comments": 11,
+"uoa": false,
+"weighted": 47.0
 }
 },
 "TX": {
@@ -48653,21 +48794,6 @@
 "short_ratio": 0.6203,
 "state": "new",
 "weighted": 10.0
-}
-},
-"UAE": {
-"2026-08-19": {
-"attention": null,
-"authors": 0,
-"pageviews": null,
-"pc_ratio": 0.0,
-"pct_bull": 28.0,
-"raw": 11,
-"score": 49.17,
-"short_ratio": 0.6511,
-"state": "hot",
-"uoa": false,
-"weighted": 11.0
 }
 },
 "UBER": {
@@ -48867,20 +48993,22 @@
 "state": "sustained",
 "uoa": false,
 "weighted": 11.0
+},
+"2026-11-18": {
+"attention": 54.61,
+"authors": 0,
+"pageviews": 767,
+"pc_ratio": 1.409,
+"pct_bull": 20.0,
+"raw": 24,
+"score": 56.98,
+"short_ratio": 0.4293,
+"state": "hot",
+"uoa": false,
+"weighted": 24.0
 }
 },
 "UP": {
-"2026-08-19": {
-"authors": 0,
-"pct_bull": 0.0,
-"raw": 10,
-"score": 12.43,
-"short_ratio": 0.5623,
-"state": "cooling",
-"ts_bull": 58.9,
-"ts_comments": 2,
-"weighted": 10.0
-},
 "2026-08-20": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -49230,6 +49358,15 @@
 "short_ratio": 0.5815,
 "state": "cooling",
 "weighted": 11.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 17,
+"score": 15.56,
+"short_ratio": 0.4894,
+"state": "cooling",
+"weighted": 17.0
 }
 },
 "USAR": {
@@ -49977,6 +50114,19 @@
 "ts_bull": 50.0,
 "ts_comments": 1,
 "weighted": 17.0
+},
+"2026-11-18": {
+"attention": null,
+"authors": 0,
+"pageviews": null,
+"pct_bull": 68.0,
+"raw": 20,
+"score": 22.12,
+"short_ratio": 0.7286,
+"state": "cooling",
+"ts_bull": 71.0,
+"ts_comments": 2,
+"weighted": 20.0
 }
 },
 "VGT": {
@@ -50076,17 +50226,6 @@
 }
 },
 "VOO": {
-"2026-08-19": {
-"authors": 0,
-"pct_bull": 0.0,
-"raw": 53,
-"score": 16.3,
-"short_ratio": 0.713,
-"state": "cooling",
-"ts_bull": 24.1,
-"ts_comments": 6,
-"weighted": 53.0
-},
 "2026-08-20": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -51052,6 +51191,17 @@
 "ts_bull": 68.6,
 "ts_comments": 21,
 "weighted": 71.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 37,
+"score": 1.29,
+"short_ratio": 0.3635,
+"state": "cooling",
+"ts_bull": 45.8,
+"ts_comments": 4,
+"weighted": 37.0
 }
 },
 "VRT": {
@@ -51179,15 +51329,6 @@
 }
 },
 "VT": {
-"2026-08-19": {
-"authors": 0,
-"pct_bull": 0.0,
-"raw": 11,
-"score": 12.37,
-"short_ratio": 0.357,
-"state": "cooling",
-"weighted": 11.0
-},
 "2026-08-27": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -51440,18 +51581,18 @@
 "short_ratio": 0.5323,
 "state": "cooling",
 "weighted": 13.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 11,
+"score": 11.03,
+"short_ratio": 0.3318,
+"state": "cooling",
+"weighted": 11.0
 }
 },
 "VTI": {
-"2026-08-19": {
-"authors": 0,
-"pct_bull": 0.0,
-"raw": 17,
-"score": 15.04,
-"short_ratio": 0.6949,
-"state": "cooling",
-"weighted": 17.0
-},
 "2026-08-22": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -51855,22 +51996,18 @@
 "short_ratio": 0.6542,
 "state": "cooling",
 "weighted": 27.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 11,
+"score": -1.32,
+"short_ratio": 0.5967,
+"state": "cooling",
+"weighted": 11.0
 }
 },
 "VXUS": {
-"2026-08-19": {
-"attention": null,
-"authors": 0,
-"pageviews": null,
-"pc_ratio": 0.565,
-"pct_bull": 45.0,
-"raw": 11,
-"score": 48.61,
-"short_ratio": 0.6708,
-"state": "sustained",
-"uoa": false,
-"weighted": 11.0
-},
 "2026-08-24": {
 "attention": null,
 "authors": 0,
@@ -52402,6 +52539,19 @@
 "short_ratio": 0.3717,
 "state": "cooling",
 "weighted": 12.0
+},
+"2026-11-18": {
+"attention": 46.21,
+"authors": 0,
+"pageviews": 167,
+"pc_ratio": 0.103,
+"pct_bull": 14.0,
+"raw": 19,
+"score": 29.14,
+"short_ratio": 0.3787,
+"state": "sustained",
+"uoa": false,
+"weighted": 19.0
 }
 },
 "WH": {
@@ -52682,6 +52832,18 @@
 "short_ratio": 0.4816,
 "state": "cooling",
 "weighted": 20.0
+},
+"2026-11-18": {
+"attention": null,
+"authors": 0,
+"cramer": "buy",
+"pageviews": null,
+"pct_bull": 22.0,
+"raw": 11,
+"score": 1.03,
+"short_ratio": 0.3794,
+"state": "cooling",
+"weighted": 11.0
 }
 },
 "WOLF": {
@@ -53032,31 +53194,7 @@
 "weighted": 13.0
 }
 },
-"XYZ": {
-"2026-08-19": {
-"attention": 46.59,
-"authors": 0,
-"pageviews": 590,
-"pc_ratio": 0.461,
-"pct_bull": 68.0,
-"raw": 10,
-"score": 26.5,
-"short_ratio": 0.4704,
-"state": "new",
-"uoa": false,
-"weighted": 10.0
-}
-},
 "YOU": {
-"2026-08-19": {
-"authors": 0,
-"pct_bull": 0.0,
-"raw": 21,
-"score": 13.01,
-"short_ratio": 0.3127,
-"state": "cooling",
-"weighted": 21.0
-},
 "2026-08-20": {
 "authors": 0,
 "pct_bull": 0.0,
@@ -53853,6 +53991,15 @@
 "short_ratio": 0.5652,
 "state": "cooling",
 "weighted": 29.0
+},
+"2026-11-18": {
+"authors": 0,
+"pct_bull": 0.0,
+"raw": 22,
+"score": 1.96,
+"short_ratio": 0.44,
+"state": "cooling",
+"weighted": 22.0
 }
 },
 "ZEC": {
